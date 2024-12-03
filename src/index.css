@@ -1,0 +1,33 @@
+.stickybar {
+  position: sticky;
+  top: 0;
+}
+.chat-wrapper .content .sidebar-group .sidebar {
+  border-radius: 10px;
+}
+.slick-slider.swiper-wrapper button {
+  display: none !important;
+}
+#chats.left-sidebar-wrap > div {
+  border: 1px solid #cdcdcd;
+  border-radius: 10px;
+}
+table.table td i.bx.bxs-adjust,
+table.table td i.bx.bx-check-double {
+  margin-right: 5px;
+}
+.mob-scrn {
+  height: 313px !important;
+}
+.ticket-select {
+  z-index: 1000;
+}
+.ticket-select .css-10t8cs9-control {
+  background: none;
+}
+.customticket .form-select {
+  padding: 0px;
+}
+.dropdown-item.night-mode span svg {
+  color: #ff875a;
+}
