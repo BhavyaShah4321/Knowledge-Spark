@@ -1,0 +1,10 @@
+*.pyc
+__pycache__
+.git
+.venv
+# node_modules
+logs/
+.env
+# static/
+media/
+generated_receipts/
