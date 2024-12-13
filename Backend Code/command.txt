@@ -1,0 +1,4 @@
+step you must run during the project is 
+1:- .venv/Scripts/activate
+2:- python ./manage.py migrate
+3:- python ./manage.py runserver
