@@ -1,6 +1,7 @@
-import { Select } from "antd";
+import { Select, message } from "antd";
 import axios from "axios";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import loginimg from "../../Image/login-img.png";
 
 function Register() {
@@ -16,7 +17,9 @@ function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const [errormessage, seterrormessage] = useState("");
     const [successMessage, setsuccessMessage] = useState("");
+    const navigate = useNavigate();
 
+    
     const handleChange = (e) => {
         const { name, value } = e.target;
         setState({ ...state, [name]: value });
@@ -31,20 +34,19 @@ function Register() {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault(); // Prevent default form submission
+        e.preventDefault();
         seterrormessage("");
         setsuccessMessage("");
 
         const { username, password, confirmPassword, email, type } = state;
 
-        // Validate input
         if (!username || !password || !confirmPassword || !email) {
-            seterrormessage("All fields are required.");
+            message.error("All the fields are required");
             return;
         }
 
         if (password !== confirmPassword) {
-            seterrormessage("Passwords do not match.");
+            message.error("Passwords don't match");
             return;
         }
 
@@ -54,17 +56,21 @@ function Register() {
                 password,
                 password2: confirmPassword,
                 email,
-                type, // Include type explicitly
+                type,
             });
 
             if (response.status === 200) {
-                setsuccessMessage("Registration successful!");
-                setState(initialstate);
+                message.success("Registration successful!");
+                const { email, token } = response.data;
+
+                
+                navigate("/otp-verification", {
+                    state: { email, token }, // Pass data using state
+                });
+
             }
         } catch (error) {
-            seterrormessage(
-                error.response?.data?.message || "Registration failed. Try again."
-            );
+            message.error("Registration failed. Please try again.");
         }
     };
 
