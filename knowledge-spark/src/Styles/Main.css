@@ -1,0 +1,412 @@
+/*
+Author       : Knowledge Spark
+Template Name: Bootstrap Template, ant Design
+*/
+
+/*============================
+ [Table of CSS] 
+
+ 1. Login 
+ 2. Register
+ 
+========================================*/
+
+
+/*-----------------
+	1. Login
+-----------------------*/
+
+
+
+/* Login.css */
+
+body {
+	font-family: Arial, sans-serif;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 99h;
+	background-color: #f9f9f9;
+}
+
+.login-container {
+	display: flex;
+	min-width: 98vw;
+	height: 100vh;
+	width: 100vw;
+	background: #fff;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.login-left {
+	flex: 1;
+	background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 40px;
+	text-align: center;
+}
+
+.back-to-home {
+	position: absolute;
+	top: 30px;
+	right: 50px;
+	cursor: pointer;
+	font-size: 14px;
+	color: #777;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	text-decoration: none;
+}
+
+.back-to-home:hover {
+	color: #000;
+}
+
+
+.login-illustration {
+	max-width: 80%;
+	height: auto;
+	margin-bottom: 20px;
+}
+
+.login-left h2 {
+	font-size: 24px;
+	color: #333;
+	margin-bottom: 10px;
+}
+
+.login-left p {
+	font-size: 14px;
+	color: #666;
+	width: 500px;
+	margin-bottom: 60px;
+}
+
+.login-right {
+	flex: 1;
+	padding: 40px;
+}
+
+.login-form {
+	max-width: 400px;
+	margin: auto;
+	margin-top: 50px;
+}
+
+.login-form h1 {
+	font-size: 26px;
+	text-align: center;
+	color: #333;
+	margin-bottom: 60px;
+}
+
+.input-field {
+	width: 100%;
+	padding: 10px;
+	margin: 10px 0;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+.password-field {
+	position: relative;
+	width: 106%;
+}
+
+.password-toggle {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	cursor: pointer;
+}
+
+.login-options {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin: 15px 0;
+}
+
+.btn {
+	width: 100%;
+	padding: 12px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.btn-login {
+	background: #ff6f61;
+	color: #fff;
+}
+
+.btn-google,
+.btn-facebook {
+	background: #eee;
+	color: #333;
+	margin: 5px 0;
+}
+
+.btn-google:hover {
+	background: #e2e1e1;
+	color: #000;
+	margin: 5px 0;
+}
+
+.btn-facebook:hover {
+	background: #e2e1e1;
+	color: #000;
+	margin: 5px 0;
+}
+
+.new-user {
+	text-align: center;
+	margin-top: 15px;
+}
+
+.new-user a {
+	color: #ff6f61;
+	text-decoration: none;
+}
+
+.new-user a:hover {
+	text-decoration: underline;
+}
+
+.password-field {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.input-field {
+	width: 100%;
+	padding: 10px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+}
+
+.password-toggle {
+	position: absolute;
+	right: 10px;
+	cursor: pointer;
+	color: #888;
+}
+
+.password-toggle:hover {
+	color: #000;
+}
+
+
+
+/*-----------------
+	2.  Register
+-----------------------*/
+
+
+.register-container {
+	display: flex;
+	width: 100vw;
+	height: 100vh;
+	background: #fff;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.register-left {
+	flex: 1;
+	background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 40px;
+	text-align: center;
+}
+
+.register-illustration {
+	max-width: 80%;
+	height: auto;
+	margin-bottom: 20px;
+}
+
+.register-left h2 {
+	font-size: 24px;
+	color: #333;
+	margin-bottom: 10px;
+}
+
+.register-left p {
+	font-size: 14px;
+	color: #666;
+	width: 80%;
+	max-width: 500px;
+	margin-bottom: 30px;
+}
+
+.register-right {
+	flex: 1;
+	padding: 40px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.register-form {
+	max-width: 400px;
+	margin: auto;
+}
+
+.register-form h1 {
+	font-size: 26px;
+	text-align: center;
+	color: #333;
+	margin-bottom: 30px;
+}
+
+.register-username-field,
+.register-email-field,
+.register-password-input-field {
+	width: 100%;
+	padding: 10px;
+	margin: 10px 0;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+.register-password-field {
+	position: relative;
+}
+
+.register-password-toggle {
+	position: absolute;
+	top: 50%;
+	right: -10px;
+	transform: translateY(-50%);
+	cursor: pointer;
+	color: #888;
+}
+
+.register-password-toggle:hover {
+	color: #333;
+}
+
+.register-options {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin: 15px 0;
+}
+
+.btn {
+	width: 100%;
+	padding: 12px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.btn-signin {
+	background: #ff6f61;
+	color: #fff;
+}
+
+.btn-google,
+.btn-facebook {
+	background: #eee;
+	color: #333;
+	margin: 5px 0;
+}
+
+.btn-google:hover,
+.btn-facebook:hover {
+	background: #e2e1e1;
+	color: #000;
+}
+
+.register-alternate {
+	text-align: center;
+	margin-top: 20px;
+}
+
+.register-alternate p {
+	margin-bottom: 10px;
+}
+
+.new-user {
+	text-align: center;
+	margin-top: 15px;
+}
+
+.new-user a {
+	color: #ff6f61;
+	text-decoration: none;
+}
+
+.new-user a:hover {
+	text-decoration: underline;
+}
+
+.back-to-home-register {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	font-size: 14px;
+	color: #777;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	text-decoration: none;
+}
+
+.back-to-home-register i {
+	font-size: 16px;
+}
+
+.back-to-home-register:hover {
+	color: #333;
+}
+
+.type-select {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	width: 420px;
+	color: #333;
+	height: 38px;
+}
+
+
+@media (max-width: 768px) {
+	.register-container {
+		flex-direction: column;
+	}
+
+	.register-left,
+	.register-right {
+		flex: none;
+		width: 100%;
+		padding: 20px;
+	}
+
+	.register-illustration {
+		width: 60%;
+	}
+
+	.register-form {
+		width: 90%;
+	}
+}
