@@ -65,16 +65,33 @@
 
 
 
+import { message } from "antd";
 import axios from "axios";
 import React, { useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import loginimg from "../../Image/login-img.png";
 
 function OTPVerification() {
     const { state } = useLocation();
     const { email, token } = state;
     const [otp, setOtp] = useState(["", "", "", ""]);
+    const [timer, setTimer] = useState(60);
     const inputs = useRef([]);
+    const timerInterval = useRef(null);
+    const navigate = useNavigate();
+
+    // if (!email || !token) {
+    //     return message.error(" Missing email or token. Please try again.")
+    // }
+
+    // useEffect(() => {
+    //     timerInterval.current = setInterval(() => {
+    //         setTimer((prev) => (prev > 0 ? prev - 1 : 0));
+    //     }, 1000);
+    //     return () => {
+    //         clearInterval(timerInterval.current);
+    //     };
+    // }, []);
 
     const handleChange = (e, index) => {
         const value = e.target.value;
@@ -111,12 +128,33 @@ function OTPVerification() {
             });
 
             if (response.status === 200) {
-                alert("OTP Verified Successfully!");
+                message.success("OTP Verified Successfully!");
+                // navigate("/")
             }
         } catch (error) {
-            alert("OTP Verification Failed!");
+            message.error("OTP Verification Failed!");
         }
     };
+
+
+    const handleresendotp = async (e) => {
+        e.preventDefault();
+
+        try {
+            const response = await axios.post("http://localhost:8000/api/resend-otp/", {
+                token,
+                otp: otp.join(""),
+            })
+
+            if (response.status === 200) {
+                message.success("OTP Verified Succesfully! ");
+            }
+
+        } catch (error) {
+            message.error("OTP Verification Failed")
+        }
+
+    }
 
     return (
         <div className="OTP-container">
@@ -153,6 +191,27 @@ function OTPVerification() {
                         <button type="submit" className="OTP-submit-button">
                             Verify OTP
                         </button>
+
+                        <div className="otpresend">
+                            {timer > 0 ? (
+                                <p>Resend OTP in {timer} seconds</p>
+                            ) : (
+                                <div>
+                                    Click here to  &nbsp;
+                                    <span
+                                        onClick={(e) => {
+                                            setTimer(60);
+                                            handleresendotp(e);
+                                        }}
+                                        className="resend-otp"
+                                    >
+                                        <Link className="link-resend-otp">
+                                            Resend OTP
+                                        </Link>
+                                    </span>
+                                </div>
+                            )}
+                        </div>
                     </form>
                 </div>
             </div>
