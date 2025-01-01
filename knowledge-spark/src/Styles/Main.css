@@ -6,20 +6,44 @@ Template Name: Bootstrap Template, ant Design
 /*============================
  [Table of CSS] 
 
- 1. Login 
- 2. Register
- 3. OTP Verification
+ 1. Scroll
+ 2. Login 
+ 3. Register
+ 4. OTP Verification
  
 ========================================*/
 
-
 /*-----------------
-	1. Login
+	1. Scroll
 -----------------------*/
 
 
+::-webkit-scrollbar {
+	width: 5px;
+	height: 5px;
+}
 
-/* Login.css */
+/* Track */
+::-webkit-scrollbar-track {
+	background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+	background: #eba259;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+	background: #eba259;
+}
+
+
+
+/*-----------------
+	2. Login
+-----------------------*/
+
 
 body {
 	font-family: Arial, sans-serif;
@@ -52,19 +76,13 @@ body {
 	justify-content: center;
 	padding: 40px;
 	text-align: center;
+	overflow: hidden;
 }
 
 .back-to-home {
-	position: absolute;
-	top: 30px;
-	right: 50px;
 	cursor: pointer;
 	font-size: 14px;
 	color: #777;
-	display: flex;
-	align-items: center;
-	gap: 5px;
-	text-decoration: none;
 }
 
 .back-to-home:hover {
@@ -94,12 +112,14 @@ body {
 .login-right {
 	flex: 1;
 	padding: 40px;
+	overflow: auto;
 }
 
 .login-form {
 	max-width: 400px;
+	width: 90%;
 	margin: auto;
-	margin-top: 50px;
+	margin-top: 30px;
 }
 
 .login-form h1 {
@@ -131,9 +151,14 @@ body {
 
 .login-options {
 	display: flex;
+	flex-wrap: wrap;
 	justify-content: space-between;
 	align-items: center;
 	margin: 15px 0;
+}
+
+.forgot-password {
+	padding-bottom: 10px;
 }
 
 .btn {
@@ -208,10 +233,18 @@ body {
 	color: #000;
 }
 
+@media (max-width: 768px) {
+
+	.login-left {
+		display: none;
+	}
+
+}
+
 
 
 /*-----------------
-	2.  Register
+	3.  Register
 -----------------------*/
 
 
@@ -234,6 +267,7 @@ body {
 	justify-content: center;
 	padding: 40px;
 	text-align: center;
+	overflow: hidden;
 }
 
 .register-illustration {
@@ -261,11 +295,14 @@ body {
 	padding: 40px;
 	display: flex;
 	flex-direction: column;
-	justify-content: center;
+	justify-content: flex-start;
+	overflow: scroll;
+	overflow-x: hidden;
 }
 
 .register-form {
 	max-width: 400px;
+	width: 90%;
 	margin: auto;
 }
 
@@ -282,8 +319,19 @@ body {
 	width: 100%;
 	padding: 10px;
 	margin: 10px 0;
+	margin-right: 10px;
+	padding-right: 2px;
 	border: 1px solid #ccc;
 	border-radius: 4px;
+	box-sizing: border-box;
+}
+
+.type-select {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	width: 100%;
+	color: #333;
+	height: 38px;
 }
 
 .register-password-field {
@@ -293,7 +341,7 @@ body {
 .register-password-toggle {
 	position: absolute;
 	top: 50%;
-	right: -10px;
+	right: 10px;
 	transform: translateY(-50%);
 	cursor: pointer;
 	color: #888;
@@ -362,16 +410,10 @@ body {
 }
 
 .back-to-home-register {
-	position: absolute;
-	top: 20px;
-	right: 20px;
+	margin-bottom: 20px;
 	font-size: 14px;
 	color: #777;
 	cursor: pointer;
-	display: flex;
-	align-items: center;
-	gap: 5px;
-	text-decoration: none;
 }
 
 .back-to-home-register i {
@@ -382,21 +424,20 @@ body {
 	color: #333;
 }
 
-.type-select {
-	margin-top: 10px;
-	margin-bottom: 10px;
-	width: 420px;
-	color: #333;
-	height: 38px;
-}
-
-
 @media (max-width: 768px) {
 	.register-container {
 		flex-direction: column;
 	}
 
-	.register-left,
+	.register-container {
+		overflow: auto;
+
+	}
+
+	.register-left {
+		display: none;
+	}
+
 	.register-right {
 		flex: none;
 		width: 100%;
@@ -412,11 +453,43 @@ body {
 	}
 }
 
+@media (max-width: 500px) {
+
+	.register-username-field,
+	.register-email-field,
+	.register-password-input-field {
+		width: 90%;
+	}
+
+	.type-select {
+		width: 90%;
+	}
+
+	.register-password-field {
+		position: relative;
+	}
+
+	.register-password-toggle {
+		position: absolute;
+		top: 50%;
+		right: 50px;
+		transform: translateY(-50%);
+		cursor: pointer;
+		color: #888;
+	}
+
+	.register-password-toggle:hover {
+		color: #333;
+	}
+
+	.btn {
+		width: 90%;
+	}
+}
 
 /*--------------------------
-	3. OTP VErification
+	4. OTP VErification
 --------------------------------*/
-
 .OTP-container {
 	display: flex;
 	width: 100vw;
@@ -461,6 +534,7 @@ body {
 	background: #fff;
 	padding: 20px;
 	box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+	width: 100%;
 }
 
 .OTP-form {
@@ -511,4 +585,36 @@ body {
 
 .OTP-submit-button:hover {
 	background: #40a9ff;
+}
+
+.link-resend-otp {
+	text-decoration: none;
+}
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+
+	/* Laptop */
+	.OTP-left {
+		display: none;
+	}
+
+	.OTP-right {
+		flex: 1;
+		width: 100%;
+	}
+}
+
+@media (max-width: 768px) {
+
+	/* Tablet and Mobile */
+	.OTP-left {
+		display: none;
+	}
+
+	.OTP-right {
+		flex: 1;
+		width: 100%;
+		padding: 20px;
+	}
 }

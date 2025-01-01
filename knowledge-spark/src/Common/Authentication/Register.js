@@ -1,7 +1,7 @@
 import { Select, message } from "antd";
 import axios from "axios";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import loginimg from "../../Image/login-img.png";
 
 function Register() {
@@ -15,11 +15,12 @@ function Register() {
 
     const [state, setState] = useState(initialstate);
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfoirmPassword, setShowConfoirmPassword] = useState(false);
     const [errormessage, seterrormessage] = useState("");
     const [successMessage, setsuccessMessage] = useState("");
     const navigate = useNavigate();
 
-    
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setState({ ...state, [name]: value });
@@ -32,6 +33,9 @@ function Register() {
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
+    const toggleConfoirmPasswordVisibility = () => {
+        setShowConfoirmPassword(!showConfoirmPassword)
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -63,7 +67,7 @@ function Register() {
                 message.success("Registration successful!");
                 const { email, token } = response.data;
 
-                
+
                 navigate("/otp-verification", {
                     state: { email, token }, // Pass data using state
                 });
@@ -77,9 +81,6 @@ function Register() {
 
     return (
         <div className="register-container">
-            <div className="back-to-home-register">
-                <i className="fa-solid fa-arrow-left"></i> Back to Home
-            </div>
             <div className="register-left">
                 <img
                     src={loginimg}
@@ -95,6 +96,11 @@ function Register() {
             </div>
 
             <div className="register-right">
+                <div className="back-to-home-register">
+                    <Link to="/">
+                        <i className="fa-solid fa-arrow-left"></i> Back to Login
+                    </Link>
+                </div>
                 <div className="register-form">
                     <h1>Sign Up into Your Account</h1>
                     <form onSubmit={handleSubmit}>
@@ -156,17 +162,17 @@ function Register() {
                                 name="confirmPassword"
                                 value={state.confirmPassword}
                                 onChange={handleChange}
-                                type={showPassword ? "text" : "password"}
+                                type={showConfoirmPassword ? "text" : "password"}
                                 placeholder="Confirm Password"
                                 className="register-password-input-field"
                             />
                             <span
                                 className="register-password-toggle"
-                                onClick={togglePasswordVisibility}
+                                onClick={toggleConfoirmPasswordVisibility}
                             >
                                 <i
                                     className={
-                                        showPassword ? "fa-solid fa-eye-slash" : "fa-solid fa-eye"
+                                        showConfoirmPassword ? "fa-solid fa-eye-slash" : "fa-solid fa-eye"
                                     }
                                 ></i>
                             </span>
@@ -176,6 +182,12 @@ function Register() {
                         <button type="submit" className="btn btn-signin">
                             Sign Up
                         </button>
+
+                        <div className="Sign-alternate">
+                            <p>Or Sign in with</p>
+                            <button className="btn btn-google">Sign In using Google</button>
+                            <button className="btn btn-facebook">Sign In using Facebook</button>
+                        </div>
                     </form>
                 </div>
             </div>
