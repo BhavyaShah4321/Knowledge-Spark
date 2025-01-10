@@ -1,50 +1,49 @@
 from django.shortcuts import render
+
 # Create your views here.
 import requests
-from rest_framework.filters import SearchFilter,OrderingFilter
+from rest_framework.filters import SearchFilter, OrderingFilter
 from user.models import User
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.viewsets import ModelViewSet
-from user.serializers import UserSerializer,RegisterSerializer,OtpSerilaizer
+from user.serializers import UserSerializer, RegisterSerializer, OtpSerilaizer
 from utils.pagination import mypagination
-from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.decorators import action
 import threading
 from utils.send_mail import send_email_with_template
 from django.db import transaction
-from utils.generate_otp import generate_otp,generate_token,decode_token
+from utils.generate_otp import generate_otp, generate_token, decode_token
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from faker import Faker
+
 # from rest_framework_simplejwt.tokens import OutstandingToken, BlacklistedToken
 
-from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+from rest_framework_simplejwt.token_blacklist.models import (
+    OutstandingToken,
+    BlacklistedToken,
+)
 
 
 from rest_framework import status
 from decouple import config
 from django.contrib.auth.hashers import check_password
 
-faker=Faker()
+faker = Faker()
+
+
 class UserViewSet(ModelViewSet):
-    queryset=User.objects.filter(deleted=0,is_active=True)
-    serializer_class=UserSerializer
-    pagination_class=mypagination
-    filter_backends=[SearchFilter,OrderingFilter]
-    permission_classes=[IsAuthenticated]
-    authentication_classes=[JWTAuthentication]
-    
-    search_fields=[
-        "username",
-        
-        "email"
-    ]
-    ordering_fields=[
-        
-        "username",
-        "email"
-    ]
+    queryset = User.objects.filter(deleted=0, is_active=True)
+    serializer_class = UserSerializer
+    pagination_class = mypagination
+    filter_backends = [SearchFilter, OrderingFilter]
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    search_fields = ["username", "email"]
+    ordering_fields = ["username", "email"]
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -52,104 +51,137 @@ class UserViewSet(ModelViewSet):
 
         if no_pagination:
             serializer = self.serializer_class(queryset, many=True)
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
 
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
 
         serializer = self.serializer_class(queryset, many=True)
-        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
 
     def update(self, request, *args, **kwargs):
-        instance=self.get_object()
-        data=request.data 
-        serializer=self.serializer_class(instance=instance,data=data,partial=True)
-        
+        instance = self.get_object()
+        data = request.data
+        serializer = self.serializer_class(instance=instance, data=data, partial=True)
+
         if serializer.is_valid():
             serializer.save()
-            return Response({"success": True,"message":"Successfully Updated","data": serializer.data}, status=status.HTTP_200_OK)
-        
-        return Response({"success": True,"message":serializer.errors}, status=status.HTTP_200_OK)
-        
-    @action(detail=False, methods=['post'])
+            return Response(
+                {
+                    "success": True,
+                    "message": "Successfully Updated",
+                    "data": serializer.data,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(
+            {"success": True, "message": serializer.errors}, status=status.HTTP_200_OK
+        )
+
+    @action(detail=False, methods=["post"])
     def logout(self, request, *args, **kwargs):
         try:
             # Get the token from the request body
-            token = request.data.get('refresh_token')
+            token = request.data.get("refresh_token")
             print("Refresh token received:", token)
 
             if token:
                 try:
-                    # Convert to RefreshToken object
                     refresh_token = RefreshToken(token)
 
-                    # Get the user associated with the token
-                    user_id = refresh_token.payload.get('user_id')
+                    user_id = refresh_token.payload.get("user_id")
                     user = User.objects.filter(id=user_id).first()
 
                     if user:
-                        # Deactivate the user (make them inactive)
                         user.is_active = False
                         user.save()
 
                         return Response(
-                            {'success': True, 'message': 'User logged out and deactivated successfully.'},
-                            status=status.HTTP_200_OK
+                            {
+                                "success": True,
+                                "message": "User logged out and deactivated successfully.",
+                            },
+                            status=status.HTTP_200_OK,
                         )
                     else:
                         return Response(
-                            {'success': False, 'message': 'User not found or invalid token.'},
-                            status=status.HTTP_400_BAD_REQUEST
+                            {
+                                "success": False,
+                                "message": "User not found or invalid token.",
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
                         )
                 except Exception as e:
                     print("Error during logout:", e)
                     return Response(
-                        {'success': False, 'message': 'Error processing token. Try again.'},
-                        status=status.HTTP_400_BAD_REQUEST
+                        {
+                            "success": False,
+                            "message": "Error processing token. Try again.",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
             else:
                 return Response(
-                    {'success': False, 'message': 'Token not provided.'},
-                    status=status.HTTP_400_BAD_REQUEST
+                    {"success": False, "message": "Token not provided."},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
         except Exception as e:
             print("Unexpected error:", e)
             return Response(
-                {'success': False, 'message': 'An unexpected error occurred.'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"success": False, "message": "An unexpected error occurred."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-     
+
     @action(detail=False, methods=["GET"], url_path="get-user-single")
     def get_user_single(self, request, *args, **kwargs):
-        # Get the current logged-in user
         try:
             instance = User.objects.get(id=request.user.id)  # Get the user by ID
         except User.DoesNotExist:
-            return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
-        # Check if the user is active
         if not instance.is_active:
-            return Response({"detail": "User is not active"}, status=status.HTTP_400_BAD_REQUEST)
- 
+            return Response(
+                {"detail": "User is not active"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
         if instance:
-            serializer=UserSerializer(instance)
-            return Response({"success":True,"data":serializer.data},status=status.HTTP_200_OK)
+            serializer = UserSerializer(instance)
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
         else:
-            return Response({"success":False,"message":"No user found ! Please login again"},status=status.HTTP_400_BAD_REQUEST)
-            
-    @action(detail=False,methods=["GET"],url_path="get-user-multiple")
-    def get_user_multiple(self,request,*args,**kwargs):
-        instance=request.user
+            return Response(
+                {"success": False, "message": "No user found ! Please login again"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    @action(detail=False, methods=["GET"], url_path="get-user-multiple")
+    def get_user_multiple(self, request, *args, **kwargs):
+        instance = request.user
         if instance.is_superuser:
-            data=User.objects.all()
-            serializer=UserSerializer(data=data,many=True)
-            return Response({"success":True,"data":serializer.data},status=status.HTTP_200_OK)
+            data = User.objects.all()
+            serializer = UserSerializer(data=data, many=True)
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
         else:
-            return Response({"success":False,"message":"You are not admin"},status=status.HTTP_200_OK)
-            
-        
+            return Response(
+                {"success": False, "message": "You are not admin"},
+                status=status.HTTP_200_OK,
+            )
+
+
 class RegisterViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
@@ -171,7 +203,6 @@ class RegisterViewSet(ModelViewSet):
                 else:
                     # Create a new user
                     user = serializer.save()
-                    print(user.otp)
 
                 token = generate_token(email, 60)
                 subject = "Email Verification"
@@ -183,7 +214,8 @@ class RegisterViewSet(ModelViewSet):
                 # send_email_verfication(subject=subject, to=to, context=context)
                 # subject, recipient_email, template_name, context
                 email_thread = threading.Thread(
-                    target=send_email_with_template, args=(subject, to, "send_otp.html",context)
+                    target=send_email_with_template,
+                    args=(subject, to, "send_otp.html", context),
                 )
                 email_thread.start()
                 return Response(
@@ -196,8 +228,11 @@ class RegisterViewSet(ModelViewSet):
                     status=status.HTTP_200_OK,
                 )
         else:
+            errors_message = " ".join(
+                [", ".join(value) for value in serializer.errors.values()]
+            )
             return Response(
-                {"success": False, "message": serializer.errors},
+                {"success": False, "message": errors_message},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -205,12 +240,12 @@ class RegisterViewSet(ModelViewSet):
 # @method_decorator(csrf_exempt, name="dispatch")
 class VerifyEmailViewset(ModelViewSet):
     queryset = User.objects.all()
-    serializer_class=UserSerializer
-    
+    serializer_class = UserSerializer
+
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
         otp = int(request.data.get("otp"))
-        token=request.data.get("token")
+        token = request.data.get("token")
         try:
             payload = decode_token(token)
         except Exception:
@@ -244,7 +279,7 @@ class VerifyEmailViewset(ModelViewSet):
         access_token = str(refresh_token.access_token)
 
         user.otp = otp
-        user.is_active=True
+        user.is_active = True
         user.save()
 
         return Response(
@@ -259,7 +294,6 @@ class VerifyEmailViewset(ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
-                
 
 # class ResendOtpViewSet(ModelViewSet):
 
@@ -282,7 +316,7 @@ class VerifyEmailViewset(ModelViewSet):
 #             "otp":otp
 #         }
 #         mail_thread = threading.Thread(
-#             target=send_email_with_template, 
+#             target=send_email_with_template,
 #             args=(subject, recipient_email, template_name, context)
 #         )
 #         mail_thread.start()
@@ -295,11 +329,11 @@ class VerifyEmailViewset(ModelViewSet):
 
 class ResendOtpViewSet(ModelViewSet):
     queryset = User.objects.all()
-    serializer_class=UserSerializer
+    serializer_class = UserSerializer
 
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
-        token=request.data.get("token")
+        token = request.data.get("token")
         try:
             payload = decode_token(token)
         except Exception:
@@ -323,8 +357,8 @@ class ResendOtpViewSet(ModelViewSet):
 
         otp = generate_otp()
         print(otp)
-        
-        user.otp=otp
+
+        user.otp = otp
         user.save()
         subject = "Email Verification"
         to = user.email
@@ -334,20 +368,23 @@ class ResendOtpViewSet(ModelViewSet):
         }
         print(context)
         email_thread = threading.Thread(
-            target=send_email_with_template, args=(subject, to, "send_otp.html",context)
+            target=send_email_with_template,
+            args=(subject, to, "send_otp.html", context),
         )
         email_thread.start()
 
         return Response(
-            {"success": True, "message": f"An OTP has been sent again to {user.email} ."},
+            {
+                "success": True,
+                "message": f"An OTP has been sent again to {user.email} .",
+            },
             status=status.HTTP_200_OK,
         )
 
-            
 
 class LoginViewSet(ModelViewSet):
     queryset = User.objects.all()
-    serializer_class=UserSerializer
+    serializer_class = UserSerializer
 
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
@@ -356,41 +393,96 @@ class LoginViewSet(ModelViewSet):
         password = data.get("password")
 
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email=email,is_superuser=False)
         except User.DoesNotExist:
             return Response(
                 {"success": False, "message": "Invalid Email or Password"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
-        if check_password(password, user.password) and user.email_verified:
-                user.is_active=True
-                user.save()
-                refresh_token = RefreshToken.for_user(user)
-                access_token = str(refresh_token.access_token)
+            
 
-                return Response(
-                    {
-                        "success": True,
-                        "message": "Login successful done",
-                        "token": {
-                            "access_token": access_token,
-                            "refresh_token": str(refresh_token),
-                        },
-                        "data": {
-                            "id": user.id,
-                            "email": user.email,
-                            "username": user.username,
-                        },
+        if check_password(password, user.password) and user.email_verified:
+            user.is_active = True
+            user.save()
+            refresh_token = RefreshToken.for_user(user)
+            access_token = str(refresh_token.access_token)
+
+            return Response(
+                {
+                    "success": True,
+                    "message": "Login successful done",
+                    "token": {
+                        "access_token": access_token,
+                        "refresh_token": str(refresh_token),
                     },
-                    status=status.HTTP_200_OK,
-                )
-                
+                    "data": {
+                        "id": user.id,
+                        "email": user.email,
+                        "username": user.username,
+                    },
+                },
+                status=status.HTTP_200_OK,
+            )
+
         else:
             return Response(
                 {"success": False, "message": "Invalid Email or Password"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+    @action(detail=False, methods=["POST"], url_path="admin-login")
+    def admin_login(self, request, *args, **kwargs):
+        data = request.data
+        email = data.get("email")
+        password = data.get("password")
+
+        if not email:
+            return Response(
+                {"success": False, "message": "Email is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not password:
+            return Response(
+                {"success": False, "message": "Password is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+            
+
+        try:
+            user_instance = User.objects.get(email=email, is_superuser=True)
+            print(user_instance)
+        except User.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Invalid email or password."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not check_password(password, user_instance.password):
+            return Response(
+                {"success": False, "message": "Invalid email or password."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user_instance.is_active=True
+        user_instance.email_verified=True
+        user_instance.save()
+
+        serializer = UserSerializer(user_instance)
+        refresh_token = RefreshToken.for_user(user_instance)
+        access_token = str(refresh_token.access_token)
+
+        return Response(
+            {
+                "success": True,
+                "message": f"{user_instance.email} logged in.",
+                "data": serializer.data,
+                "token": {
+                    "access_token": access_token,
+                    "refresh_token": str(refresh_token),
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 
@@ -403,10 +495,13 @@ class ForgotPasswordViewSet(ModelViewSet):
         email = request.data.get("email")
 
         try:
-            user = User.objects.get(email=email,email_verified=True)
+            user = User.objects.get(email=email, email_verified=True)
         except User.DoesNotExist:
             return Response(
-                {"success": False, "message": f"Email {email} is not registered before"},
+                {
+                    "success": False,
+                    "message": f"Email {email} is not registered before",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -414,27 +509,30 @@ class ForgotPasswordViewSet(ModelViewSet):
         recipient_email = user.email
         subject = "Reset assword link request from AgelessEatsKitchen.com"
         context = {"link": f"{config('HOST_URL')}reset-password/{token}/"}
-        template="send_forgot_password_mail.html"
+        template = "send_forgot_password_mail.html"
         mail_thread = threading.Thread(
-            target=send_email_with_template, 
-            args=(subject, recipient_email, template, context)
+            target=send_email_with_template,
+            args=(subject, recipient_email, template, context),
         )
         mail_thread.start()
 
         return Response(
-            {"success": True, "message": f"Password reset link has been sent on {email}"},
+            {
+                "success": True,
+                "message": f"Password reset link has been sent on {email}",
+            },
             status=status.HTTP_200_OK,
         )
 
 
-
 class ResetPasswordViewSet(ModelViewSet):
-    queryset=User.objects.all()
-    serializer_class=UserSerializer
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
         password = request.data.get("password")
-        token=request.data.get('token')
+        token = request.data.get("token")
         password2 = request.data.get("password2")
 
         if token is None:
@@ -442,15 +540,15 @@ class ResetPasswordViewSet(ModelViewSet):
                 {"success": False, "message": "token is not provided"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         try:
-            payload = decode_token(token) # type: ignore
+            payload = decode_token(token)  # type: ignore
         except Exception:
             return Response(
                 {"success": False, "message": "Link expired"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        print("payload",payload)
+        print("payload", payload)
         if "email" not in payload:
             return Response(
                 {"success": False, "message": "Invalid link"},
@@ -483,10 +581,12 @@ class ResetPasswordViewSet(ModelViewSet):
         user.save()
 
         return Response(
-            {"success": True, "message": f"Password changed successfully for {user.email}"},
+            {
+                "success": True,
+                "message": f"Password changed successfully for {user.email}",
+            },
             status=status.HTTP_200_OK,
         )
-
 
 
 class ChangePasswordViewSet(ModelViewSet):
@@ -538,7 +638,7 @@ class ChangePasswordViewSet(ModelViewSet):
 
 class LoginWithGoogleViewSet(ModelViewSet):
     queryset = User.objects.all()
-    serializer_class=UserSerializer
+    serializer_class = UserSerializer
 
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
@@ -555,14 +655,14 @@ class LoginWithGoogleViewSet(ModelViewSet):
 
                     email = user_info["email"]
                     username = user_info["name"]
-                    if username is None or username =="":
-                        username=faker("username")
-                        
-                    username = ' '.join(username.split()).replace(' ', '_')
+                    if username is None or username == "":
+                        username = faker("username")
+
+                    username = " ".join(username.split()).replace(" ", "_")
                     user = User.objects.filter(email=email)
                     print(user)
                     if user.exists():
-                        mainuser=user[0]
+                        mainuser = user[0]
                         mainuser.is_active = True
                         mainuser.save()
                         refresh_token = RefreshToken.for_user(user[0])
@@ -592,12 +692,12 @@ class LoginWithGoogleViewSet(ModelViewSet):
                     # Process user info, create user, or authenticate user as needed
                     return Response(
                         {
-                             "success": True,
-                                "message": "Google authentication Successfully done",
-                                "token": {
-                                    "access_token": access_token,
-                                    "refresh_token": str(refresh_token),
-                                },
+                            "success": True,
+                            "message": "Google authentication Successfully done",
+                            "token": {
+                                "access_token": access_token,
+                                "refresh_token": str(refresh_token),
+                            },
                         },
                         status=status.HTTP_200_OK,
                     )
@@ -617,4 +717,3 @@ class LoginWithGoogleViewSet(ModelViewSet):
                 {"success": False, "message": "Something went wrong ! Try again"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
