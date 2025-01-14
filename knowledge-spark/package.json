@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^5.4.0",
+    "@ant-design/plots": "^2.3.3",
     "@emotion/css": "^11.13.0",
     "@reduxjs/toolkit": "^2.3.0",
     "@testing-library/jest-dom": "^5.17.0",
