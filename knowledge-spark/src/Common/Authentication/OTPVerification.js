@@ -67,8 +67,8 @@
 
 import { message } from "antd";
 import axios from "axios";
-import React, { useRef, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import loginimg from "../../Image/login-img.png";
 
 function OTPVerification() {
@@ -80,18 +80,19 @@ function OTPVerification() {
     const timerInterval = useRef(null);
     const navigate = useNavigate();
 
-    // if (!email || !token) {
-    //     return message.error(" Missing email or token. Please try again.")
-    // }
+    
+    useEffect(() => {
+        
+        if (!email || !token) {
+            return message.error(" Missing email or token. Please try again.")
+        }
+        timerInterval.current = setInterval(() => {
+            setTimer((prev) => (prev > 0 ? prev - 1 : 0));
+        }, 1000);
 
-    // useEffect(() => {
-    //     timerInterval.current = setInterval(() => {
-    //         setTimer((prev) => (prev > 0 ? prev - 1 : 0));
-    //     }, 1000);
-    //     return () => {
-    //         clearInterval(timerInterval.current);
-    //     };
-    // }, []);
+        return () => clearInterval(timerInterval.current);
+    }, [email, token]);
+
 
     const handleChange = (e, index) => {
         const value = e.target.value;
@@ -129,7 +130,7 @@ function OTPVerification() {
 
             if (response.status === 200) {
                 message.success("OTP Verified Successfully!");
-                // navigate("/")
+                navigate("/")
             }
         } catch (error) {
             message.error("OTP Verification Failed!");
@@ -164,7 +165,7 @@ function OTPVerification() {
                     alt="Welcome Illustration"
                     className="OTP-illustration"
                 />
-                <h2>Welcome to DreamsLMS Courses.</h2>
+                <h2>Welcome to Knowledge Spark.</h2>
                 <p>
                     Please enter the OTP sent to your registered email address ({email}) to verify your account.
                 </p>
@@ -192,7 +193,7 @@ function OTPVerification() {
                             Verify OTP
                         </button>
 
-                        <div className="otpresend">
+                        {/* <div className="otpresend">
                             {timer > 0 ? (
                                 <p>Resend OTP in {timer} seconds</p>
                             ) : (
@@ -211,7 +212,7 @@ function OTPVerification() {
                                     </span>
                                 </div>
                             )}
-                        </div>
+                        </div> */}
                     </form>
                 </div>
             </div>

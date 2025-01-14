@@ -1,78 +1,164 @@
+import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
+import { Button, Form, Input, message } from "antd";
+import axios from "axios";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import loginimg from "../../Image/login-img.png";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
-  }
+  };
+
+  const handleSubmit = async (values) => {
+    const { email, password } = values;
+
+    const normalUserApi = "http://localhost:8000/api/login/";
+    const adminApi = "http://localhost:8000/api/login/admin-login/";
+
+    try {
+      // First attempt normal user login
+      const normalResponse = await axios.post(normalUserApi, { email, password });
+
+      if (normalResponse.status === 200 && normalResponse.data.success) {
+        const { token } = normalResponse.data;
+
+        localStorage.setItem("auth_token", token);
+        message.success("User login successful!");
+
+        navigate("/dashboard");
+        return;
+      }
+    } catch (error) {
+      // If normal login fails, proceed to admin login
+      try {
+        const adminResponse = await axios.post(adminApi, { email, password });
+
+        if (adminResponse.status === 200 && adminResponse.data.success) {
+          const { token } = adminResponse.data;
+
+          localStorage.setItem("auth_token", token);
+          message.success("Admin login successful!");
+
+          navigate("/dashboard");
+          return;
+        }
+      } catch (adminError) {
+        // Both normal and admin login failed
+        message.error("Invalid email or password. Please try again.");
+      }
+    }
+  };
 
   return (
     <div className="login-container">
       <div className="login-left">
         <img
-          src={loginimg}// Replace with the path to your illustration image
+          src={loginimg}
           alt="Welcome Illustration"
           className="login-illustration"
         />
-        <h2>Welcome to DreamsLMS Courses.</h2>
+        <h2>Welcome to Knowledge Spark.</h2>
         <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+          minim veniam.
         </p>
       </div>
 
       <div className="login-right">
-        <div className="back-to-home">
-          <Link to="/register">
-            <i className="fa-solid fa-arrow-left"></i> Back to Register
-          </Link>
-        </div>
         <div className="login-form">
           <h1>Login into Your Account</h1>
-          <form>
-            <label>Email</label>
-            <input
-              type="email"
-              placeholder="Enter your email address"
-              className="input-field"
-            />
-
-            <label>Password</label>
-            <div className="password-field">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                className="input-field"
+          <Form
+            name="login-form"
+            layout="vertical"
+            onFinish={handleSubmit}
+            autoComplete="off"
+          >
+            {/* Email Field */}
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter your email address!",
+                },
+                {
+                  type: "email",
+                  message: "Please enter a valid email address!",
+                },
+              ]}
+            >
+              <Input
+                placeholder="Enter your email address"
+                className="login-field"
               />
-              <span className="password-toggle" onClick={togglePasswordVisibility}>
-                <i className={showPassword ? "fa-solid fa-eye-slash" : "fa-solid fa-eye"}></i>
-              </span>
-            </div>
+            </Form.Item>
+
+            {/* Password Field */}
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter your password!",
+                },
+              ]}
+            >
+              <Input.Password
+                className="login-field"
+                placeholder="Enter your password"
+                iconRender={(visible) =>
+                  visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
+                }
+                type={showPassword ? "text" : "password"}
+                suffix={
+                  <span onClick={togglePasswordVisibility}>
+                    {showPassword ? (
+                      <EyeInvisibleOutlined />
+                    ) : (
+                      <EyeOutlined />
+                    )}
+                  </span>
+                }
+              />
+            </Form.Item>
 
             <div className="login-options">
-              <a href="/forgot-password" className="forgot-password">Forgot Password?</a>
+              <a href="/forget-password" className="forgot-password">
+                Forgot Password?
+              </a>
               <label>
                 <input type="checkbox" /> Remember me
               </label>
             </div>
 
-            <button type="submit" className="btn btn-login">
-              Log In
-            </button>
+            {/* Submit Button */}
+            <Form.Item>
+              <button type="submit" className="btn btn-login">
+                Sign Up
+              </button>
+            </Form.Item>
 
             <div className="login-alternate">
               <p>Or Log in with</p>
-              <button className="btn btn-google">Login In using Google</button>
-              <button className="btn btn-facebook">Login In using Facebook</button>
+              <Button type="default" className="btn btn-google" block>
+                Login with Google
+              </Button>
+              <Button type="default" className="btn btn-facebook" block>
+                Login with Facebook
+              </Button>
             </div>
 
             <p className="new-user">
               New User? <Link to="/register">Create an Account</Link>
             </p>
-          </form>
+          </Form>
         </div>
       </div>
     </div>

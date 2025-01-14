@@ -1,4 +1,5 @@
-import { Select, message } from "antd";
+import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
+import { Form, Input, message, Progress, Select } from "antd";
 import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -18,8 +19,9 @@ function Register() {
     const [showConfoirmPassword, setShowConfoirmPassword] = useState(false);
     const [errormessage, seterrormessage] = useState("");
     const [successMessage, setsuccessMessage] = useState("");
+    const [passwordStrength, setPasswordStrength] = useState(0);
+    const [passwordHint, setPasswordHint] = useState("");
     const navigate = useNavigate();
-
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -37,14 +39,32 @@ function Register() {
         setShowConfoirmPassword(!showConfoirmPassword)
     }
 
+    const evaluatePasswordStrength = (password) => {
+        let strength = 0;
+        let hint = "Weak";
+
+        if (password.length >= 8) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[a-z]/.test(password)) strength++;
+        if (/\d/.test(password)) strength++;
+        if (/[\W_]/.test(password)) strength++;
+
+        if (strength === 1 || strength === 2) hint = "Weak";
+        if (strength === 3) hint = "Medium";
+        if (strength >= 4) hint = "Strong";
+
+        setPasswordStrength(strength);
+        setPasswordHint(hint);
+    };
+
+
     const handleSubmit = async (e) => {
-        e.preventDefault();
         seterrormessage("");
         setsuccessMessage("");
 
         const { username, password, confirmPassword, email, type } = state;
 
-        if (!username || !password || !confirmPassword || !email) {
+        if (!username || !password || !confirmPassword || !email || !type) {
             message.error("All the fields are required");
             return;
         }
@@ -56,25 +76,24 @@ function Register() {
 
         try {
             const response = await axios.post("http://localhost:8000/api/register/", {
-                username,
-                password,
+                username: username,
+                password: password,
                 password2: confirmPassword,
-                email,
-                type,
+                email: email,
+                type: type,
             });
 
-            if (response.status === 200) {
-                message.success("Registration successful!");
+            if (response.data.success) {
+                message.success(response.data.message);
                 const { email, token } = response.data;
-
-
-                navigate("/otp-verification", {
-                    state: { email, token }, // Pass data using state
-                });
-
+                navigate("/otp-verification", { state: { email, token } });
             }
         } catch (error) {
-            message.error("Registration failed. Please try again.");
+            if (error.response && error.response.data.message) {
+                message.error(error.response.data.message);
+            } else {
+                message.error("Registration failed. Please try again.");
+            }
         }
     };
 
@@ -87,7 +106,7 @@ function Register() {
                     alt="Welcome Illustration"
                     className="register-illustration"
                 />
-                <h2>Welcome to DreamsLMS Courses.</h2>
+                <h2>Welcome to Knowledge Spark.</h2>
                 <p>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
                     eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
@@ -103,95 +122,182 @@ function Register() {
                 </div>
                 <div className="register-form">
                     <h1>Sign Up into Your Account</h1>
-                    <form onSubmit={handleSubmit}>
-                        <label>Name:</label>
-                        <input
+                    <Form
+                        layout="vertical"
+                        onFinish={handleSubmit} // Attach the handleSubmit function here
+                    >
+                        <Form.Item
+                            label="User Name"
                             name="username"
-                            value={state.username}
-                            onChange={handleChange}
-                            placeholder="Enter your Name"
-                            className="register-username-field"
-                        />
-                        <label>Email</label>
-                        <input
-                            name="email"
-                            value={state.email}
-                            onChange={handleChange}
-                            type="email"
-                            placeholder="Enter your email address"
-                            className="register-email-field"
-                        />
-                        <label>Type: </label>
-                        <Select
-                            value={state.type}
-                            onChange={handleTypeChange}
-                            defaultValue="student"
-                            allowClear
-                            options={[
-                                { value: "Student", label: "Student" },
-                                { value: "Teacher", label: "Teacher" },
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Please input your username!",
+                                },
                             ]}
-                            placeholder="Select Type"
-                            className="type-select"
-                        />
-                        <br />
-                        <label>Password</label>
-                        <div className="register-password-field">
-                            <input
+                        >
+                            <Input
+                                name="username"
+                                value={state.username}
+                                onChange={handleChange}
+                                placeholder="Enter your Name"
+                                className="register-username-field"
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Email"
+                            name="email"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Please input your email!",
+                                },
+                                {
+                                    type: "email",
+                                    message: "Please enter a valid email address!",
+                                },
+                            ]}
+                        >
+                            <Input
+                                name="email"
+                                value={state.email}
+                                onChange={handleChange}
+                                placeholder="Enter your email address"
+                                className="register-email-field"
+                            />
+                        </Form.Item>
+                        <Form.Item
+                            label="Type"
+                            name="type"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Please select your type!",
+                                },
+                            ]}
+                        >
+                            <Select
+                                value={state.type}
+                                onChange={handleTypeChange}
+                                defaultValue="Student"
+                                allowClear
+                                options={[
+                                    { value: "Student", label: "Student" },
+                                    { value: "Teacher", label: "Teacher" },
+                                ]}
+                                placeholder="Select Type"
+                                className="custom-select"
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Password"
+                            name="password"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Please input your password!",
+                                },
+                                {
+                                    min: 8,
+                                    message: "Password must be at least 8 characters!",
+                                },
+                            ]}
+                        >
+                            <Input.Password
                                 name="password"
                                 value={state.password}
-                                onChange={handleChange}
-                                type={showPassword ? "text" : "password"}
-                                placeholder="Password"
-                                className="register-password-input-field"
+                                className="register-password-field"
+                                placeholder="Enter your password"
+                                iconRender={(visible) =>
+                                    visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
+                                }
+                                suffix={
+                                    <span onClick={togglePasswordVisibility}>
+                                        {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                                    </span>
+                                }
+                                onChange={(e) => {
+                                    handleChange(e);
+                                    evaluatePasswordStrength(e.target.value);
+                                }}
                             />
-                            <span
-                                className="register-password-toggle"
-                                onClick={togglePasswordVisibility}
-                            >
-                                <i
-                                    className={
-                                        showPassword ? "fa-solid fa-eye-slash" : "fa-solid fa-eye"
-                                    }
-                                ></i>
-                            </span>
+                        </Form.Item>
+
+                        <div className="password-strength">
+                            <Progress
+                                percent={(passwordStrength / 5) * 100}
+                                status={
+                                    passwordHint === "Strong"
+                                        ? "success"
+                                        : passwordHint === "Medium"
+                                            ? "active"
+                                            : "exception"
+                                }
+                                showInfo={false}
+                            />
+                            <p>Password Strength: <strong>{passwordHint}</strong></p>
                         </div>
-                        <label>Confirm Password</label>
-                        <div className="register-password-field">
-                            <input
+
+                        <Form.Item
+                            label="Confirm Password"
+                            name="confirmPassword"
+                            dependencies={["password"]}
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "Please confirm your password!",
+                                },
+                                ({ getFieldValue }) => ({
+                                    validator(_, value) {
+                                        return new Promise((resolve, reject) => {
+                                            setTimeout(() => {
+                                                if (!value || getFieldValue('password') === value) {
+                                                    resolve();
+                                                }
+                                                else {
+                                                    reject(new Error("Passwords do not match!"));
+                                                }
+                                            }, 2000);
+                                        })
+                                    },
+                                }),
+                            ]}
+                        >
+                            <Input.Password
                                 name="confirmPassword"
                                 value={state.confirmPassword}
-                                onChange={handleChange}
-                                type={showConfoirmPassword ? "text" : "password"}
                                 placeholder="Confirm Password"
-                                className="register-password-input-field"
+                                className="register-password-field"
+                                iconRender={(visible) =>
+                                    visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
+                                }
+                                suffix={
+                                    <span onClick={toggleConfoirmPasswordVisibility}>
+                                        {showConfoirmPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                                    </span>
+                                }
+                                onChange={handleChange}
                             />
-                            <span
-                                className="register-password-toggle"
-                                onClick={toggleConfoirmPasswordVisibility}
-                            >
-                                <i
-                                    className={
-                                        showConfoirmPassword ? "fa-solid fa-eye-slash" : "fa-solid fa-eye"
-                                    }
-                                ></i>
-                            </span>
-                        </div>
-                        {errormessage && <p className="error-message">{errormessage}</p>}
-                        {successMessage && <p className="success-message">{successMessage}</p>}
-                        <button type="submit" className="btn btn-signin">
-                            Sign Up
-                        </button>
+                        </Form.Item>
+
+                        <Form.Item>
+                            <button type="submit" className="btn btn-signin">
+                                Sign Up
+                            </button>
+                        </Form.Item>
 
                         <div className="Sign-alternate">
                             <p>Or Sign in with</p>
                             <button className="btn btn-google">Sign In using Google</button>
                             <button className="btn btn-facebook">Sign In using Facebook</button>
                         </div>
-                    </form>
+                    </Form>
                 </div>
             </div>
         </div>
+
     );
 }
 
