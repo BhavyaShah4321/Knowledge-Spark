@@ -85,7 +85,9 @@ function Register() {
 
             if (response.data.success) {
                 message.success(response.data.message);
-                const { email, token } = response.data;
+                const { token } = response.data;
+                const { email } = response.data.data;
+                console.log("Navigating with:", { email, token }); // Debugging log
                 navigate("/otp-verification", { state: { email, token } });
             }
         } catch (error) {
@@ -178,9 +180,9 @@ function Register() {
                             ]}
                         >
                             <Select
-                                value={state.type}
+                                value={state.type||'null'}
                                 onChange={handleTypeChange}
-                                defaultValue="Student"
+                                // defaultValue="Null"
                                 allowClear
                                 options={[
                                     { value: "Student", label: "Student" },

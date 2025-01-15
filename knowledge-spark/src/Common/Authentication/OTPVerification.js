@@ -1,97 +1,50 @@
-// import { Input, message } from "antd";
-// import axios from "axios";
-// import React, { useState } from "react";
-
-// const OTPVerification = ({ email, token }) => {
-//     const [otp, setOtp] = useState(["", "", "", ""]);
-
-//     const handleOtpChange = (value, index) => {
-//         if (!isNaN(value)) {
-//             const newOtp = [...otp];
-//             newOtp[index] = value;
-//             setOtp(newOtp);
-
-//             if (value && index < otp.length - 1) {
-//                 document.getElementById(`otp-input-${index + 1}`).focus();
-//             }
-
-//             if (newOtp.join("").length === 4) {
-//                 verifyOtp(newOtp.join(""));
-//             }
-//         }
-//     };
-
-//     const verifyOtp = async (otpCode) => {
-//         message.loading({ content: "Verifying OTP...", key: "otpVerification" });
-//         try {
-//             await axios.post("http://localhost:8000/api/verify-otp/", {
-//                 token,
-//                 otp: otpCode,
-//             });
-//             message.success({ content: "OTP Verified!", key: "otpVerification" });
-//         } catch (error) {
-//             message.error({
-//                 content: "OTP verification failed. Try again.",
-//                 key: "otpVerification",
-//             });
-//         }
-//     };
-
-//     return (
-//         <div className="otp-container">
-//             <h1>Verify OTP</h1>
-//             <p>We sent an OTP to your email: {email}</p>
-//             <div className="otp-fields">
-//                 {otp.map((value, index) => (
-//                     <Input
-//                         key={index}
-//                         id={`otp-input-${index}`}
-//                         value={value}
-//                         maxLength={1}
-//                         onChange={(e) => handleOtpChange(e.target.value, index)}
-//                         style={{
-//                             width: "50px",
-//                             marginRight: "10px",
-//                             textAlign: "center",
-//                         }}
-//                     />
-//                 ))}
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default OTPVerification;
-
-
-
 import { message } from "antd";
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import loginimg from "../../Image/login-img.png";
 
 function OTPVerification() {
     const { state } = useLocation();
-    const { email, token } = state;
+    // const token = state?.token;
+    const email = state?.email;
     const [otp, setOtp] = useState(["", "", "", ""]);
     const [timer, setTimer] = useState(60);
     const inputs = useRef([]);
     const timerInterval = useRef(null);
     const navigate = useNavigate();
+    const [token, setToken] = useState(state?.token);
 
-    
+    console.log("Token", token);
+    console.log("Email", email);
+
     useEffect(() => {
-        
-        if (!email || !token) {
-            return message.error(" Missing email or token. Please try again.")
+        if (state?.token) {
+            localStorage.setItem("token", state.token);
         }
+    }, [state?.token]);
+
+
+    useEffect(() => {
+
+        if (timer === 0) {
+            clearInterval(timerInterval.current);
+            return;
+        }
+
         timerInterval.current = setInterval(() => {
-            setTimer((prev) => (prev > 0 ? prev - 1 : 0));
+            setTimer((prev) => {
+                if (prev > 0) {
+                    return prev - 1;
+                } else {
+                    clearInterval(timerInterval.current);
+                    return 0;
+                }
+            });
         }, 1000);
 
         return () => clearInterval(timerInterval.current);
-    }, [email, token]);
+    }, [timer, token]);
 
 
     const handleChange = (e, index) => {
@@ -124,18 +77,27 @@ function OTPVerification() {
 
         try {
             const response = await axios.post("http://localhost:8000/api/verify-otp/", {
-                token,
+                token:token,
                 otp: otp.join(""),
             });
 
             if (response.status === 200) {
-                message.success("OTP Verified Successfully!");
-                navigate("/")
+                message.success(response.data.message);
+                navigate("/");
             }
         } catch (error) {
-            message.error("OTP Verification Failed!");
+            console.error("Error during OTP verification:", error);
+            const errorMessage =
+                error.response?.data?.message || "OTP Verification Failed!";
+
+            if (error.response?.data?.message?.includes("expired")) {
+                message.error("The OTP you entered has expired. Please request a new one.");
+            } else {
+                message.error(errorMessage);
+            }
         }
     };
+
 
 
     const handleresendotp = async (e) => {
@@ -143,19 +105,30 @@ function OTPVerification() {
 
         try {
             const response = await axios.post("http://localhost:8000/api/resend-otp/", {
+                email,
                 token,
-                otp: otp.join(""),
-            })
+            });
 
             if (response.status === 200) {
-                message.success("OTP Verified Succesfully! ");
+                message.success(response.data.message);
+                setTimer(60); // Reset the timer
+                setOtp(["", "", "", ""]); // Clear OTP inputs
+
+
+                const newToken = response.data.token;
+                if (newToken) {
+                    setToken(newToken); // Use state to update the token
+                }
+    
             }
-
         } catch (error) {
-            message.error("OTP Verification Failed")
+            console.error("Error during OTP resend:", error);
+            const errorMessage =
+                error.response?.data?.message || "Failed to resend OTP. Please try again.";
+            message.error(errorMessage);
         }
+    };
 
-    }
 
     return (
         <div className="OTP-container">
@@ -167,7 +140,7 @@ function OTPVerification() {
                 />
                 <h2>Welcome to Knowledge Spark.</h2>
                 <p>
-                    Please enter the OTP sent to your registered email address ({email}) to verify your account.
+                    Please enter the OTP sent to your registered email address to verify your account.
                 </p>
             </div>
 
@@ -193,7 +166,7 @@ function OTPVerification() {
                             Verify OTP
                         </button>
 
-                        {/* <div className="otpresend">
+                        <div className="otpresend">
                             {timer > 0 ? (
                                 <p>Resend OTP in {timer} seconds</p>
                             ) : (
@@ -212,7 +185,7 @@ function OTPVerification() {
                                     </span>
                                 </div>
                             )}
-                        </div> */}
+                        </div>
                     </form>
                 </div>
             </div>

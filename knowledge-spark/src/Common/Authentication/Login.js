@@ -1,5 +1,5 @@
 import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
-import { Button, Form, Input, message } from "antd";
+import { Form, Input, message } from "antd";
 import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -147,12 +147,8 @@ function Login() {
 
             <div className="login-alternate">
               <p>Or Log in with</p>
-              <Button type="default" className="btn btn-google" block>
-                Login with Google
-              </Button>
-              <Button type="default" className="btn btn-facebook" block>
-                Login with Facebook
-              </Button>
+              <button className="btn btn-google">Log In using Google</button>
+              <button className="btn btn-facebook">Log In using Facebook</button>
             </div>
 
             <p className="new-user">
