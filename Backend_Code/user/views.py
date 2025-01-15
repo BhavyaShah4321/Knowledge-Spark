@@ -419,6 +419,7 @@ class LoginViewSet(ModelViewSet):
                         "id": user.id,
                         "email": user.email,
                         "username": user.username,
+                        "is_superuser":user.is_superuser
                     },
                 },
                 status=status.HTTP_200_OK,
@@ -470,12 +471,15 @@ class LoginViewSet(ModelViewSet):
         serializer = UserSerializer(user_instance)
         refresh_token = RefreshToken.for_user(user_instance)
         access_token = str(refresh_token.access_token)
-
+        serializer_data_updated=serializer.data
+        
+        serializer_data_updated["is_superuser"]=True
         return Response(
             {
                 "success": True,
                 "message": f"{user_instance.email} logged in.",
-                "data": serializer.data,
+                "data": serializer_data_updated,
+                
                 "token": {
                     "access_token": access_token,
                     "refresh_token": str(refresh_token),
@@ -508,7 +512,7 @@ class ForgotPasswordViewSet(ModelViewSet):
         token = generate_token(user.email, 60)
         recipient_email = user.email
         subject = "Reset assword link request from AgelessEatsKitchen.com"
-        context = {"link": f"{config('HOST_URL')}reset-password/{token}/"}
+        context = {"link": f"http://localhost:3000/reset-password/{token}"}
         template = "send_forgot_password_mail.html"
         mail_thread = threading.Thread(
             target=send_email_with_template,
