@@ -20,7 +20,7 @@ function Dashboard() {
                             <Graphico />
                         </div>
                         <div className="graphico-details">
-                            <h3>$50,000</h3>
+                            <h3>5,000</h3>
                             <p>Total Teacher</p>
                         </div>
                         <div className="dashboard-percentage">+16%</div>
@@ -32,7 +32,7 @@ function Dashboard() {
                             <Graphico />
                         </div>
                         <div className="graphico-details">
-                            <h3>$50,000</h3>
+                            <h3>50,000</h3>
                             <p>Total Student</p>
                         </div>
                         <div className="dashboard-percentage">+16%</div>
@@ -44,7 +44,7 @@ function Dashboard() {
                             <Graphico />
                         </div>
                         <div className="graphico-details">
-                            <h3>$50,000</h3>
+                            <h3>50,000</h3>
                             <p>Total Commision</p>
                         </div>
                         <div className="dashboard-percentage">+16%</div>

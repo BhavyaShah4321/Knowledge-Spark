@@ -134,7 +134,7 @@ function Register() {
                             rules={[
                                 {
                                     required: true,
-                                    message: "Please input your username!",
+                                    message: "Please enter username!",
                                 },
                             ]}
                         >
@@ -153,7 +153,7 @@ function Register() {
                             rules={[
                                 {
                                     required: true,
-                                    message: "Please input your email!",
+                                    message: "Please enter email!",
                                 },
                                 {
                                     type: "email",
@@ -175,7 +175,7 @@ function Register() {
                             rules={[
                                 {
                                     required: true,
-                                    message: "Please select your type!",
+                                    message: "Please select type!",
                                 },
                             ]}
                         >
@@ -199,7 +199,7 @@ function Register() {
                             rules={[
                                 {
                                     required: true,
-                                    message: "Please input your password!",
+                                    message: "Please enter password!",
                                 },
                                 {
                                     min: 8,
@@ -290,11 +290,11 @@ function Register() {
                             </button>
                         </Form.Item>
 
-                        <div className="Sign-alternate">
+                        {/* <div className="Sign-alternate">
                             <p>Or Sign in with</p>
                             <button className="btn btn-google">Sign In using Google</button>
                             <button className="btn btn-facebook">Sign In using Facebook</button>
-                        </div>
+                        </div> */}
                     </Form>
                 </div>
             </div>
