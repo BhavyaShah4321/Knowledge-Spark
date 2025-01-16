@@ -120,6 +120,7 @@ body {
 	flex: 1;
 	padding: 40px;
 	overflow: auto;
+	margin: auto;
 }
 
 .login-form {
@@ -304,7 +305,7 @@ body {
 	padding: 40px;
 	display: flex;
 	flex-direction: column;
-	justify-content: flex-start;
+	justify-content:center;
 	overflow: scroll;
 	overflow-x: hidden;
 }

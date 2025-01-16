@@ -26,7 +26,12 @@ function Login() {
       if (normalResponse.status === 200 && normalResponse.data.success) {
         const { token } = normalResponse.data;
 
-        localStorage.setItem("auth_token", token);
+
+        localStorage.setItem("auth_token", JSON.stringify({
+          access_token: token.access_token,
+          refresh_token: token.refresh_token,
+          user_type: "Admin"
+        }));
         message.success("User login successful!");
 
         navigate("/dashboard");
@@ -39,8 +44,15 @@ function Login() {
 
         if (adminResponse.status === 200 && adminResponse.data.success) {
           const { token } = adminResponse.data;
+          console.log("Admin Token", token);
 
-          localStorage.setItem("auth_token", token);
+
+          localStorage.setItem("auth_token", JSON.stringify({
+            access_token: token.access_token,
+            refresh_token: token.refresh_token,
+            user_type: "Member"
+          }));
+
           message.success("Admin login successful!");
 
           navigate("/dashboard");
@@ -141,15 +153,15 @@ function Login() {
             {/* Submit Button */}
             <Form.Item>
               <button type="submit" className="btn btn-login">
-                Sign Up
+                Sign In
               </button>
             </Form.Item>
 
-            <div className="login-alternate">
+            {/* <div className="login-alternate">
               <p>Or Log in with</p>
               <button className="btn btn-google">Log In using Google</button>
               <button className="btn btn-facebook">Log In using Facebook</button>
-            </div>
+            </div> */}
 
             <p className="new-user">
               New User? <Link to="/register">Create an Account</Link>
