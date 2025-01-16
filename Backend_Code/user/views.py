@@ -434,7 +434,7 @@ class LoginViewSet(ModelViewSet):
     @action(detail=False, methods=["POST"], url_path="admin-login")
     def admin_login(self, request, *args, **kwargs):
         data = request.data
-        email = data.get("email")
+        email = data.get("email").lower()
         password = data.get("password")
 
         if not email:
