@@ -15,25 +15,29 @@ function Login() {
 
   const handleSubmit = async (values) => {
     const { email, password } = values;
-
+  
     const normalUserApi = "http://localhost:8000/api/login/";
     const adminApi = "http://localhost:8000/api/login/admin-login/";
-
+  
     try {
       // First attempt normal user login
       const normalResponse = await axios.post(normalUserApi, { email, password });
-
+  
       if (normalResponse.status === 200 && normalResponse.data.success) {
         const { token } = normalResponse.data;
-
-
-        localStorage.setItem("auth_token", JSON.stringify({
-          access_token: token.access_token,
-          refresh_token: token.refresh_token,
-          user_type: "Admin"
-        }));
+  
+        // Store the token in localStorage
+        localStorage.setItem(
+          "auth_token",
+          JSON.stringify({
+            access_token: token.access_token,
+            refresh_token: token.refresh_token,
+            user_type: "User",
+          })
+        );
         message.success("User login successful!");
-
+  
+        // Navigate to dashboard
         navigate("/dashboard");
         return;
       }
@@ -41,20 +45,22 @@ function Login() {
       // If normal login fails, proceed to admin login
       try {
         const adminResponse = await axios.post(adminApi, { email, password });
-
+  
         if (adminResponse.status === 200 && adminResponse.data.success) {
           const { token } = adminResponse.data;
-          console.log("Admin Token", token);
-
-
-          localStorage.setItem("auth_token", JSON.stringify({
-            access_token: token.access_token,
-            refresh_token: token.refresh_token,
-            user_type: "Member"
-          }));
-
+  
+          // Store the token in localStorage
+          localStorage.setItem(
+            "auth_token",
+            JSON.stringify({
+              access_token: token.access_token,
+              refresh_token: token.refresh_token,
+              user_type: "Admin",
+            })
+          );
           message.success("Admin login successful!");
-
+  
+          // Navigate to dashboard
           navigate("/dashboard");
           return;
         }
@@ -64,6 +70,7 @@ function Login() {
       }
     }
   };
+  
 
   return (
     <div className="login-container">
