@@ -1,14 +1,13 @@
 import {DownOutlined, LogoutOutlined, PlusOutlined} from '@ant-design/icons';
 import {Avatar, Button, Dropdown, Layout, Menu, Modal} from 'antd';
-// import {useDispatch, useSelector} from 'react-redux';
-// import {logout} from '../slices/auth';
 import React, {useEffect, useState} from 'react';
-// import logo from '../Images/Mahesh-Sharma-Hasten.webp';
-// import profilePic from '../Images/user.svg';
+import { postRequest } from '../../Axios';
+
 import { Link } from 'react-router-dom';
 const {confirm} = Modal;
 
 const {Header} = Layout;
+
 
 const items = [
   {
@@ -76,42 +75,7 @@ const items = [
   }
 ];
 export default function AppHeader() {
-//   const dispatch = useDispatch();
-//     //const { user: currentUser } = useSelector((state) => state.auth);
-//     const { user: reduxUser } = useSelector((state) => state.auth);
-//     const [currentUser, setCurrentUser] = useState(reduxUser);
-
-//     // Function to refresh user value when the event is triggered
-//     const refreshUserData = () => {
-//         const localStorageKey = "user";
-//         const userData = JSON.parse(localStorage.getItem(localStorageKey) || "{}");
-//         setCurrentUser(userData);
-//     };
-
-//     useEffect(() => {
-//         // Listen for the custom "refreshUser" event
-//         window.addEventListener("refreshUser", refreshUserData);
-
-//         // Cleanup event listener on component unmount
-//         return () => {
-//             window.removeEventListener("refreshUser", refreshUserData);
-//         };
-//     }, []);
-    //console.log("currentUser", currentUser);
-  // const handleLogout = async () => {
-  //   try {
-  //     dispatch(logout())
-  //       .unwrap()
-  //       .then(() => {
-  //         navigate('/login');
-  //       })
-  //       .catch(() => {
-  //         //setLoading(false);
-  //       });
-  //   } catch (error) {
-  //     //setBtnLoading(false);
-  //   }
-  // };
+ 
   const handleMenuClick = e => {
     switch (e.key) {
       case '1':
