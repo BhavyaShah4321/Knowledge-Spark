@@ -42,8 +42,8 @@ class UserViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-    search_fields = ["username", "email"]
-    ordering_fields = ["username", "email"]
+    search_fields = ["username", "email","type"]
+    ordering_fields = ["username", "email","type"]
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
