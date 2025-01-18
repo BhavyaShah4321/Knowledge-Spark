@@ -83,9 +83,16 @@ class UserViewSet(ModelViewSet):
                 status=status.HTTP_200_OK,
             )
 
-        return Response(
-            {"success": True, "message": serializer.errors}, status=status.HTTP_200_OK
-        )
+        else:
+            
+            errors_message = " ".join(
+                [", ".join(value) for value in serializer.errors.values()]
+            )
+            return Response(
+                {"success": False, "message": errors_message},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
 
     @action(detail=False, methods=["post"])
     def logout(self, request, *args, **kwargs):
@@ -418,6 +425,7 @@ class LoginViewSet(ModelViewSet):
                     "data": {
                         "id": user.id,
                         "email": user.email,
+                        "type":user.type,
                         "username": user.username,
                         "is_superuser":user.is_superuser
                     },
@@ -474,12 +482,13 @@ class LoginViewSet(ModelViewSet):
         serializer_data_updated=serializer.data
         
         serializer_data_updated["is_superuser"]=True
+        serializer_data_updated["type"]="Admin"
+        
         return Response(
             {
                 "success": True,
                 "message": f"{user_instance.email} logged in.",
                 "data": serializer_data_updated,
-                
                 "token": {
                     "access_token": access_token,
                     "refresh_token": str(refresh_token),
