@@ -10,6 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
             'id',
             "username",
             'email',
+            'type',
             "profile_picture",
             'email_verified',
             'otp'
