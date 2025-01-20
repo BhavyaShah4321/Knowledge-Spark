@@ -35,7 +35,7 @@ faker = Faker()
 
 
 class UserViewSet(ModelViewSet):
-    queryset = User.objects.filter(deleted=0, is_active=True)
+    queryset = User.objects.filter(deleted=0,email_verified=True).order_by("-id")
     serializer_class = UserSerializer
     pagination_class = mypagination
     filter_backends = [SearchFilter, OrderingFilter]
