@@ -46,14 +46,18 @@ class User(AbstractUser):
     ]
     username = models.CharField(max_length=60)
     email = models.EmailField(unique=True)
-    profile_picture = models.ImageField(default='profile_picture/default_profile_image.png', upload_to='profile_picture/')
+    profile_picture = models.ImageField(default='', upload_to='profile_picture/')
     otp = models.IntegerField(null=True)
     type=models.CharField(max_length=7,choices=type_choices,null=True)
     is_active = models.BooleanField(default=False)
     email_verified = models.BooleanField(default=False)
     deleted=models.IntegerField(default=0)
     objects=UserManager()
+    dob=models.DateField(null=True,blank=True)
+    bio=models.TextField(null=True)
     
+    created_at=models.DateTimeField(auto_now_add=True,null=True)
+        
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
     
