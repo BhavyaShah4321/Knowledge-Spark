@@ -1,94 +1,46 @@
-import {DownOutlined, LogoutOutlined, PlusOutlined} from '@ant-design/icons';
-import {Avatar, Button, Dropdown, Layout, Menu, Modal} from 'antd';
-import React, {useEffect, useState} from 'react';
-import { postRequest } from '../../Axios';
+import { DownOutlined, LogoutOutlined, PlusOutlined } from '@ant-design/icons';
+import { Avatar, Button, Dropdown, Layout, Menu, message, Modal } from 'antd';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-import { Link } from 'react-router-dom';
-const {confirm} = Modal;
-
-const {Header} = Layout;
-
+const { confirm } = Modal;
+const { Header } = Layout;
 
 const items = [
   {
     label: (
       <>
-        <PlusOutlined style={{marginRight: 8}} />
-        <a href="/add-dieprofile">Add Die Profile</a>
+        <PlusOutlined style={{ marginRight: 8 }} />
+        <a href="">Add Die Profile</a>
       </>
     ),
     key: '0',
   },
-  {
-    label: (
-      <>
-        <PlusOutlined style={{marginRight: 8}} />
-        <a href="/add-new-customer">Add New Customer</a>
-      </>
-    ),
-    key: '1',
-  },
-  {
-    label: (
-      <>
-        <PlusOutlined style={{marginRight: 8}} />
-        <a href="/create-quotation">Create Quotation</a>
-      </>
-    ),
-    key: '2',
-  },
-  {
-    label: (
-      <>
-        <PlusOutlined style={{marginRight: 8}} />
-        <a href="/add-die-quotation">Create Die Quotation</a>
-      </>
-    ),
-    key: '3',
-  },
-  {
-    label: (
-      <>
-        <PlusOutlined style={{marginRight: 8}} />
-        <a href="/create-work-order">Create WorkOrder</a>
-      </>
-    ),
-    key: '4',
-  },
-  {
-    label: (
-      <>
-        <PlusOutlined style={{marginRight: 8}} />
-        <a href="/create-proforma">Create Proforma</a>
-      </>
-    ),
-    key: '5',
-  },
-  {
-    label: (
-      <>
-        <PlusOutlined style={{marginRight: 8}} />
-        <a href="/bulk-order-list">Create BulkOrder</a>
-      </>
-    ),
-    key: '7',
-  }
 ];
+
 export default function AppHeader() {
- 
-  const handleMenuClick = e => {
+  const navigate = useNavigate();
+  const [userEmail, setUserEmail] = useState('');
+
+  useEffect(() => {
+    const authData = JSON.parse(localStorage.getItem('auth_token'));
+    if (authData && authData.user && authData.user.email) {
+      setUserEmail(authData.user.email);
+    } else {
+      setUserEmail('N/A');
+    }
+  }, []);
+
+  const handleMenuClick = (e) => {
     switch (e.key) {
       case '1':
         console.log('Profile clicked');
-        // Add code to navigate to Profile or handle Profile logic
         break;
       case '2':
         console.log('Settings clicked');
-        // Add code to navigate to Settings or handle Settings logic
         break;
       case '3':
-        console.log('Logout clicked');
-        // handleLogout();
         showLogoutConfirm();
         break;
       default:
@@ -103,9 +55,7 @@ export default function AppHeader() {
       okType: 'danger',
       cancelText: 'No',
       onOk() {
-        // dispatch(logout());
-        // setTimeout(() => {
-        //   navigate('/login');
+        handleLogout();
       },
       onCancel() {
         console.log('Cancelled logout');
@@ -113,48 +63,87 @@ export default function AppHeader() {
     });
   };
 
+  const handleLogout = async () => {
+    try {
+      const authData = JSON.parse(localStorage.getItem('auth_token'));
+
+      if (!authData || !authData.refresh_token) {
+        message.error('No refresh token found. Please log in again.');
+        return;
+      }
+
+      const refreshToken = authData.refresh_token;
+      const accessToken = authData.access_token;
+
+      const response = await axios.post(
+        'http://localhost:8000/api/user/logout/',
+        { refresh_token: refreshToken },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        message.success('Logged out successfully!');
+        localStorage.removeItem('auth_token');
+        navigate('/');
+      } else {
+        message.error('Failed to log out. Please try again.');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      if (error.response && error.response.status === 401) {
+        message.error('Session expired. Please log in again.');
+      } else {
+        message.error('An error occurred while logging out. Please try again.');
+      }
+    }
+  };
+
+  const getInitials = (email) => {
+    if (!email || email === 'N/A') return 'N/A';
+    const namePart = email.split('@')[0];
+    const initials = namePart
+      .split(/[\W]/)
+      .map((word) => word.charAt(0).toUpperCase())
+      .join('');
+    return initials.slice(0, 2);
+  };
+
+  const backgroundColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+
   const userMenu = (
     <Menu onClick={handleMenuClick}>
       <Menu.Item key="1">
-        <Link to="/profile">Profile</Link>
+        <Link>Profile</Link>
       </Menu.Item>
       <Menu.Item key="2">
-        <Link to="/settings">Settings</Link>
+        <Link>Settings</Link>
       </Menu.Item>
       <Menu.Item key="3">
         <Link>Logout</Link>
       </Menu.Item>
     </Menu>
   );
+
   return (
     <Header>
-      {/* Right section with buttons and user menu */}
-      <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
-        <Dropdown
-          className="addmenu"
-          menu={{
-            items,
-          }}
-          trigger={['click']}
-          placement="bottomRight"
-        >
-          <a onClick={e => e.preventDefault()}>
-          <Link>
-            <PlusOutlined />
-            </Link>
-          </a>
-        </Dropdown>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <Dropdown overlay={userMenu} trigger={['click']} className="usermenu">
-          <div
-            style={{
-              gap: '5px',
-            }}
-          >
-             <Avatar className="ant-avatar" /> 
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Avatar
+              style={{
+                backgroundColor: backgroundColor,
+                color: '#fff',
+              }}
+            >
+              {getInitials(userEmail)}
+            </Avatar>
             <DownOutlined />
           </div>
         </Dropdown>
-
         <Button
           type="link"
           shape="circle"

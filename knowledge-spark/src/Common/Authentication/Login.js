@@ -14,31 +14,97 @@ function Login() {
     setShowPassword(!showPassword);
   };
 
+  // const handleSubmit = async (values) => {
+  //   const { email, password } = values;
+
+  //   const normalUserApi = "http://localhost:8000/api/login/";
+  //   const adminApi = "http://localhost:8000/api/login/admin-login/";
+
+  //   try {
+  //     // First attempt normal user login
+  //     const normalResponse = await axios.post(normalUserApi, { email, password });
+
+  //     if (normalResponse.status === 200 && normalResponse.data.success) {
+  //       const { token } = normalResponse.data;
+
+  //       // Store the token in localStorage
+  //       localStorage.setItem(
+  //         "auth_token",
+  //         JSON.stringify({
+  //           access_token: token.access_token,
+  //           refresh_token: token.refresh_token,
+  //           user_type: "Member",
+  //         })
+  //       );
+  //       message.success("User login successful!");
+
+  //       // Navigate to dashboard
+  //       navigate("/dashboard");
+  //       return;
+  //     }
+  //   } catch (error) {
+  //     // If normal login fails, proceed to admin login
+  //     try {
+  //       const adminResponse = await axios.post(adminApi, { email, password });
+
+  //       if (adminResponse.status === 200 && adminResponse.data.success) {
+  //         const { token } = adminResponse.data;
+
+  //         // Store the token in localStorage
+  //         localStorage.setItem(
+  //           "auth_token",
+  //           JSON.stringify({
+  //             access_token: token.access_token,
+  //             refresh_token: token.refresh_token,
+  //             user_type: "Admin",
+
+  //           })
+  //         );
+  //         message.success("Admin login successful!");
+
+  //         // Navigate to dashboard
+  //         navigate("/dashboard");
+  //         return;
+  //       }
+  //     } catch (adminError) {
+  //       // Both normal and admin login failed
+  //       message.error("Invalid email or password. Please try again.");
+  //     }
+  //   }
+  // };
+
+
   const handleSubmit = async (values) => {
     const { email, password } = values;
-  
+
     const normalUserApi = "http://localhost:8000/api/login/";
     const adminApi = "http://localhost:8000/api/login/admin-login/";
-  
+
     try {
       // First attempt normal user login
       const normalResponse = await axios.post(normalUserApi, { email, password });
-  
+
       if (normalResponse.status === 200 && normalResponse.data.success) {
-        const { token } = normalResponse.data;
-  
-        // Store the token in localStorage
+        const { token, data } = normalResponse.data; // Destructure token and additional user data
+
+        // Store the token and additional data in localStorage
         localStorage.setItem(
           "auth_token",
           JSON.stringify({
             access_token: token.access_token,
             refresh_token: token.refresh_token,
-            user_type: "User",
+            user: {
+              id: data.id,
+              email: data.email,
+              type: data.type,
+              profile_picture: data.profile_picture,
+              created_at: data.created_at,
+            },
+            user_type: "Member", // or 'Normal User'
           })
         );
+
         message.success("User login successful!");
-  
-        // Navigate to dashboard
         navigate("/dashboard");
         return;
       }
@@ -46,32 +112,37 @@ function Login() {
       // If normal login fails, proceed to admin login
       try {
         const adminResponse = await axios.post(adminApi, { email, password });
-  
+
         if (adminResponse.status === 200 && adminResponse.data.success) {
-          const { token } = adminResponse.data;
-  
-          // Store the token in localStorage
+          const { token, data } = adminResponse.data; // Destructure token and additional user data
+
+          // Store the token and additional data in localStorage
           localStorage.setItem(
             "auth_token",
             JSON.stringify({
               access_token: token.access_token,
               refresh_token: token.refresh_token,
+              user: {
+                id: data.id,
+                email: data.email,
+                type: data.type,
+                profile_picture: data.profile_picture,
+                created_at: data.created_at,
+              },
               user_type: "Admin",
             })
           );
+
           message.success("Admin login successful!");
-  
-          // Navigate to dashboard
           navigate("/dashboard");
           return;
         }
       } catch (adminError) {
-        // Both normal and admin login failed
         message.error("Invalid email or password. Please try again.");
       }
     }
   };
-  
+
 
   return (
     <div className="login-container">
