@@ -5,10 +5,6 @@ from utils.generate_otp import generate_otp
 class UserSerializer(serializers.ModelSerializer):
     email=serializers.CharField(required=True)
     dob = serializers.DateField(format="%d-%m-%Y", input_formats=["%d-%m-%Y", "%Y-%m-%d"], allow_null=True, required=False)
-    
-    
-
-
 
     class Meta:
         model=User
@@ -19,6 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
             'type',
             "profile_picture",
             'email_verified',
+            "is_active",
             'otp',
             "dob",
             "bio",
