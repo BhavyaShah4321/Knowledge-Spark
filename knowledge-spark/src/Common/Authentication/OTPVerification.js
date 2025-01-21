@@ -77,7 +77,7 @@ function OTPVerification() {
 
         try {
             const response = await axios.post("http://localhost:8000/api/verify-otp/", {
-                token:token,
+                token: token,
                 otp: otp.join(""),
             });
 
@@ -119,7 +119,7 @@ function OTPVerification() {
                 if (newToken) {
                     setToken(newToken); // Use state to update the token
                 }
-    
+
             }
         } catch (error) {
             console.error("Error during OTP resend:", error);

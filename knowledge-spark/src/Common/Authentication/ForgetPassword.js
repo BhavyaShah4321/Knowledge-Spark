@@ -62,8 +62,8 @@ function ForgetPassword() {
             </div>
             <div className="forget-password-right">
                 <div className="forget-password-back-to-home">
-                    <Link to="/register">
-                        <i className="fa-solid fa-arrow-left"></i> Back to Register
+                    <Link to="/">
+                        <i className="fa-solid fa-arrow-left"></i> Back to Login
                     </Link>
                 </div>
                 <div className="forget-password-form">
