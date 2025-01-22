@@ -1429,3 +1429,245 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #eba259;
 }
+
+.ant-menu-light:not(.ant-menu-horizontal) .ant-menu-item:not(.ant-menu-item-selected):hover,
+.ant-menu-light>.ant-menu:not(.ant-menu-horizontal) .ant-menu-item:not(.ant-menu-item-selected):hover {
+  background-color: transparent;
+}
+
+:where(.css-dev-only-do-not-override-ni1kz0).ant-menu-inline-collapsed>.ant-menu-item .ant-menu-item-icon+span {
+  display: none;
+}
+
+.ant-menu-inline-collapsed.ant-menu-light.ant-menu-vertical>.ant-menu-item,
+.ant-menu-inline-collapsed.ant-menu-light.ant-menu-vertical>.ant-menu-submenu {
+  width: 46px;
+  height: 46px;
+  padding-inline: 0;
+  padding: 7px;
+
+
+  margin-inline: 0;
+  margin-block: 0;
+  margin: 4px;
+}
+
+.ant-menu-inline-collapsed.ant-menu-light.ant-menu-vertical>.ant-menu-submenu {
+  padding: 0;
+
+  &.ant-menu-submenu-selected {
+    background: #E9ECEF;
+  }
+}
+
+:where(.css-dev-only-do-not-override-ni1kz0).ant-menu-light .ant-menu-item-selected,
+:where(.css-dev-only-do-not-override-ni1kz0).ant-menu-light>.ant-menu .ant-menu-item-selected {
+  background-color: #E9ECEF;
+}
+
+:where(.css-dev-only-do-not-override-ni1kz0).ant-menu-light .ant-menu-item-selected,
+:where(.css-dev-only-do-not-override-ni1kz0).ant-menu-light>.ant-menu .ant-menu-item-selected {
+  color: #343434;
+}
+
+:where(.css-dev-only-do-not-override-ni1kz0).ant-layout-sider .ant-layout-sider-children .ant-menu.ant-menu-inline-collapsed {
+  width: auto;
+  height: 100%;
+}
+
+.sidebar_menu_section .ant-menu-inline-collapsed.ant-menu-light .ant-menu-submenu-title {
+  color: #3F506D;
+  margin: 0;
+  width: 46px;
+  height: 46px;
+  padding-inline: 0;
+  padding: 7px;
+  margin: 0;
+  margin-inline: 0;
+  margin-block: 0;
+}
+
+.ant-layout-content {
+  padding: 16px 24px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+.ant-layout-content::-webkit-scrollbar {
+  display: none;
+}
+
+
+.ant-layout-content {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.contentwraper {
+  padding: 24px;
+
+  .scrolldiv {
+    background: #fff;
+    padding: 24px;
+    overflow: auto;
+    overflow-x: hidden;
+    border-radius: 16px;
+    height: 100%;
+  }
+
+  .bredcrumbwrp {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    margin-bottom: 10px;
+
+    .back {
+      padding-right: 10px;
+      margin-right: 10px;
+      border-right: 1px solid rgba(0, 0, 0, 0.1);
+      color: #094E8F;
+      font-size: 13px;
+      font-weight: 600;
+
+      svg {
+        margin-right: 3px;
+      }
+
+    }
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+a {
+  text-decoration: none;
+}
+
+/* a:hover {
+  /* color: $main_color_blue; 
+} */
+
+::selection {
+  color: #fff;
+  /* background: $main_color_blue; */
+}
+
+html {
+  height: 100%;
+  font-size: 62.5%;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ant-layout,
+.ant-layout * {
+  box-sizing: border-box;
+  /* //padding: 0; */
+}
+
+a,
+a:hover {
+  text-decoration: none;
+}
+
+body {
+  height: 100%;
+  font-family: "Poppins", sans-serif;
+
+  #root {
+    height: 100%;
+  }
+
+  .App {
+    height: 100%;
+  }
+}
+
+.m-0 {
+  margin: 0 !important;
+}
+ant-layout.ant-layout-has-sider {
+  flex-direction: row;
+  height: 100vh;
+  background: #F9FAFB;
+}
+
+.ant-layout {
+  background: #F9FAFB;
+}
+
+body .ant-layout-sider .sidebar_menu {
+  padding: 0 16px;
+  overflow: auto;
+  overflow-x: hidden;
+}
+
+/*  */
+
+.dwidget {
+  display: flex;
+  gap: 16px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  justify-content: space-between;
+
+  .icond {
+    background: #123B66;
+    border-radius: 10px;
+    overflow: hidden;
+    min-width: 56px;
+    min-height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+
+    &::before {
+      content: "";
+      width: 70px;
+      height: 70px;
+      background-color: rgb(255 255 255 / 10%);
+      position: absolute;
+      left: -7px;
+      top: -35px;
+      border-radius: 50%;
+    }
+
+    svg {
+      position: relative;
+    }
+  }
+
+  .count {
+    flex: auto;
+
+    h3 {
+      color: #0A0A0A;
+      font-size: 26px;
+      font-weight: 600;
+      margin: 0;
+      margin-top: -5px;
+    }
+
+    p {
+      color: #848484;
+      font-size: 16px;
+    }
+  }
+
+  .percent {
+    color: #82D616;
+    font-size: 16px;
+    font-weight: 500;
+  }
+}

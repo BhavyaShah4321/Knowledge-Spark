@@ -11,7 +11,7 @@ function Register() {
         email: "",
         password: "",
         confirmPassword: "",
-        type: "Student",
+        type: "",
     };
 
     const [state, setState] = useState(initialstate);
@@ -123,7 +123,7 @@ function Register() {
                     </Link>
                 </div>
                 <div className="register-form">
-                    <h1>Sign Up into Your Account</h1>
+                    <h1>Sign Up Into Your Account</h1>
                     <Form
                         layout="vertical"
                         onFinish={handleSubmit} // Attach the handleSubmit function here
@@ -142,7 +142,7 @@ function Register() {
                                 name="username"
                                 value={state.username}
                                 onChange={handleChange}
-                                placeholder="Enter your Name"
+                                placeholder="Enter Username"
                                 className="register-username-field"
                             />
                         </Form.Item>
@@ -165,7 +165,7 @@ function Register() {
                                 name="email"
                                 value={state.email}
                                 onChange={handleChange}
-                                placeholder="Enter your email address"
+                                placeholder="Enter your email "
                                 className="register-email-field"
                             />
                         </Form.Item>

@@ -128,7 +128,7 @@ export default function Sidebar() {
               <span>Dashboard</span>
             </Tooltip>
           </Menu.Item>
-          <SubMenu key="5" icon={<RiseOutlined />} title="Manage Teacher">
+          <SubMenu key="1" icon={<RiseOutlined />} title="Manage Teacher">
             <Menu.Item key="/teacher-list">
               <Tooltip title="Manage Teacher" placement="right">
                 <span>Teacher</span>
@@ -136,7 +136,7 @@ export default function Sidebar() {
             </Menu.Item>
           </SubMenu>
           <SubMenu
-            key="3"
+            key="2"
             icon={<RobotOutlined />}
             title="Manage Student"
           >
@@ -146,6 +146,13 @@ export default function Sidebar() {
               </Tooltip>
             </Menu.Item>
 
+          </SubMenu>
+          <SubMenu key="3" icon={<RiseOutlined />} title="Manage Course">
+            <Menu.Item key="/course-list">
+              <Tooltip title="Manage Course" placement="right">
+                <span>Courses</span>
+              </Tooltip>
+            </Menu.Item>
           </SubMenu>
         </Menu>
       </Sider>
