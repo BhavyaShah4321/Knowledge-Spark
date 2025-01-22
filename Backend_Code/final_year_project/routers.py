@@ -1,6 +1,7 @@
 from rest_framework.routers import DefaultRouter
 from user.views import UserViewSet,RegisterViewSet,ResendOtpViewSet,LoginViewSet,ForgotPasswordViewSet,ResetPasswordViewSet,ChangePasswordViewSet,LoginWithGoogleViewSet,VerifyEmailViewset
 
+from course.views import CourseVideoViewSet,CourseViewSet,CourseFeedbackViewSet
 router=DefaultRouter()
 
 
@@ -17,6 +18,9 @@ router.register("google-authentication",LoginWithGoogleViewSet,basename="google-
 
 
 
+router.register("course",CourseViewSet,basename="course")
+router.register("course-video",CourseVideoViewSet,basename="course-video")
+router.register("course-feedback",CourseFeedbackViewSet,basename="course-feedback")
 
 
 

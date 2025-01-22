@@ -117,7 +117,7 @@ export default function AppHeader() {
   const userMenu = (
     <Menu onClick={handleMenuClick}>
       <Menu.Item key="1">
-        <Link>Profile</Link>
+        <Link to='/profile'>Profile</Link>
       </Menu.Item>
       <Menu.Item key="2">
         <Link>Settings</Link>
