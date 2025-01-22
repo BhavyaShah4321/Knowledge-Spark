@@ -104,7 +104,7 @@ function TeacherList() {
             },
         },
         {
-            title: 'User Name',
+            title: 'Student Name',
             dataIndex: 'username',
             key: 'username',
             sorter: (a, b) => a.username.localeCompare(b.username),
@@ -115,11 +115,11 @@ function TeacherList() {
             key: 'email',
             sorter: (a, b) => a.email.localeCompare(b.email),
         },
-        {
-            title: 'DOB',
-            dataIndex: 'dob',
-            key: 'dob',
-        },
+        // {
+        //     title: 'DOB',
+        //     dataIndex: 'dob',
+        //     key: 'dob',
+        // },
         {
             title: 'Action',
             key: 'action',
@@ -146,7 +146,7 @@ function TeacherList() {
         <div>
             <Row className="pagenamerow mb-0" justify="space-between" align="middle">
                 <Col>
-                    <h2>Student List</h2>
+                    <h2>Students</h2>
                     <div className="bredcrumbwrp">
                         <Link to="/dashboard" className="back">
                             BACK
@@ -154,7 +154,7 @@ function TeacherList() {
                         <Breadcrumb
                             items={[
                                 { title: <Link to="/dashboard">Home</Link> },
-                                { title: 'Student List' },
+                                { title: 'Students' },
                             ]}
                         />
                     </div>

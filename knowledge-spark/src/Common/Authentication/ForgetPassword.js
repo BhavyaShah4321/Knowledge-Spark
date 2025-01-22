@@ -78,10 +78,10 @@ function ForgetPassword() {
                             type="email"
                             value={state.email}
                             onChange={handleChange} // Handle input changes
-                            placeholder="Enter your email address"
+                            placeholder="Enter your email "
                             className="forget-password-input-field"
                         />
-                        <button type="submit" className="btn btn-forget-password">
+                        <button type="submit" className="btn btn-signin">
                             Submit
                         </button>
                     </form>

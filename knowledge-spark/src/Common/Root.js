@@ -11,24 +11,44 @@ import Login from './Authentication/Login';
 import OTPVerification from './Authentication/OTPVerification';
 import ResetPassword from './Authentication/ResetPassword';
 import Profile from '../components/UserProfile/Profile';
+import Courses from '../components/CreateVideoCourse/Courses';
 
-function Root() {
+const Root = () => {
   return (
     <Routes>
+      {/* Public Routes */}
       <Route path="/" element={<Login />} />
       <Route path="/register" element={<Registration />} />
       <Route path="/otp-verification" element={<OTPVerification />} />
-      <Route path='/forget-password' element={<ForgetPassword />} />
+      <Route path="/forget-password" element={<ForgetPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
-      <Route element={<PrivateRoute />}>
-        <Route path='/Graph1' element={<Graph1 />} />
-        <Route path='/dashboard' element={<Dashboard />} />
-        <Route path='/profile' element={<Profile/>}/>
-        <Route path='/teacher-list' element={<TeacherList />} />
-        <Route path='/student-list' element={<StudentList />} />
+
+      {/* Role-Based Private Routes */}
+      <Route element={<PrivateRoute allowedRoles={["Admin", "Teacher", "Student"]} />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/profile" element={<Profile />} />
       </Route>
+
+      {/* Admin-Specific Routes */}
+      <Route element={<PrivateRoute allowedRoles={["Admin"]} />}>
+        <Route path="/teacher-list" element={<TeacherList />} />
+        <Route path="/student-list" element={<StudentList />} />
+      <Route path="/course-list" element={<Courses />} />
+      </Route>
+
+      {/* Teacher-Specific Routes */}
+      <Route element={<PrivateRoute allowedRoles={["Teacher"]} />}>
+      </Route>
+
+      {/* Student-Specific Routes */}
+      <Route element={<PrivateRoute allowedRoles={["Student"]} />}>
+      
+      </Route>
+
+      {/* Unauthorized Route */}
+      <Route path="/unauthorized" element={<h1>Unauthorized Access</h1>} />
     </Routes>
   );
-}
+};
 
 export default Root;
