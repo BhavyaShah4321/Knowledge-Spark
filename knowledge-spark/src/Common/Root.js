@@ -10,6 +10,7 @@ import ForgetPassword from './Authentication/ForgetPassword';
 import Login from './Authentication/Login';
 import OTPVerification from './Authentication/OTPVerification';
 import ResetPassword from './Authentication/ResetPassword';
+import Profile from '../components/UserProfile/Profile';
 
 function Root() {
   return (
@@ -22,6 +23,7 @@ function Root() {
       <Route element={<PrivateRoute />}>
         <Route path='/Graph1' element={<Graph1 />} />
         <Route path='/dashboard' element={<Dashboard />} />
+        <Route path='/profile' element={<Profile/>}/>
         <Route path='/teacher-list' element={<TeacherList />} />
         <Route path='/student-list' element={<StudentList />} />
       </Route>
