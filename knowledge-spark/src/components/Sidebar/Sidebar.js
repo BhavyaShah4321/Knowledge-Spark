@@ -9,7 +9,7 @@ import { Button, Layout, Menu, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../../Image/Logo.png';
-import '../../Styles/Common.css';
+import '../../Styles/Common.scss';
 const { Sider } = Layout;
 const { SubMenu } = Menu;
 

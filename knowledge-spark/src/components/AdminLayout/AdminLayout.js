@@ -1,7 +1,7 @@
 import React from 'react';
 import {Layout} from 'antd';
 import PropTypes from 'prop-types';
-import '../../Styles/Common.css';
+import '../../Styles/Common.scss';
 import Header from '../Header/Header';
 import Sidebar from '../Sidebar/Sidebar';
 
