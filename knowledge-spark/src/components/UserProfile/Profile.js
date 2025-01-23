@@ -1,137 +1,163 @@
-import { PlusOutlined, EditOutlined } from '@ant-design/icons';
-import React, { useState, useEffect } from "react";
-import { Row, Col, Button, Upload, Input, Breadcrumb, Form, message } from "antd";
-import { Link, useNavigate } from 'react-router-dom';
+import { PlusOutlined } from '@ant-design/icons';
+import { Avatar, Breadcrumb, Button, Col, Form, Input, Row, Upload, message } from 'antd';
 import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
-const Profile = () => {
+function Profile() {
   const [form] = Form.useForm();
-  const navigate = useNavigate();
-  const [btnLoading, setBtnLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [fileList, setFileList] = useState([]);
-
-  // Parse auth data from localStorage
-  const authData = JSON.parse(localStorage.getItem("auth_token") || "{}");
-  const userData = authData.user || {};
-
-  // Initialize form data state
-  const [formData, setFormData] = useState({
-    username: userData.username || "",
-    email: userData.email || "",
-    type: userData.type || ""
+  const [authData, setAuthData] = useState(null);
+  const [profile, setProfile] = useState({
+    id: '',
+    username: '',
+    email: '',
+    profileImage: '',
+    createdAt: '',
+    type: '',
+    userType: '',
   });
 
+  // Load auth data and populate the profile
   useEffect(() => {
-    // Set initial form values
-    form.setFieldsValue({
-      username: userData.username || "",
-      email: userData.email || ""
-    });
-  }, [form, userData]);
+    const storedAuth = localStorage.getItem('auth_token'); // Get data from localStorage
+    if (storedAuth) {
+      const parsedAuth = JSON.parse(storedAuth); // Parse JSON only once
+      setAuthData(parsedAuth);
 
-  // Handle file upload validation
-  const validateFileList = () => {
-    const fileType = fileList[0]?.type;
-    if (fileList.length > 0 && !["image/jpeg", "image/jpg", "image/png"].includes(fileType)) {
-      return Promise.reject(new Error("Only JPG, JPEG, or PNG files are allowed!"));
+      const { user } = parsedAuth;
+      if (user) {
+        // Ensure the profile image URL is complete
+        const profileImage = user.profile_picture
+          ? user.profile_picture.startsWith('http')
+            ? user.profile_picture
+            : `http://localhost:8000${user.profile_picture}`
+          : '';
+
+        setProfile({
+          id: user.id,
+          username: user.username || '',
+          email: user.email || '',
+          profileImage,
+          createdAt: user.created_at || '',
+          type: user.type || '',
+          userType: user.user_type || '',
+        });
+      }
+    } else {
+      console.warn('No auth data found in localStorage.');
     }
-    return Promise.resolve();
+  }, []);
+
+  // Toggle editing mode and initialize fileList with the current profile image
+  const toggleEditing = () => {
+    if (!isEditing && profile.profileImage) {
+      setFileList([
+        {
+          uid: '-1',
+          name: 'profile_image.png',
+          status: 'done',
+          url: profile.profileImage,
+        },
+      ]);
+    }
+    setIsEditing(!isEditing);
   };
 
-  // Handle file change for profile picture
+  // Handle file upload and preview
   const handleFileChange = ({ fileList: newFileList }) => {
     setFileList(newFileList);
+
+    if (newFileList.length > 0) {
+      const file = newFileList[0].originFileObj;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfile({ ...profile, profileImage: e.target.result });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setProfile({ ...profile, profileImage: '' });
+    }
   };
 
-  // Toggle edit mode
-  const toggleEdit = () => {
-    setIsEditing((prev) => !prev);
-  };
+  // Save profile changes (including text and image)
+  const handleSave = async () => {
+    const headers = {
+      Authorization: `Bearer ${authData?.access_token}`,
+    };
 
-  // Handle form submission
-  const handleFinish = async (values) => {
-    setBtnLoading(true);
-
-    // Construct form data for API payload
-    const formPayload = new FormData();
-    formPayload.append('username', values.username);
-    formPayload.append('email', values.email);
-    // formPayload.append('type', formData.type); // Assuming 'type' is not editable
+    // Create FormData to send profile data and image
+    const formData = new FormData();
+    formData.append('email', profile.email);
+    formData.append('username', profile.username);
 
     if (fileList.length > 0 && fileList[0].originFileObj) {
-      formPayload.append('profile_picture', fileList[0].originFileObj);
+      formData.append('profile_image', fileList[0].originFileObj);
     }
 
     try {
-      // API call to update user profile
-      const response = await axios.patch(
-        `/user/${userData.id}/`, // API endpoint
-        formPayload,
-        {
-          headers: {
-            Authorization: `Bearer ${authData.token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
+      // Update the profile via API
+      const response = await axios.put(`http://localhost:8000/api/user/${profile.id}/`, formData, { headers });
+      message.success('Profile updated successfully!');
 
-      // Update localStorage with the new profile data
+      // Fetch the updated user data to ensure consistency
+      const updatedUser = response.data;
+
+      // Update localStorage with the latest data
       const updatedAuthData = {
         ...authData,
-        user: { ...authData.user, ...response.data },
+        user: {
+          ...authData.user,
+          ...updatedUser, // Merge updated user details
+        },
       };
       localStorage.setItem('auth_token', JSON.stringify(updatedAuthData));
 
-      // Update local state
-      setFormData({
-        ...formData,
-        ...response.data,
-      });
+      // Update profile state with the latest data
+      setProfile((prevProfile) => ({
+        ...prevProfile,
+        username: updatedUser.username || prevProfile.username,
+        email: updatedUser.email || prevProfile.email,
+        profileImage: updatedUser.profile_picture
+          ? updatedUser.profile_picture.startsWith('http')
+            ? updatedUser.profile_picture
+            : `http://localhost:8000${updatedUser.profile_picture}`
+          : prevProfile.profileImage,
+      }));
 
-      message.success('Profile updated successfully!');
-      setIsEditing(false);
+      setIsEditing(false); // Exit editing mode
     } catch (error) {
-      console.error('Profile update error:', error);
-      message.error('Failed to update profile. Please try again.');
-    } finally {
-      setBtnLoading(false);
+      message.error('Failed to update profile!');
+      console.error('Error updating profile:', error);
     }
   };
 
   return (
-    <>
-      {/* Top Bar with Breadcrumb */}
-      <div className="ListingTopBar">
-        <div className="pagenamewrap">
-          <div className="pagename">
-            <h3>My Profile</h3>
+    <div>
+      <Row className="pagenamerow mb-0" justify="space-between" align="middle">
+        <Col>
+          <h2>My Profile</h2>
+          <div className="bredcrumbwrp">
+            <Link to="/dashboard" className="back">
+              BACK
+            </Link>
             <Breadcrumb
               items={[
                 { title: <Link to="/dashboard">Home</Link> },
-                { title: 'My Profile' }
+                { title: 'My Profile' },
               ]}
             />
           </div>
-        </div>
-      </div>
-
-      <section className="grid-sec FormSection myprofile marginbottom">
-        <div className="FormBody">
-          <Form
-            layout="vertical"
-            form={form}
-            onFinish={handleFinish}
-            autoComplete="off"
-          >
-            <Row gutter={16} className="prflrow">
-              <Col xs={24} flex="auto" className="profileimg">
-                <Form.Item
-                  label="Profile Image"
-                  name="profile_image"
-                  rules={[{ validator: validateFileList }]}
-                  style={{ margin: "0" }}
-                >
+        </Col>
+      </Row>
+      <div>
+        <Form layout="vertical" form={form} autoComplete="off">
+          <Row gutter={16} className="prflrow">
+            {/* Profile Image */}
+            <Col xs={24} md={6} className="profileimg">
+              <Form.Item label="Profile Image" name="profile_image" style={{ margin: '0' }}>
+                {isEditing ? (
                   <Upload
                     beforeUpload={() => false}
                     listType="picture-card"
@@ -148,82 +174,54 @@ const Profile = () => {
                       </div>
                     )}
                   </Upload>
-                </Form.Item>
-              </Col>
-
-              <Col flex="auto" className="prflcont">
-                <Row gutter={[15]}>
-                  {isEditing ? (
-                    <>
-                      <Col xs={24} sm={24} md={12} lg={12}>
-                        <Form.Item
-                          label="Username"
-                          name="username"
-                          rules={[
-                            { required: true, message: 'Please enter username' },
-                          ]}
-                        >
-                          <Input placeholder="Enter Username" />
-                        </Form.Item>
-                      </Col>
-                      <Col xs={24} sm={24} md={12} lg={12}>
-                        <Form.Item
-                          label="Email Address"
-                          name="email"
-                          rules={[
-                            { required: true, message: 'Please enter email' },
-                            { type: 'email', message: 'Please enter a valid email' }
-                          ]}
-                        >
-                          <Input placeholder="Enter Email Address" disabled />
-                        </Form.Item>
-                      </Col>
-                    </>
-                  ) : (
-                    <>
-                      <Col xs={24} sm={24} md={12} lg={12}>
-                        <Form.Item>
-                          <label>Username</label>
-                          <p>{formData.username}</p>
-                        </Form.Item>
-                      </Col>
-                      <Col xs={24} sm={24} md={12} lg={12}>
-                        <Form.Item>
-                          <label>Email</label>
-                          <p>{formData.email}</p>
-                        </Form.Item>
-                      </Col>
-                      <Col xs={24} sm={24} md={12} lg={12}>
-                        <Form.Item>
-                          <label>User Type</label>
-                          <p>{formData.type}</p>
-                        </Form.Item>
-                      </Col>
-                    </>
-                  )}
-                </Row>
-              </Col>
-            </Row>
-
-            <Row justify="end" gutter={16}>
-              <Col>
-                {isEditing ? (
-                  <>
-                    <Button type="default" onClick={toggleEdit}>Cancel</Button>
-                    <Button type="primary" htmlType="submit" loading={btnLoading}>Save</Button>
-                  </>
                 ) : (
-                  <Button type="primary" icon={<EditOutlined />} onClick={toggleEdit}>
-                    Edit
-                  </Button>
+                  <Avatar
+                    size={128}
+                    src={profile.profileImage || 'https://via.placeholder.com/128'}
+                  />
                 )}
-              </Col>
-            </Row>
-          </Form>
-        </div>
-      </section>
-    </>
+              </Form.Item>
+            </Col>
+
+            {/* Profile Details */}
+            <Col xs={24} md={18}>
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={24}>
+                  <Form.Item label="Username">
+                    {isEditing ? (
+                      <Input
+                        value={profile.username}
+                        onChange={(e) => setProfile({ ...profile, username: e.target.value })}
+                      />
+                    ) : (
+                      <span>{profile.username || '-'}</span>
+                    )}
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={24}>
+                  <Form.Item label="Email">
+                    {isEditing ? (
+                      <Input
+                        value={profile.email}
+                        onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                      />
+                    ) : (
+                      <span>{profile.email || '-'}</span>
+                    )}
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+          <Row justify="end" style={{ marginTop: 16 }}>
+            <Button type="primary" onClick={isEditing ? handleSave : toggleEditing}>
+              {isEditing ? 'Save' : 'Edit Profile'}
+            </Button>
+          </Row>
+        </Form>
+      </div>
+    </div>
   );
-};
+}
 
 export default Profile;
