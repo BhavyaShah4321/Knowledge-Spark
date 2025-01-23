@@ -9,10 +9,44 @@ import { ReactComponent as FilterIcon } from '../../Image/FilterIcon.svg';
 export default function Courses() {
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
         const [searchText, setSearchText] = useState('');
-        const [data, setData] = useState([]);
+        // const [data, setData] = useState([]);
         const [currentPage, setCurrentPage] = useState(1);
         const [totalItems, setTotalItems] = useState(0);
         const [loading, setLoading] = useState(false);
+        const [courseData,setCourseData]=useState([]);
+
+    useEffect(()=>{
+        const fetchCourseDetails = async (page=1) => {
+            try {
+                setLoading(true);
+                const authData = JSON.parse(localStorage.getItem('auth_token'));
+                if (!authData || !authData.access_token) {
+                    console.error('Authentication tokens are missing. Please log in again.');
+                    return;
+                }
+                const accessToken = authData.access_token;
+                const response = await axios.get(
+                    `http://localhost:8000/api/course/`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`,
+                        },
+                    }
+                );
+            
+                const CourseDetails = response.data;
+                setCourseData(CourseDetails.results.data || []);
+                setTotalItems(CourseDetails.count || 0);
+                
+            } catch (error) {
+                console.error('Error fetching teacher details:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCourseDetails();
+    },[])
+
         const onSearchChange = (e) => {
             const value = e.target.value;
             setSearchText(value);
@@ -35,23 +69,12 @@ export default function Courses() {
                     key: 'index',
                     render: (text, record, index) => (currentPage - 1) * 10 + index + 1,
                 },
-                {
-                    title: 'Course Number',
-                    dataIndex: 'course_number',
-                    key: 'course_number',
-                   
-                },
-                {
-                    title: 'Course Name',
-                    dataIndex: 'course_name',
-                    key: 'course_name',
-                    sorter: (a, b) => a.username.localeCompare(b.username),
-                },
+                
                 {
                     title: 'Course Title',
                     dataIndex: 'course_title',
                     key: 'course_title',
-                    sorter: (a, b) => a.email.localeCompare(b.email),
+                  
                 },
                 {
                     title: 'Course Description',
@@ -59,22 +82,19 @@ export default function Courses() {
                     key: 'course_description',
                     sorter: (a, b) => a.email.localeCompare(b.email),
                 },
-               
                 {
-                    title: 'Action',
-                    key: 'action',
-                    render: (text, record) => (
-                        <Space>
-                            <Tooltip title="View">
-                                <Dropdown overlay={Menu(record)} trigger={['click']}>
-                                    <Button>
-                                        {record.isActive ? 'Active' : 'Inactive'} <DownOutlined />
-                                    </Button>
-                                </Dropdown>
-                            </Tooltip>
-                        </Space>
-                    ),
+                    title: 'Teacher Name',
+                    dataIndex: 'course_teacher',
+                    key: 'course_teacher',
                 },
+                {
+                    title: 'Status',
+                    dataIndex: 'course_status',
+                    key: 'course_status',
+                    sorter: (a, b) => a.email.localeCompare(b.email),
+                },
+               
+              
             ];
             const handleTableChange = (pagination) => {
                 setCurrentPage(pagination.current);
@@ -118,7 +138,7 @@ export default function Courses() {
 
             <Table
                 rowSelection={rowSelection}
-                dataSource={Array.isArray(data) ? data : []}
+                dataSource={Array.isArray(courseData) ? courseData : []}
                 columns={columns}
                 rowKey="id"
                 pagination={{
