@@ -513,6 +513,7 @@ body .ant-layout-sider .sidebar_menu {
   background-color: $main_color_blue !important;
   color: #ffffff !important;
 }
+
 //Changes In Radion Button Checked
 .ant-radio-wrapper .ant-radio-inner {
   background-color: #D9D9D9;
@@ -522,8 +523,8 @@ body .ant-layout-sider .sidebar_menu {
 
 /* Checked Radio Button */
 .ant-radio-wrapper .ant-radio-checked .ant-radio-inner {
-  border-color: #123B66 !important; 
-  background-color: #123B66 !important; 
+  border-color: #123B66 !important;
+  background-color: #123B66 !important;
 }
 
 /* Radio Button Inner Circle */
@@ -539,7 +540,7 @@ body .ant-layout-sider .sidebar_menu {
 
 /* Hover State for Checked Radio Button */
 .ant-radio-wrapper:hover .ant-radio-checked .ant-radio-inner {
-  background-color: #123B66 !important; 
+  background-color: #123B66 !important;
   border-color: #123B66 !important;
 }
 
@@ -2759,6 +2760,7 @@ body .ant-layout-sider .sidebar_menu {
 .link-resend-otp {
   text-decoration: none;
 }
+
 @media (max-width: 1024px) {
 
   /* Laptop */
@@ -2785,6 +2787,7 @@ body .ant-layout-sider .sidebar_menu {
     padding: 20px;
   }
 }
+
 .forget-password-container {
   display: flex;
   min-width: 98vw;
@@ -2890,4 +2893,114 @@ body .ant-layout-sider .sidebar_menu {
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
+}
+
+
+/*-----------------
+    8. Cource Details
+  -----------------------*/
+
+/* Main container */
+.course-detail-container {
+  background: linear-gradient(135deg, #f0f2f5, #e0e8f0);
+  padding: 50px 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.course-detail-row {
+  width: 100%;
+}
+
+.course-detail-card {
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.course-detail-card:hover {
+  transform: translateY(-10px);
+}
+
+/* Course Title */
+.course-title {
+  font-size: 36px;
+  font-weight: bold;
+  color: #2d2d2d;
+  margin-bottom: 20px;
+}
+
+/* Course Status Toggle */
+.course-status {
+  margin-bottom: 20px;
+}
+
+.course-teacher {
+  font-size: 20px;
+  color: #555;
+}
+
+.course-status-toggle {
+  margin-top: 10px;
+}
+
+/* Course Description */
+.course-description {
+  margin-top: 30px;
+}
+
+.course-description-text {
+  color: #333;
+  font-size: 18px;
+  line-height: 1.6;
+  text-align: justify;
+  padding: 0 10px;
+}
+
+/* Video Section */
+.course-video {
+  margin-top: 40px;
+  background: #000;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.course-tags {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.course-tags .ant-tag {
+  font-size: 16px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background-color: #f5f5f5;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .course-detail-card {
+    padding: 20px;
+  }
+
+  .course-title {
+    font-size: 28px;
+  }
+
+  .course-description-text {
+    font-size: 16px;
+  }
+
+  .course-video {
+    margin-top: 20px;
+    padding: 5px;
+  }
 }

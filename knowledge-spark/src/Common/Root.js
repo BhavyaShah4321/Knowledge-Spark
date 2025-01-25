@@ -1,10 +1,11 @@
 import React from 'react';
 import { Route, Routes } from "react-router-dom";
+import CourceDetails from '../Admin/CreateVideoCourse/CourceDetails';
+import Courses from '../Admin/CreateVideoCourse/Courses';
 import Dashboard from '../Admin/Dashboard';
 import StudentList from '../Admin/Manage Student/StudentList';
 import TeacherList from '../Admin/ManageTeacher/TeacherList';
 import Registration from '../Common/Authentication/Register';
-import Courses from '../components/CreateVideoCourse/Courses';
 import PrivateRoute from '../components/PrivateRoute';
 import Profile from '../components/UserProfile/Profile';
 import ForgetPassword from './Authentication/ForgetPassword';
@@ -34,6 +35,7 @@ const Root = () => {
         <Route path="/teacher-list" element={<TeacherList />} />
         <Route path="/student-list" element={<StudentList />} />
         <Route path="/course-list" element={<Courses />} />
+        <Route path="/cource-details/:id" element={<CourceDetails />} />
 
       </Route>
 
