@@ -43,9 +43,16 @@ function TeacherList() {
   const onSearchChange = (e) => {
     const value = e.target.value;
     setSearchText(value);
-    fetchTeacherDetails(1, value);
+  
+    // Filter data locally
+    const filteredData = data.filter((item) =>
+      item.username.toLowerCase().includes(value.toLowerCase()) ||
+      item.email.toLowerCase().includes(value.toLowerCase())
+    );
+  
+    setData(filteredData);
   };
-
+  
   const resetFilter = () => {
     setSearchText('');
     setCurrentPage(1);
@@ -61,11 +68,50 @@ function TeacherList() {
     fetchTeacherDetails(currentPage);
   }, [currentPage]);
 
+  const updateTeacherStatus = async (id, isActive) => {
+    try {
+      const authData = JSON.parse(localStorage.getItem('auth_token'));
+      if (!authData || !authData.access_token) {
+        console.error('Authentication tokens are missing. Please log in again.');
+        return;
+      }
+      const accessToken = authData.access_token;
+
+      const response = await axios.patch(
+        `http://localhost:8000/api/user/${id}/`,
+        { is_active: isActive },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        console.log('Teacher status updated successfully');
+        fetchTeacherDetails(currentPage); // Refresh the teacher list after updating
+      }
+    } catch (error) {
+      console.error('Error updating teacher status:', error);
+    }
+  };
+
+
 
   const menu = (record) => (
-    <Menu>
-      <Menu.Item key="active">{record.isActive ? 'Active' : 'Set to Active'}</Menu.Item>
-      <Menu.Item key="inactive">{record.isActive ? 'Set to Inactive' : 'Inactive'}</Menu.Item>
+    <Menu
+      onClick={({ key }) => {
+        const newStatus = key === 'active';
+        updateTeacherStatus(record.id, newStatus);
+      }}
+    >
+      <Menu.Item key="active" disabled={record.is_active}>
+        Set to Active
+      </Menu.Item>
+      <Menu.Item key="inactive" disabled={!record.is_active}>
+        Set to Inactive
+      </Menu.Item>
     </Menu>
   );
 
@@ -76,44 +122,38 @@ function TeacherList() {
       render: (text, record, index) => (currentPage - 1) * 10 + index + 1,
     },
     {
-      title: 'Profile Picture',
+      title: 'Email',
       dataIndex: 'email',
-      key: 'profile_picture',
+      key: 'email',
       render: (email) => {
         const getInitials = (email) => {
           if (!email) return 'N/A';
-          const namePart = email.split('@')[0];
-          const initials = namePart
-            .split(/[\W_]/)
-            .map((word) => word.charAt(0).toUpperCase())
-            .join('');
-          return initials.slice(0, 2);
+          return email.charAt(0).toUpperCase();
         };
-
+        
         const backgroundColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+        
         return (
-          <Avatar
-            style={{
-              backgroundColor: backgroundColor,
-              color: '#fff',
-            }}
-          >
-            {getInitials(email)}
-          </Avatar>
+          <Space>
+            <Avatar
+              style={{
+                backgroundColor,
+                color: '#fff',
+              }}
+              >
+              {getInitials(email)}
+            </Avatar>
+            <span>{email}</span>
+          </Space>
         );
       },
+      sorter: (a, b) => a.email.localeCompare(b.email),
     },
     {
       title: 'Teacher Name',
       dataIndex: 'username',
       key: 'username',
       sorter: (a, b) => a.username.localeCompare(b.username),
-    },
-    {
-      title: 'Email',
-      dataIndex: 'email',
-      key: 'email',
-      sorter: (a, b) => a.email.localeCompare(b.email),
     },
     // {
     //   title: 'Bio',
@@ -130,10 +170,10 @@ function TeacherList() {
       key: 'action',
       render: (text, record) => (
         <Space>
-          <Tooltip title="View">
+          <Tooltip title="Change Status">
             <Dropdown overlay={menu(record)} trigger={['click']}>
               <Button>
-                {record.isActive ? 'Active' : 'Inactive'} <DownOutlined />
+                {record.is_active ? 'Active' : 'Inactive'} <DownOutlined />
               </Button>
             </Dropdown>
           </Tooltip>
