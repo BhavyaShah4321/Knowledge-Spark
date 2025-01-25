@@ -1,8 +1,8 @@
-import { DownOutlined, SearchOutlined } from '@ant-design/icons';
-import { Avatar, Breadcrumb, Button, Col, Dropdown, Input, Modal, Row, Space, Table, Tooltip } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+import { Breadcrumb, Button, Col, Input, Row, Space, Table, Tooltip } from 'antd';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ReactComponent as FilterIcon } from '../../Image/FilterIcon.svg';
 
 export default function Courses() {
@@ -12,8 +12,8 @@ export default function Courses() {
     const [totalItems, setTotalItems] = useState(0);
     const [loading, setLoading] = useState(false);
     const [courseData, setCourseData] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedCourse, setSelectedCourse] = useState(null);
+    const navigate = useNavigate()
+
 
     useEffect(() => {
         const fetchCourseDetails = async (page = 1) => {
@@ -59,13 +59,8 @@ export default function Courses() {
     };
 
     const handleCourseClick = (course) => {
-        setSelectedCourse(course);
-        setIsModalOpen(true);
-    };
-
-    const closeModal = () => {
-        setIsModalOpen(false);
-        setSelectedCourse(null);
+        // Navigate to the course detail page, passing the course ID as a parameter
+        navigate(`/cource-details/${course.id}`);
     };
 
     const columns = [
@@ -157,41 +152,6 @@ export default function Courses() {
                     x: 1500,
                 }}
             />
-
-            <Modal
-                title="Course Details"
-                visible={isModalOpen}
-                onCancel={closeModal}
-                footer={[
-                    <Button key="close" type='primary' className="iconlink"  onClick={closeModal}>
-                        Close
-                    </Button>,
-                ]}
-            >
-                {selectedCourse && (
-                    <div>
-                        <p><strong>Title:</strong> {selectedCourse.course_title}</p>
-                        <p><strong>Description:</strong> {selectedCourse.course_description}</p>
-                        <p><strong>Teacher Name:</strong> {selectedCourse.course_teacher}</p>
-                        <p><strong>Status:</strong> {selectedCourse.course_status}</p>
-                        {selectedCourse.video_url && (
-                            <div>
-                                <strong>Video:</strong>
-                                <div style={{ marginTop: '10px' }}>
-                                    <iframe
-                                        width="100%"
-                                        height="315"
-                                        src={selectedCourse.video_url}
-                                        frameBorder="0"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowFullScreen
-                                    ></iframe>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
-            </Modal>
         </div>
     );
 }
