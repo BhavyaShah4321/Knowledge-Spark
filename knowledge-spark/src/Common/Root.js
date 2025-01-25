@@ -34,7 +34,7 @@ const Root = () => {
         <Route path="/teacher-list" element={<TeacherList />} />
         <Route path="/student-list" element={<StudentList />} />
         <Route path="/course-list" element={<Courses />} />
-   
+
       </Route>
 
       {/* Teacher-Specific Routes */}
