@@ -12,6 +12,7 @@ import Login from './Authentication/Login';
 import OTPVerification from './Authentication/OTPVerification';
 import ResetPassword from './Authentication/ResetPassword';
 
+
 const Root = () => {
   return (
     <Routes>
@@ -33,6 +34,7 @@ const Root = () => {
         <Route path="/teacher-list" element={<TeacherList />} />
         <Route path="/student-list" element={<StudentList />} />
         <Route path="/course-list" element={<Courses />} />
+   
       </Route>
 
       {/* Teacher-Specific Routes */}
