@@ -5,7 +5,7 @@ from utils.generate_otp import generate_otp
 class UserSerializer(serializers.ModelSerializer):
     email=serializers.CharField(required=True)
     dob = serializers.DateField(format="%d-%m-%Y", input_formats=["%d-%m-%Y", "%Y-%m-%d"], allow_null=True, required=False)
-
+    profile_picture=serializers.CharField(allow_null=True)
     class Meta:
         model=User
         fields=[
@@ -26,6 +26,7 @@ class UserSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         email=attrs.get("email")
         username=attrs.get("username")
+        profile_picture=attrs.get("profile_picture")
         
             
         if self.instance:
@@ -37,6 +38,14 @@ class UserSerializer(serializers.ModelSerializer):
             user_email_instanse=User.objects.filter(email=email,email_verified=True).exclude(id=self.instance.id)
         if user_email_instanse.exists():
             raise serializers.ValidationError("Email Address already exists")
+        
+        
+        if profile_picture:
+            if not profile_picture.name.lower().endswith(('.png', '.jpg', '.jpeg')):
+                raise serializers.ValidationError({"profile_picture": "Only PNG, JPG, or JPEG images are allowed."})
+        
+            
+        
         
         return attrs
         
