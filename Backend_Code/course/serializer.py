@@ -39,6 +39,20 @@ class CourseSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("The specified teacher does not exist.")
 
         return data
+    
+    def to_representation(self, instance):
+        course_data = super().to_representation(instance)
+
+        course_video_instances = CourseVideo.objects.filter(course=instance)
+        course_video_serializer = CourseVideoSerializer(course_video_instances, many=True)
+        course_data['videos'] = course_video_serializer.data 
+
+        course_feedback_instances = CourseFeedback.objects.filter(course=instance)
+        course_feedback_serializer = CourseFeedbackSerializer(course_feedback_instances, many=True)
+        course_data['feedbacks'] = course_feedback_serializer.data 
+
+        return course_data
+
 
 class CourseVideoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -80,10 +94,6 @@ class CourseVideoSerializer(serializers.ModelSerializer):
         if not course_video_description:
             raise serializers.ValidationError("Video description is required.")
 
-        # request = self.context.get("request")
-        # if request and request.user.id != course.course_teacher.id:  
-            # raise serializers.ValidationError("You are not allowed to add or update  this video.")
-
         return data
     
     
@@ -93,7 +103,7 @@ class CourseFeedbackSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "feedback_student",
-            "feedback_course",
+            "course",
             "feedback_message",
             "created_at",
             "updated_at",
@@ -107,12 +117,12 @@ class CourseFeedbackSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Feedback message must be at least 10 characters long.")
 
         feedback_student = data.get("feedback_student")
-        feedback_course = data.get("feedback_course")
+        course = data.get("course")
         
         if not feedback_student:
             raise serializers.ValidationError("Student id is required.")
 
-        if not feedback_course:
+        if not course:
             raise serializers.ValidationError("Course is required.")
         
         return data
