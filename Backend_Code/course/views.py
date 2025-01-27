@@ -172,7 +172,7 @@ class CourseFeedbackViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ['feedback_message', 'feedback_student__username', 'feedback_course__course_title']
+    search_fields = ['feedback_message', 'feedback_student__username', 'course__course_title']
     ordering_fields = ['created_at', 'updated_at']
 
     def list(self, request, *args, **kwargs):
