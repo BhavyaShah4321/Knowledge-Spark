@@ -36,8 +36,8 @@ class CourseVideo(models.Model):
 
 
 class CourseFeedback(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="feedback_course",blank=True,null=True)
     feedback_student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="feedback_student",blank=True,null=True)
-    feedback_course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="feedback_course",blank=True,null=True)
     feedback_message = models.CharField(max_length=100, null=True,blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
