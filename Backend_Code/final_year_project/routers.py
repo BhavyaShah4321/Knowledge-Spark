@@ -1,11 +1,17 @@
 from rest_framework.routers import DefaultRouter
-from user.views import UserViewSet,RegisterViewSet,ResendOtpViewSet,LoginViewSet,ForgotPasswordViewSet,ResetPasswordViewSet,ChangePasswordViewSet,LoginWithGoogleViewSet,VerifyEmailViewset
+from user.views import UserViewSet,RegisterViewSet,ResendOtpViewSet,LoginViewSet,ForgotPasswordViewSet,ResetPasswordViewSet,ChangePasswordViewSet,LoginWithGoogleViewSet,VerifyEmailViewset,UserArchiveViewset,UserRestoreViewset
 
-from course.views import CourseVideoViewSet,CourseViewSet,CourseFeedbackViewSet
+from course.views import CourseVideoViewSet,CourseViewSet,CourseFeedbackViewSet,CourseCategoryViewSet
 router=DefaultRouter()
 
 
 router.register("user",UserViewSet,basename="user")
+router.register("user-archive",UserArchiveViewset,basename="archive")
+router.register("user-restore",UserRestoreViewset,basename="restore")
+
+
+
+
 router.register("register",RegisterViewSet,basename="register")
 
 router.register("verify-otp",VerifyEmailViewset,basename="verify-otp")
@@ -21,6 +27,8 @@ router.register("google-authentication",LoginWithGoogleViewSet,basename="google-
 router.register("course",CourseViewSet,basename="course")
 router.register("course-video",CourseVideoViewSet,basename="course-video")
 router.register("course-feedback",CourseFeedbackViewSet,basename="course-feedback")
+router.register("course-category",CourseCategoryViewSet,basename="course-category")
+
 
 
 

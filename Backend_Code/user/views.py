@@ -42,8 +42,8 @@ class UserViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-    search_fields = ["username", "email","type"]
-    ordering_fields = ["username", "email","type"]
+    search_fields = ["username", "email","type","gender","dob","bio"]
+    ordering_fields = ["username", "email","type","gender","dob","bio"]
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -66,6 +66,33 @@ class UserViewSet(ModelViewSet):
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
+        
+    def create(self,request,*args,**kwargs):
+        data = json.loads(request.data.get("form_data"))
+
+        profile_picture = request.FILES.get('profile_picture')
+        data["profile_picture"] = profile_picture
+
+        serializer = self.serializer_class(data=data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "success": True,
+                    "message": "Successfully Created",
+                    "data": serializer.data,
+                },
+                status=status.HTTP_200_OK,
+            )
+        else:
+            errors_message = " ".join(
+                [", ".join(value) for value in serializer.errors.values()]
+            )
+            return Response(
+                {"success": False, "message": errors_message},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -192,10 +219,99 @@ class UserViewSet(ModelViewSet):
         else:
             return Response(
                 {"success": False, "message": "You are not admin"},
-                status=status.HTTP_200_OK,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
 
+class UserArchiveViewset(ModelViewSet):
+    queryset = User.objects.filter(deleted=1,email_verified=True).order_by("-id")
+    serializer_class = UserSerializer
+    pagination_class = mypagination
+    filter_backends = [SearchFilter, OrderingFilter]
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    search_fields = ["username", "email","type"]
+    ordering_fields = ["username", "email","type"]    
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        no_pagination = request.query_params.get("no_pagination")
+
+        if no_pagination:
+            serializer = self.serializer_class(queryset, many=True)
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+        
+    def create(self, request, *args, **kwargs):
+        id=request.data.get("id")
+        if not id:
+           return Response(
+            {"success": True, "message":"id is required"}, status=status.HTTP_400_BAD_REQUEST
+        )
+            
+        try:
+            user_instance=User.objects.get(id=id)
+        except User.DoesNotExist:
+           return Response(
+            {"success": True, "message":"No user with this id"}, status=status.HTTP_400_BAD_REQUEST
+        )
+           
+        user_instance.deleted=1
+        user_instance.save()
+        
+        return Response(
+                {"success": True, "message": "User Successfully Archived"}, status=status.HTTP_200_OK
+            )
+           
+
+class UserRestoreViewset(ModelViewSet):
+    queryset = User.objects.filter(deleted=1,email_verified=True).order_by("-id")
+    serializer_class = UserSerializer
+    pagination_class = mypagination
+    filter_backends = [SearchFilter, OrderingFilter]
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    search_fields = ["username", "email","type"]
+    ordering_fields = ["username", "email","type"]    
+
+    
+    
+    def create(self, request, *args, **kwargs):
+        id=request.data.get("id")
+        if not id:
+           return Response(
+            {"success": True, "message":"id is required"}, status=status.HTTP_400_BAD_REQUEST
+        )
+            
+        try:
+            user_instance=User.objects.get(id=id)
+        except User.DoesNotExist:
+           return Response(
+            {"success": True, "message":"No user with this id"}, status=status.HTTP_400_BAD_REQUEST
+        )
+           
+        user_instance.deleted=0
+        user_instance.save()
+        
+        return Response(
+                {"success": True, "message": "User Successfully Restored"}, status=status.HTTP_200_OK
+            )
+           
 class RegisterViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer

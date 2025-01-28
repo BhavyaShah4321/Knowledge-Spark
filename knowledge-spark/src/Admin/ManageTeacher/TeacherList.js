@@ -102,23 +102,34 @@ function TeacherList() {
   };
 
   const handleEdit = (teacher) => {
-
     setEditingTeacher(teacher);
     const formattedDob = teacher.dob ? dayjs(teacher.dob, "DD-MM-YYYY") : null;
+    
+    // Create a fileList for the profile picture if it exists
+    let fileList = [];
+    if (teacher.profile_picture) {
+      fileList = [{
+        uid: '-1',
+        name: 'Current Profile Picture',
+        status: 'done',
+        url: getProfilePictureUrl(teacher.profile_picture),
+      }];
+    }
+    
     form.setFieldsValue({
       username: teacher.username,
       email: teacher.email,
       dob: formattedDob,
       bio: teacher.bio,
       gender: teacher.gender,
+      profile_picture: fileList,
     });
     setOpen(true);
   };
 
   const handleSubmit = async (values) => {
     
-    values.username= values.username;
-    values.email= values.email;
+    
     try {
       const accessToken = getAccessToken();
 
@@ -134,6 +145,7 @@ function TeacherList() {
       // Create the form_data object
       const form_data = {
         username: values.username,
+        type:"Teacher",
         email: values.email,
         bio: values.bio,
         dob: dayjs(values.dob).format("DD-MM-YYYY"),
@@ -180,27 +192,40 @@ function TeacherList() {
   const updateTeacherStatus = async (id, isActive) => {
     try {
       const accessToken = getAccessToken();
+  
+      // Create a FormData instance
+      const formData = new FormData();
+      const form_data = {
+         is_active:isActive,
+      };
 
+      // Add form_data as a stringified JSON
+      formData.append("form_data", JSON.stringify(form_data));
+  
+      // Send the PATCH request with FormData
       const response = await axios.patch(
         `http://localhost:8000/api/user/${id}/`,
-        { is_active: isActive },
+        formData,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
+            "Content-Type": "multipart/form-data", // Required for FormData
           },
         }
       );
-
+  
+      // Handle success response
       if (response.status === 200) {
         message.success("Teacher status updated successfully");
-        fetchTeacherDetails(currentPage);
+        fetchTeacherDetails(currentPage); // Refresh the teacher list
       }
     } catch (error) {
       console.error("Error updating teacher status:", error);
       message.error("Failed to update teacher status");
     }
   };
+  
+  
 
   const menu = (record) => (
     <Menu
@@ -226,7 +251,7 @@ function TeacherList() {
 
   const onClose = () => {
     setOpen(false);
-    form.resetFields();
+    // form.resetFields();
     setEditingTeacher(null);
   };
 

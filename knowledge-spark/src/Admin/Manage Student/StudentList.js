@@ -115,10 +115,19 @@ function StudentList() {
         );
         return;
       }
+
+
       const accessToken = authData.access_token;
+
+      const formData = new FormData();
+      const form_data = {
+         is_active:isActive,
+      };
+
+      formData.append("form_data", JSON.stringify(form_data));
       const response = await axios.patch(
         `http://localhost:8000/api/user/${id}/`,
-        { is_active: isActive },
+        formData,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -174,11 +183,22 @@ function StudentList() {
   const handleEdit = (student) => {
     setEditingStudent(student);
     const formattedDob = student.dob ? dayjs(student.dob, "DD-MM-YYYY") : null;
+    let fileList = [];
+    if (student.profile_picture) {
+      fileList = [{
+        uid: '-1',
+        name: 'Current Profile Picture',
+        status: 'done',
+        url: getProfilePictureUrl(student.profile_picture),
+      }];
+    }
     form.setFieldsValue({
       username: student.username,
       email: student.email,
       dob: formattedDob,
       bio: student.bio,
+      gender:student.gender,
+      profile_picture: fileList,
     });
     setOpen(true);
   };
@@ -305,6 +325,8 @@ function StudentList() {
       const form_data = {
         username: values.username,
         email: values.email,
+        type:'Student',
+        gender:values.gender,
         bio: values.bio,
         dob: values.dob ? values.dob.format("DD-MM-YYYY") : undefined,
       };
