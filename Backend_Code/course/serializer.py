@@ -41,24 +41,27 @@ class CourseSerializer(serializers.ModelSerializer):
         course_title = data.get("course_title", "").strip()
         if not course_title and not self.instance:
             raise serializers.ValidationError("Course title is required.")
-        if len(course_title) < 5:
-            raise serializers.ValidationError("Course title must be at least 5 characters long.")
+        if course_title:
+            if len(course_title) < 5:
+                raise serializers.ValidationError("Course title must be at least 5 characters long.")
 
         course_description = data.get("course_description", "").strip()
         if not course_description  and not self.instance:
             raise serializers.ValidationError("Course description is required.")
-        if len(course_description) < 20:
-            raise serializers.ValidationError("Course description must be at least 20 characters long.")
+        if course_description:
+            if len(course_description) < 20:
+                raise serializers.ValidationError("Course description must be at least 20 characters long.")
 
         course_teacher = data.get("course_teacher")
         if not course_teacher  and not self.instance:
             raise serializers.ValidationError("Course teacher is required.")
-        try:
-            user_instance = User.objects.get(id=course_teacher.id)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("The specified teacher does not exist.")
-        if user_instance.type != "Teacher"  and not self.instance :
-            raise serializers.ValidationError("Only users with the role 'Teacher' (or superuser) can create courses.")
+        if course_teacher:
+            try:
+                user_instance = User.objects.get(id=course_teacher.id)
+            except User.DoesNotExist:
+                raise serializers.ValidationError("The specified teacher does not exist.")
+            if user_instance.type != "Teacher"  and not self.instance :
+                raise serializers.ValidationError("Only users with the role 'Teacher' (or superuser) can create courses.")
 
         course_category = data.get("course_category")
         if not course_category  and not self.instance:
@@ -69,7 +72,7 @@ class CourseSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Course price is required.")
         
         course_thumbnail=data.get("course_thumbnail")
-        if course_thumbnail  and not self.instance:
+        if course_thumbnail:
             
             allowed_extensions = ('.png', '.jpg', '.jpeg')
             if not course_thumbnail.name.lower().endswith(allowed_extensions):
