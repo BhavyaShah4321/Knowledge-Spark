@@ -39,37 +39,37 @@ class CourseSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         course_title = data.get("course_title", "").strip()
-        if not course_title:
+        if not course_title and not self.instance:
             raise serializers.ValidationError("Course title is required.")
         if len(course_title) < 5:
             raise serializers.ValidationError("Course title must be at least 5 characters long.")
 
         course_description = data.get("course_description", "").strip()
-        if not course_description:
+        if not course_description  and not self.instance:
             raise serializers.ValidationError("Course description is required.")
         if len(course_description) < 20:
             raise serializers.ValidationError("Course description must be at least 20 characters long.")
 
         course_teacher = data.get("course_teacher")
-        if not course_teacher:
+        if not course_teacher  and not self.instance:
             raise serializers.ValidationError("Course teacher is required.")
         try:
             user_instance = User.objects.get(id=course_teacher.id)
         except User.DoesNotExist:
             raise serializers.ValidationError("The specified teacher does not exist.")
-        if user_instance.type != "Teacher":
+        if user_instance.type != "Teacher"  and not self.instance :
             raise serializers.ValidationError("Only users with the role 'Teacher' (or superuser) can create courses.")
 
         course_category = data.get("course_category")
-        if not course_category:
+        if not course_category  and not self.instance:
             raise serializers.ValidationError("Course category is required.")
         
         course_price = data.get("course_price")
-        if not course_price:
+        if not course_price  and not self.instance:
             raise serializers.ValidationError("Course price is required.")
         
         course_thumbnail=data.get("course_thumbnail")
-        if course_thumbnail:
+        if course_thumbnail  and not self.instance:
             
             allowed_extensions = ('.png', '.jpg', '.jpeg')
             if not course_thumbnail.name.lower().endswith(allowed_extensions):
@@ -112,18 +112,20 @@ class CourseVideoSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         course=data.get("course")
-        if not course:
+        
+        if not course  and not self.instance:
             raise serializers.ValidationError("course id is required")
         
         course_video_title = data.get("course_video_title", "").strip()
-        if not course_video_title:
+        if not course_video_title  and not self.instance:
             raise serializers.ValidationError("Video title is required.")
-        if len(course_video_title) < 5:
-            raise serializers.ValidationError("Video title must be at least 5 characters long.")
+        if course_video_title:
+            if len(course_video_title) < 5:
+                raise serializers.ValidationError("Video title must be at least 5 characters long.")
 
 
         course_video_thumbnail=data.get("course_video_thumbnail")
-        if course_video_thumbnail:
+        if course_video_thumbnail :
             
             allowed_extensions = ('.png', '.jpg', '.jpeg')
             if not course_video_thumbnail.name.lower().endswith(allowed_extensions):
@@ -144,14 +146,14 @@ class CourseVideoSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("course_thumbnail is required.")        
            
         course_video = data.get("course_video")
-        if not course_video:
+        if not course_video  and not self.instance:
             raise serializers.ValidationError("A video file is required.")
         if not course_video.name.endswith(('.mp4', '.avi', '.mkv')):
             raise serializers.ValidationError("Only video files with extensions .mp4, .avi, or .mkv are allowed.")        
         
 
         course_video_description = data.get("course_video_description", "").strip()
-        if not course_video_description:
+        if not course_video_description  and not self.instance:
             raise serializers.ValidationError("Video description is required.")
 
         return data
