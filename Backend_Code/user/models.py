@@ -44,6 +44,12 @@ class User(AbstractUser):
         ("Teacher","Teacher"),
         
     ]
+    gender_fields=[
+        ("male","male"),
+        ("female","female"),
+        ("other","other"),
+        
+    ]
     username = models.CharField(max_length=60)
     email = models.EmailField(unique=True)
     profile_picture = models.ImageField(default='', upload_to='profile_picture/')
@@ -51,6 +57,8 @@ class User(AbstractUser):
     type=models.CharField(max_length=7,choices=type_choices,null=True)
     is_active = models.BooleanField(default=False)
     email_verified = models.BooleanField(default=False)
+    gender=models.CharField(choices=gender_fields,default="",null=True,blank=True)
+
     deleted=models.IntegerField(default=0)
     objects=UserManager()
     dob=models.DateField(null=True,blank=True)
