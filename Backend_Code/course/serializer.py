@@ -128,8 +128,7 @@ class CourseVideoSerializer(serializers.ModelSerializer):
 
 
         course_video_thumbnail=data.get("course_video_thumbnail")
-        if course_video_thumbnail :
-            
+        if course_video_thumbnail:
             allowed_extensions = ('.png', '.jpg', '.jpeg')
             if not course_video_thumbnail.name.lower().endswith(allowed_extensions):
                 raise serializers.ValidationError( "Only PNG, JPG, or JPEG images are allowed.")
@@ -151,8 +150,10 @@ class CourseVideoSerializer(serializers.ModelSerializer):
         course_video = data.get("course_video")
         if not course_video  and not self.instance:
             raise serializers.ValidationError("A video file is required.")
-        if not course_video.name.endswith(('.mp4', '.avi', '.mkv')):
-            raise serializers.ValidationError("Only video files with extensions .mp4, .avi, or .mkv are allowed.")        
+        
+        if course_video:
+            if not course_video.name.endswith(('.mp4', '.avi', '.mkv')):
+                raise serializers.ValidationError("Only video files with extensions .mp4, .avi, or .mkv are allowed.")        
         
 
         course_video_description = data.get("course_video_description", "").strip()
