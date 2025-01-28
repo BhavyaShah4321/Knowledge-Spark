@@ -69,9 +69,12 @@ class UserViewSet(ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
+
         data = json.loads(request.data.get("form_data"))
+
         profile_picture = request.FILES.get('profile_picture')
-        data["profile_picture"]=profile_picture
+        if profile_picture:
+            data["profile_picture"] = profile_picture
 
         serializer = self.serializer_class(instance=instance, data=data, partial=True)
 
@@ -85,9 +88,8 @@ class UserViewSet(ModelViewSet):
                 },
                 status=status.HTTP_200_OK,
             )
-
         else:
-            
+            print(serializer.errors)
             errors_message = " ".join(
                 [", ".join(value) for value in serializer.errors.values()]
             )
@@ -95,6 +97,8 @@ class UserViewSet(ModelViewSet):
                 {"success": False, "message": errors_message},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
         
 
     @action(detail=False, methods=["post"])
