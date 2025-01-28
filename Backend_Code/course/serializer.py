@@ -1,15 +1,36 @@
 from rest_framework import serializers
-from course.models import Course, CourseVideo, CourseFeedback
+from course.models import Course, CourseVideo, CourseFeedback,Category
 from user.models import User
 
+class CourseCategorySerializer(serializers.ModelSerializer):
+    class  Meta:
+        model = Category
+        fields=["id","name","status"]
+        
+    def validate(self, attrs):
+        name=attrs.get("name")
+        if not name:
+            raise serializers.ValidationError("name is required")
+            
+        return attrs
+
 class CourseSerializer(serializers.ModelSerializer):
+    course_teacher_username=serializers.CharField(source="course_teacher.username",required=False,
+    allow_null=True)
+    course_teacher_email=serializers.CharField(source="course_teacher.email",required=False,
+    allow_null=True)
     class Meta:
         model = Course
         fields = [
             "id",
             "course_title",
             "course_teacher",
+            "course_teacher_username",
+            "course_teacher_email",
             "course_description",
+            
+            "course_category",
+            "course_price",
             "course_status",
             "created_at",
             "updated_at",
@@ -33,11 +54,19 @@ class CourseSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Course teacher is required.")
         try:
             user_instance = User.objects.get(id=course_teacher.id)
-            if user_instance.type != "Teacher":
-                raise serializers.ValidationError("Only 'Teacher' can create course.")
         except User.DoesNotExist:
             raise serializers.ValidationError("The specified teacher does not exist.")
+        if user_instance.type != "Teacher":
+            raise serializers.ValidationError("Only users with the role 'Teacher' (or superuser) can create courses.")
 
+        course_category = data.get("course_category")
+        if not course_category:
+            raise serializers.ValidationError("Course category is required.")
+        
+        course_price = data.get("course_price")
+        if not course_price:
+            raise serializers.ValidationError("Course price is required.")
+        
         return data
     
     def to_representation(self, instance):
@@ -63,6 +92,7 @@ class CourseVideoSerializer(serializers.ModelSerializer):
             "course_video_title",
             "course_video_description",
             "course",
+            "status",
             "created_at",
             "updated_at",
         ]
@@ -105,6 +135,7 @@ class CourseFeedbackSerializer(serializers.ModelSerializer):
             "feedback_student",
             "course",
             "feedback_message",
+            "status",
             "created_at",
             "updated_at",
         ]

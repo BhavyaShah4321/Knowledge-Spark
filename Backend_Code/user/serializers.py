@@ -17,6 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
             'email_verified',
             "is_active",
             'otp',
+            'gender',
             "dob",
             "bio",
             "created_at",
@@ -24,25 +25,33 @@ class UserSerializer(serializers.ModelSerializer):
         ]
         
     def validate(self, attrs):
-        email=attrs.get("email")
-        username=attrs.get("username")
-        profile_picture=attrs.get("profile_picture")
-        
+        email = attrs.get("email")
+        username = attrs.get("username")
+        profile_picture = attrs.get("profile_picture")
+
         if self.instance:
-            user_username_instanse=User.objects.filter(username=username,email_verified=True).exclude(id=self.instance.id)
-        if user_username_instanse.exists():
-            raise serializers.ValidationError("Username already exists")
-        
+            # When updating an instance, exclude the current user from the query
+            if User.objects.filter(username=username).exclude(id=self.instance.id).exists():
+                raise serializers.ValidationError("Username already exists.")
+        else:
+            # For new instances
+            if User.objects.filter(username=username).exists():
+                raise serializers.ValidationError("Username already exists.")
+
         if self.instance:
-            user_email_instanse=User.objects.filter(email=email,email_verified=True).exclude(id=self.instance.id)
-        if user_email_instanse.exists():
-            raise serializers.ValidationError("Email Address already exists")
-        
-        
+            if User.objects.filter(email=email).exclude(id=self.instance.id).exists():
+                raise serializers.ValidationError("Email address already exists.")
+        else:
+            if User.objects.filter(email=email).exists():
+                raise serializers.ValidationError("Email address already exists.")
+
         if profile_picture:
-            if not profile_picture.name.lower().endswith(('.png', '.jpg', '.jpeg')):
-                raise serializers.ValidationError({"profile_picture": "Only PNG, JPG, or JPEG images are allowed."})
-            
+            allowed_extensions = ('.png', '.jpg', '.jpeg')
+            if not profile_picture.name.lower().endswith(allowed_extensions):
+                raise serializers.ValidationError( "Only PNG, JPG, or JPEG images are allowed.")
+        else:
+            if not self.instance:
+                raise serializers.ValidationError("Profile picture is required.")        
         return attrs
         
     def update(self, instance, validated_data):
@@ -51,6 +60,11 @@ class UserSerializer(serializers.ModelSerializer):
                 self.instance.profile_picture.delete(save=False)
                 
         return super().update(instance, validated_data)
+    
+    def create(self, validated_data):
+        validated_data["email_verified"]=True
+        validated_data["is_active"]=True
+        return super().create(validated_data)
         
 class RegisterSerializer(serializers.ModelSerializer):
     password2=serializers.CharField(required=False)
@@ -93,9 +107,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         if password and password2 and password != password2:
             raise serializers.ValidationError("Password and Re-Password is not matching.")
         
-        
-        
-
         return attrs
     
     def create(self, validated_data):
