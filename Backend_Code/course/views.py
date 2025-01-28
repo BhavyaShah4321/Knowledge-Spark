@@ -29,6 +29,7 @@ class CourseViewSet(ModelViewSet):
             "course_teacher_email",
             "course_description",
             "course_category",
+            "course_thumbnail",
             "course_price",
             "course_status",
             "created_at",
@@ -40,6 +41,8 @@ class CourseViewSet(ModelViewSet):
             "course_teacher_email",
             "course_description",
             "course_category",
+            "course_thumbnail",
+            
             "course_price",
             "course_status",
             "created_at",
@@ -71,7 +74,11 @@ class CourseViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """Create a new course."""
-        data = request.data
+        data = json.loads(request.data.get("form_data"))
+
+        course_thumbnail = request.FILES.get('course_thumbnail')
+        data["course_thumbnail"] = course_thumbnail
+
         serializer = self.serializer_class(data=data, context={"request": request})
         if serializer.is_valid():
             with transaction.atomic():
@@ -101,7 +108,10 @@ class CourseViewSet(ModelViewSet):
     def update(self, request, *args, **kwargs):
         """Update an existing course."""
         instance = self.get_object()
-        data = request.data
+        data = json.loads(request.data.get("form_data"))
+
+        course_thumbnail = request.FILES.get('course_thumbnail')
+        data["course_thumbnail"] = course_thumbnail
         serializer = self.serializer_class(instance, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -136,8 +146,8 @@ class CourseVideoViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ["course_video_title", "created_at", "updated_at","status",]
-    ordering_fields = ["course_video_title", "created_at", "updated_at","status"]
+    search_fields = ["course_video_title", "created_at", "updated_at","status","course_video_thumbnail"]
+    ordering_fields = ["course_video_title", "created_at", "updated_at","status""course_video_thumbnail"]
 
     def list(self, request, *args, **kwargs):
         """List all course videos."""
@@ -165,8 +175,13 @@ class CourseVideoViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         """Create a new course video."""
         data = json.loads(request.data.get("form_data"))
-        course_video = request.FILES.get("course_video")
+
+        course_video_thumbnail = request.FILES.get('course_video_thumbnail')
+        course_video = request.FILES.get('course_video')
+        
+        data["course_video_thumbnail"] = course_video_thumbnail
         data["course_video"] = course_video
+
 
         serializer = self.serializer_class(data=data, context={"request": request})
         if serializer.is_valid():
@@ -198,8 +213,13 @@ class CourseVideoViewSet(ModelViewSet):
         """Update an existing course video."""
         instance = self.get_object()
         data = json.loads(request.data.get("form_data"))
-        course_video = request.FILES.get("course_video")
+
+        course_video_thumbnail = request.FILES.get('course_video_thumbnail')
+        course_video = request.FILES.get('course_video')
+        
+        data["course_video_thumbnail"] = course_video_thumbnail
         data["course_video"] = course_video
+
         serializer = self.serializer_class(instance, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()

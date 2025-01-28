@@ -46,20 +46,16 @@ class UserSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Email address already exists.")
 
         if profile_picture:
+            
             allowed_extensions = ('.png', '.jpg', '.jpeg')
             if not profile_picture.name.lower().endswith(allowed_extensions):
                 raise serializers.ValidationError( "Only PNG, JPG, or JPEG images are allowed.")
+            
         else:
             if not self.instance:
                 raise serializers.ValidationError("Profile picture is required.")        
         return attrs
         
-    def update(self, instance, validated_data):
-        if validated_data["profile_picture"]:
-            if self.instance.profile_picture:
-                self.instance.profile_picture.delete(save=False)
-                
-        return super().update(instance, validated_data)
     
     def create(self, validated_data):
         validated_data["email_verified"]=True

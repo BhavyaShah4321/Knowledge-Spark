@@ -22,6 +22,8 @@ class Course(models.Model):
     course_teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name="course_teacher",blank=True,null=True)
     course_description = models.TextField(null=True,blank=True)
     course_status=models.CharField(choices=course_status_fields,default="active")
+    course_thumbnail=models.FileField(upload_to="course-thumbnail",default="",null=True,blank=True)
+    
     course_category=models.ForeignKey(Category,on_delete=models.CASCADE,related_name="course_category",default="",null=True,blank=True)
     course_price=models.CharField(max_length=255,null=True,blank=True,default="")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -43,6 +45,8 @@ class CourseVideo(models.Model):
     course_video = models.FileField(upload_to="course_video/",blank=True,null=True)
     course_video_title = models.CharField(max_length=255, null=True,blank=True)
     course_video_description = models.TextField(null=True,blank=True)
+    course_video_thumbnail=models.FileField(upload_to="course-video-thumbnail",default="",null=True,blank=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status=models.CharField(choices=status_fields,default="active")

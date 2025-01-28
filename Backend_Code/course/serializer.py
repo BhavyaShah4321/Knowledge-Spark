@@ -25,6 +25,7 @@ class CourseSerializer(serializers.ModelSerializer):
             "id",
             "course_title",
             "course_teacher",
+            "course_thumbnail",
             "course_teacher_username",
             "course_teacher_email",
             "course_description",
@@ -67,6 +68,17 @@ class CourseSerializer(serializers.ModelSerializer):
         if not course_price:
             raise serializers.ValidationError("Course price is required.")
         
+        course_thumbnail=data.get("course_thumbnail")
+        if course_thumbnail:
+            
+            allowed_extensions = ('.png', '.jpg', '.jpeg')
+            if not course_thumbnail.name.lower().endswith(allowed_extensions):
+                raise serializers.ValidationError( "Only PNG, JPG, or JPEG images are allowed.")
+            
+        else:
+            if not self.instance:
+                raise serializers.ValidationError("course_thumbnail is required.")        
+        
         return data
     
     def to_representation(self, instance):
@@ -92,6 +104,7 @@ class CourseVideoSerializer(serializers.ModelSerializer):
             "course_video_title",
             "course_video_description",
             "course",
+            "course_video_thumbnail",
             "status",
             "created_at",
             "updated_at",
@@ -99,9 +112,7 @@ class CourseVideoSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         course=data.get("course")
-        print(course)
         if not course:
-            print(course)
             raise serializers.ValidationError("course id is required")
         
         course_video_title = data.get("course_video_title", "").strip()
@@ -110,15 +121,34 @@ class CourseVideoSerializer(serializers.ModelSerializer):
         if len(course_video_title) < 5:
             raise serializers.ValidationError("Video title must be at least 5 characters long.")
 
+
+        course_video_thumbnail=data.get("course_video_thumbnail")
+        if course_video_thumbnail:
+            
+            allowed_extensions = ('.png', '.jpg', '.jpeg')
+            if not course_video_thumbnail.name.lower().endswith(allowed_extensions):
+                raise serializers.ValidationError( "Only PNG, JPG, or JPEG images are allowed.")
+            
+        else:
+            if not self.instance:
+                raise serializers.ValidationError("course video thumbnail is required.")     
+            
+        course_video_thumbnail=data.get("course_video_thumbnail")
+        if course_video_thumbnail:
+            
+            allowed_extensions = ('.png', '.jpg', '.jpeg')
+            if not course_video_thumbnail.name.lower().endswith(allowed_extensions):
+                raise serializers.ValidationError( "Only PNG, JPG, or JPEG images are allowed.")
+        else:
+            if not self.instance:
+                raise serializers.ValidationError("course_thumbnail is required.")        
+           
         course_video = data.get("course_video")
-        max_size = 100 * 1024 * 1024  # 100 MB in bytes
         if not course_video:
             raise serializers.ValidationError("A video file is required.")
         if not course_video.name.endswith(('.mp4', '.avi', '.mkv')):
             raise serializers.ValidationError("Only video files with extensions .mp4, .avi, or .mkv are allowed.")        
-        if course_video.size > max_size:
-            raise serializers.ValidationError("The video file size cannot exceed 100 MB.")
-
+        
 
         course_video_description = data.get("course_video_description", "").strip()
         if not course_video_description:
