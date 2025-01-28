@@ -28,7 +28,7 @@ class CourseViewSet(ModelViewSet):
             "course_teacher_username",
             "course_teacher_email",
             "course_description",
-            "course_category",
+            "course_category__name",
             "course_thumbnail",
             "course_price",
             "course_status",
@@ -40,7 +40,7 @@ class CourseViewSet(ModelViewSet):
             "course_teacher_username",
             "course_teacher_email",
             "course_description",
-            "course_category",
+            "course_category__name",
             "course_thumbnail",
             
             "course_price",
@@ -254,12 +254,16 @@ class CourseFeedbackViewSet(ModelViewSet):
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = [
-        "feedback_message",
         "feedback_student__username",
         "course__course_title",
         "status",
+        "feedback_student_username",
+            "feedback_student_profile_picture",
+            "feedback_student_email",
     ]
-    ordering_fields = ["created_at", "updated_at","status"]
+    ordering_fields = ["created_at", "updated_at","status", "feedback_student_username",
+            "feedback_student_profile_picture",
+            "feedback_student_email",]
 
     def list(self, request, *args, **kwargs):
         """List all feedback."""

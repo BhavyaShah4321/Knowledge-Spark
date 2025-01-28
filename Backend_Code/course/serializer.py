@@ -164,11 +164,18 @@ class CourseVideoSerializer(serializers.ModelSerializer):
     
     
 class CourseFeedbackSerializer(serializers.ModelSerializer):
+    feedback_student_username=serializers.CharField(source="feedback_student.username",required=False,allow_null=True)
+    feedback_student_profile_picture=serializers.CharField(source="feedback_student.profile_picture",required=False,allow_null=True)
+    feedback_student_email=serializers.CharField(source="feedback_student.email",required=False,allow_null=True)
+    
     class Meta:
         model = CourseFeedback
         fields = [
             "id",
             "feedback_student",
+            "feedback_student_username",
+            "feedback_student_profile_picture",
+            "feedback_student_email",
             "course",
             "feedback_message",
             "status",
