@@ -100,6 +100,8 @@ export default function Sidebar() {
             className="widhout-collapsed-logo"
             src={Logo}
             width={'181px'}
+            // style={'object-postion:center;object-fit:cover;'}
+            // style={{objectPosition:"cover",objectFit:"center"}}
             height={'48px'}
             alt=""
           ></img>
@@ -128,32 +130,33 @@ export default function Sidebar() {
               <span>Dashboard</span>
             </Tooltip>
           </Menu.Item>
-          <SubMenu key="1" icon={<RiseOutlined />} title="Manage Teacher">
-            <Menu.Item key="/teacher-list">
-              <Tooltip title="Manage Teacher" placement="right">
-                <span>Teacher</span>
+        
+            <Menu.Item key="/teacher-list"  icon={<RobotOutlined />}>
+              <Tooltip title="Teachers" placement="right">
+                <span>Teachers</span>
               </Tooltip>
             </Menu.Item>
-          </SubMenu>
-          <SubMenu
-            key="2"
-            icon={<RobotOutlined />}
-            title="Manage Student"
-          >
-            <Menu.Item key="/student-list">
-              <Tooltip title="Manage Student" placement="right">
-                <span>Student</span>
+ 
+        
+            <Menu.Item key="/student-list" icon={<BarChartOutlined />}>
+              <Tooltip title="Students" placement="right">
+                <span>Students</span>
               </Tooltip>
             </Menu.Item>
 
-          </SubMenu>
-          <SubMenu key="3" icon={<RiseOutlined />} title="Manage Course">
-            <Menu.Item key="/course-list">
-              <Tooltip title="Manage Course" placement="right">
+  
+            <Menu.Item key="/course-list" icon={<RiseOutlined />}>
+              <Tooltip title="Courses" placement="right">
                 <span>Courses</span>
               </Tooltip>
             </Menu.Item>
-          </SubMenu>
+
+            <Menu.Item key="/feedback" icon={<BarChartOutlined />}>
+              <Tooltip title="FeedBack" placement="right">
+                <span>Feedback</span>
+              </Tooltip>
+            </Menu.Item>
+        
         </Menu>
       </Sider>
       <Button

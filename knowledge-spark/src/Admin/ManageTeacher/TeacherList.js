@@ -343,7 +343,8 @@ function TeacherList() {
         <Space>
           <Tooltip title="Change Status">
             <Dropdown overlay={menu(record)} trigger={["click"]}>
-              <Button>
+              <Button
+              >
                 {record.is_active ? "Active" : "Inactive"} <DownOutlined />
               </Button>
             </Dropdown>

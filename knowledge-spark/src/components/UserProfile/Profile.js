@@ -12,7 +12,7 @@ function Profile() {
   const [profile, setProfile] = useState({
     username: '',
     email: '',
-    profileImage: '',
+    profile_picture: '',
   });
 
   useEffect(() => {
@@ -21,24 +21,24 @@ function Profile() {
       const parsedAuth = JSON.parse(storedAuth);
       const { user, access_token } = parsedAuth;
       if (user) {
-        const profileImage = user.profileImage
-          ? user.profileImage.startsWith('http')
-            ? user.profileImage
-            : `http://localhost:8000${user.profileImage}`
+        const profile_picture = user.profile_picture
+          ? user.profile_picture.startsWith('http')
+            ? user.profile_picture
+            : `http://localhost:8000${user.profile_picture}`
           : '';
         setAuthData(parsedAuth);
         setProfile({
           username: user.username,
           email: user.email,
-          profileImage: profileImage,
+          profile_picture: profile_picture,
         });
-        if (profileImage) {
+        if (profile_picture) {
           setFileList([
             {
               uid: '-1',
               name: 'profile_image.png',
               status: 'done',
-              url: profileImage,
+              url: profile_picture,
             },
           ]);
         }
@@ -52,11 +52,11 @@ function Profile() {
       const file = newFileList[0].originFileObj;
       const reader = new FileReader();
       reader.onload = (e) => {
-        setProfile({ ...profile, profileImage: e.target.result });
+        setProfile({ ...profile, profile_picture: e.target.result });
       };
       reader.readAsDataURL(file);
     } else {
-      setProfile({ ...profile, profileImage: '' });
+      setProfile({ ...profile, profile_picture: '' });
     }
   };
 
@@ -71,7 +71,7 @@ function Profile() {
     const form_data = {
       username: profile.username,
       email: profile.email,
-      type: authData?.user.type || "User",
+      // type: authData?.user.type || "User",
     };
 
     // Add form_data as stringified JSON
@@ -91,16 +91,16 @@ function Profile() {
 
       if (response.status === 200) {
         message.success('Profile updated successfully!');
-        const updatedProfileImage = response.data.profile_picture
+        const updatedprofile_picture = response.data.profile_picture
           ? response.data.profile_picture.startsWith('http')
             ? response.data.profile_picture
             : `http://localhost:8000${response.data.profile_picture}`
-          : profile.profileImage;
+          : profile.profile_picture;
 
         const updatedProfile = {
           username: response.data.username || profile.username,
           email: response.data.email || profile.email,
-          profileImage: updatedProfileImage,
+          profile_picture: updatedprofile_picture,
         };
 
         setProfile(updatedProfile);
@@ -196,7 +196,7 @@ function Profile() {
                   ) : (
                     <Avatar
                       size={160}
-                      src={profile.profileImage || 'https://via.placeholder.com/160'}
+                      src={profile.profile_picture || 'https://via.placeholder.com/160'}
                       className="shadow-sm"
                     />
                   )}
