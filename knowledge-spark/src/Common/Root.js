@@ -12,6 +12,8 @@ import ForgetPassword from './Authentication/ForgetPassword';
 import Login from './Authentication/Login';
 import OTPVerification from './Authentication/OTPVerification';
 import ResetPassword from './Authentication/ResetPassword';
+import ViewCourseVideo from '../Admin/CreateVideoCourse/ViewCourseVideo';
+import FeedBack from '../components/FeedBack/FeedBack';
 
 
 const Root = () => {
@@ -36,6 +38,9 @@ const Root = () => {
         <Route path="/student-list" element={<StudentList />} />
         <Route path="/course-list" element={<Courses />} />
         <Route path="/cource-details/:id" element={<CourceDetails />} />
+        <Route path="/view-course/:id" element={<ViewCourseVideo />} />
+        <Route path="/feedback" element={<FeedBack />} />
+
 
       </Route>
 

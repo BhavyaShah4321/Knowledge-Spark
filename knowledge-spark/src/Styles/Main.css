@@ -1,0 +1,276 @@
+/* Main.css */
+
+/* Layout */
+.course-container {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  padding: 24px;
+}
+
+.course-wrapper {
+  max-width: 1536px;
+  margin: 0 auto;
+}
+
+/* Course Header */
+.course-header {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.course-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.course-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.course-description {
+  color: #4b5563;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.course-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.875rem;
+}
+
+.course-price {
+  background-color: #dbeafe;
+  color: #1e40af;
+  padding: 4px 12px;
+  border-radius: 9999px;
+}
+
+.course-status {
+  padding: 4px 12px;
+  border-radius: 9999px;
+}
+
+.status-active {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-inactive {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.course-date {
+  color: #6b7280;
+}
+
+.instructor-info {
+  text-align: right;
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+/* Main Content Layout */
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 1024px) {
+  .main-content {
+    grid-template-columns: 3fr 1fr;
+  }
+}
+
+/* Video Player Section */
+.video-section {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.video-container {
+  position: relative;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  background-color: black;
+}
+
+.video-player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.video-info {
+  padding: 16px;
+}
+
+.video-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.video-description {
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+/* Sidebar */
+.sidebar {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sidebar-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.video-count {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.video-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.video-item {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.2s ease;
+}
+
+.video-item button {
+  width: 100%;
+  padding: 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.video-item:hover {
+  background-color: #f9fafb;
+}
+
+.video-item.active {
+  background-color: #eff6ff;
+}
+
+.lesson-number {
+  width: 32px;
+  height: 32px;
+  background-color: #dbeafe;
+  color: #1e40af;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-weight: 500;
+}
+
+.lesson-info {
+  flex-grow: 1;
+}
+
+.lesson-title {
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.lesson-date {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+/* Loader */
+.loader {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: #4b5563;
+}
+
+/* Video Controls */
+video::-webkit-media-controls-panel {
+  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.5)) !important;
+}
+
+/* Focus States */
+button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
+.course-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.course-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #111827;
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.course-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.course-price {
+  background-color: #1e40af;
+  color: white;
+  font-weight: bold;
+  font-size: 1.25rem;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  display: inline-block;
+}
+
+.course-status {
+  font-weight: bold;
+  padding: 6px 14px;
+  border-radius: 9999px;
+}
+
+.course-date {
+  font-size: 0.875rem;
+  color: #6b7280;
+}

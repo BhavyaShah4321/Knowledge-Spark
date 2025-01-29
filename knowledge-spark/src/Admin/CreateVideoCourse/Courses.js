@@ -131,7 +131,7 @@ export default function Courses() {
   
 
   const handleCourseClick = (course) => {
-    navigate(`/cource-details/${course.id}`);
+    navigate(`/view-course/${course.id}`);
   };
 
   const menu = (record) => (
@@ -192,7 +192,7 @@ export default function Courses() {
           <Tooltip title="Change Status">
             <Dropdown overlay={menu(record)} trigger={["click"]}>
               <Button
-                type={record.course_status === "active" ? "primary" : "default"}
+                // type={record.course_status === "active" ? "primary" : "default"}
                 className={
                   record.course_status === "active"
                     ? "bg-green-500"
