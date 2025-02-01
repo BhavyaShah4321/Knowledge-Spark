@@ -8,7 +8,7 @@ import {
 import { Button, Layout, Menu, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Logo from '../../Image/Logo.png';
+import Logo from '../../Image/logo.jpg';
 import '../../Styles/Common.scss';
 const { Sider } = Layout;
 const { SubMenu } = Menu;
@@ -100,9 +100,8 @@ export default function Sidebar() {
             className="widhout-collapsed-logo"
             src={Logo}
             width={'181px'}
-            // style={'object-postion:center;object-fit:cover;'}
-            // style={{objectPosition:"cover",objectFit:"center"}}
-            height={'48px'}
+            style={{ objectFit:"cover", objectPosition: "center" }}
+            height={'63px'}
             alt=""
           ></img>
           <img
@@ -148,6 +147,11 @@ export default function Sidebar() {
             <Menu.Item key="/course-list" icon={<RiseOutlined />}>
               <Tooltip title="Courses" placement="right">
                 <span>Courses</span>
+              </Tooltip>
+            </Menu.Item>
+            <Menu.Item key="/category-list" icon={<BarChartOutlined />}>
+              <Tooltip title="Category" placement="right">
+                <span>Category</span>
               </Tooltip>
             </Menu.Item>
 

@@ -14,6 +14,7 @@ import OTPVerification from './Authentication/OTPVerification';
 import ResetPassword from './Authentication/ResetPassword';
 import ViewCourseVideo from '../Admin/CreateVideoCourse/ViewCourseVideo';
 import FeedBack from '../components/FeedBack/FeedBack';
+import Category from '../components/Category/Category';
 
 
 const Root = () => {
@@ -40,6 +41,7 @@ const Root = () => {
         <Route path="/cource-details/:id" element={<CourceDetails />} />
         <Route path="/view-course/:id" element={<ViewCourseVideo />} />
         <Route path="/feedback" element={<FeedBack />} />
+        <Route path="/category-list" element={<Category />} />
 
 
       </Route>

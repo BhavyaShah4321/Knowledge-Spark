@@ -64,7 +64,7 @@ const ViewCourseVideo = () => {
     <div className="course-container">
       <div className="course-wrapper">
         {/* Course Header */}
-        <div className="course-header">
+        {/* <div className="course-header">
           <div className="course-header-content">
             <div>
               <h1 className="course-title">{course.course_title}</h1>
@@ -86,7 +86,7 @@ const ViewCourseVideo = () => {
               <div>Contact: {course.course_teacher_email}</div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Main Content */}
         <div className="main-content">

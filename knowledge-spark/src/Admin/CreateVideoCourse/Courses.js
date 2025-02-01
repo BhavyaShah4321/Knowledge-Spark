@@ -254,7 +254,7 @@ export default function Courses() {
       </Row>
 
       <Table
-        rowSelection={rowSelection}
+        // rowSelection={rowSelection}
         dataSource={Array.isArray(courseData) ? courseData : []}
         columns={columns}
         rowKey="id"

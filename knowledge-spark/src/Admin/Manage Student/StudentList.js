@@ -522,7 +522,7 @@ function StudentList() {
       </Drawer>
 
       <Table
-        rowSelection={rowSelection}
+        // rowSelection={rowSelection}
         dataSource={Array.isArray(data) ? data : []}
         columns={columns}
         rowKey="id"
