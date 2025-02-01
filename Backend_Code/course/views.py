@@ -255,14 +255,16 @@ class CourseFeedbackViewSet(ModelViewSet):
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = [
         "feedback_student__username",
-        "course__course_title",
         "status",
+            "course_title",
+        
         "feedback_student_username",
             "feedback_student_profile_picture",
             "feedback_student_email",
     ]
     ordering_fields = ["created_at", "updated_at","status", "feedback_student_username",
             "feedback_student_profile_picture",
+            "course_title",
             "feedback_student_email",]
 
     def list(self, request, *args, **kwargs):

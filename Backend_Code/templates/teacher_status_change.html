@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Status Update Notification</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 20px; text-align: center;">
+
+    <div style="max-width: 600px; background: #ffffff; margin: auto; padding: 25px; border-radius: 10px; 
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center;">
+        
+        <h2 style="color: #333;">Your Profile Status Has Been Updated</h2>
+
+        <p style="font-size: 16px; color: #555;">
+            Dear <strong>{{ name }}</strong>, <br>
+            Your account status has been updated. Please review the changes and confirm if everything is correct.
+        </p>
+
+        <!-- Add conditional classes here -->
+        <div 
+            class="{% if status %}status-active{% else %}status-inactive{% endif %}" 
+            style="font-size: 18px; font-weight: bold; padding: 10px; border-radius: 5px; display: inline-block; 
+            margin-bottom: 20px;">
+            {% if status %}
+                ✅ Active
+            {% else %}
+                ❌ Inactive
+            {% endif %}
+        </div>
+
+        <br>
+
+        <a href="{{ confirmation_link }}" 
+            style="display: inline-block; padding: 12px 25px; font-size: 16px; font-weight: bold; color: #ffffff; 
+            background-color: #007BFF; text-decoration: none; border-radius: 5px; transition: background 0.3s ease;">
+            Check Changes
+        </a>
+
+        <p style="font-size: 12px; color: #777; margin-top: 20px;">
+            If you have any questions, feel free to contact our support team. <br>
+            &copy; 2024 Your Company Name
+        </p>
+    </div>
+
+</body>
+</html>
