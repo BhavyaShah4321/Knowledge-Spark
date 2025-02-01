@@ -3,6 +3,7 @@ import { Form, Input, message } from "antd";
 import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Logo from '../../Image/logo.jpg';
 
 import loginimg from "../../Image/login-img.png";
 
@@ -107,6 +108,14 @@ function Login() {
 
       <div className="login-right">
         <div className="login-form">
+        {/* <div className="logod">
+                <img
+                  className="NavLogo"
+                  src={Logo}
+                  width={'120px'}
+                  alt=""
+                ></img>
+              </div> */}
           <h1>Login into Your Account</h1>
           <Form
             name="login-form"

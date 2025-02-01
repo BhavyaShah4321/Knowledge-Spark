@@ -549,7 +549,7 @@ function TeacherList() {
       </Drawer>
 
       <Table
-        rowSelection={rowSelection}
+        // rowSelection={rowSelection}
         dataSource={data}
         columns={columns}
         rowKey="id"
