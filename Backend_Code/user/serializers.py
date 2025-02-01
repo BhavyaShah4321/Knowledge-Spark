@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from user.models import User
 from utils.generate_otp import generate_otp
+import threading
+from utils.send_mail import send_email_with_template
 
 class UserSerializer(serializers.ModelSerializer):
     email=serializers.CharField(required=True)
@@ -15,6 +17,8 @@ class UserSerializer(serializers.ModelSerializer):
             'type',
             "profile_picture",
             'email_verified',
+            "user_degree_certificate",
+            "user_12th_marsheet_image",
             "is_active",
             'otp',
             'gender',
@@ -61,6 +65,36 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data["email_verified"]=True
         validated_data["is_active"]=True
         return super().create(validated_data)
+    
+    def update(self, instance, validated_data):
+        previous_status = instance.is_active
+        instance = super().update(instance, validated_data)
+
+        print(validated_data.get("is_active", instance.is_active))
+        print(previous_status)
+        print(instance.type)
+
+        if instance.type == "Teacher" and previous_status != instance.is_active:
+            print("done")
+
+            # Directly assign the boolean value
+            teacherstatus = instance.is_active
+
+            subject = "Your Profile Status Updated"
+            to = instance.email
+            context = {
+                "confirmation_link": "http://localhost:8000/dashboared/",
+                "status": teacherstatus,
+                "name":instance.username
+            }
+
+            email_thread = threading.Thread(
+                target=send_email_with_template,
+                args=(subject, to, "teacher_status_change.html", context),
+            )
+            email_thread.start()
+
+        return instance
         
 class RegisterSerializer(serializers.ModelSerializer):
     password2=serializers.CharField(required=False)

@@ -71,8 +71,13 @@ class UserViewSet(ModelViewSet):
         data = json.loads(request.data.get("form_data"))
 
         profile_picture = request.FILES.get('profile_picture')
+        user_12th_marsheet_image = request.FILES.get('user_12th_marsheet_image')
+        user_degree_certificate = request.FILES.get('user_degree_certificate')
+        
         data["profile_picture"] = profile_picture
-
+        data["user_degree_certificate"]=user_degree_certificate
+        data["user_12th_marsheet_image"]=user_12th_marsheet_image
+        
         serializer = self.serializer_class(data=data, partial=True)
 
         if serializer.is_valid():
@@ -100,13 +105,25 @@ class UserViewSet(ModelViewSet):
         data = json.loads(request.data.get("form_data"))
 
         profile_picture = request.FILES.get('profile_picture')
+        user_12th_marsheet_image = request.FILES.get('user_12th_marsheet_image')
+        user_degree_certificate = request.FILES.get('user_degree_certificate')
+        
+        if user_12th_marsheet_image:
+            data["user_12th_marsheet_image"]=user_12th_marsheet_image
+            
+        if user_degree_certificate:
+            data["user_degree_certificate"]=user_degree_certificate
+            
         if profile_picture:
             data["profile_picture"] = profile_picture
+            
+        
 
         serializer = self.serializer_class(instance=instance, data=data, partial=True)
 
         if serializer.is_valid():
             serializer.save()
+            
             return Response(
                 {
                     "success": True,
