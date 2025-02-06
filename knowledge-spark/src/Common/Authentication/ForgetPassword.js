@@ -68,10 +68,10 @@ function ForgetPassword() {
                 </div>
                 <div className="forget-password-form">
                     <h1 className="forget-password-heading">Forgot Password?</h1>
-                    <div>
+                    <div className="forget-password-description">
                         <p>Enter your email to reset your password.</p>
                     </div>
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit} className='Forget-password-form'>
                         <label>Email</label>
                         <input
                             name="email"
