@@ -2,12 +2,16 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "../../Styles/Main.css";
 import axios from "axios";
+import { Alert } from "antd";
 
 const ViewCourseVideo = () => {
   const { id } = useParams();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [feedback, setFeedback] = useState("");
+  const [complaint, setComplaint] = useState("");
+  const [submitStatus, setSubmitStatus] = useState({ type: "", message: "" });
 
   const BASE_URL = "http://localhost:8000";
 
@@ -52,6 +56,46 @@ const ViewCourseVideo = () => {
     });
   };
 
+  const handleSubmitFeedback = async (e) => {
+    e.preventDefault();
+    try {
+      const accessToken = getAccessToken();
+      await axios.post(
+        `${BASE_URL}/api/course/${id}/feedback`,
+        { feedback },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      setSubmitStatus({ type: "success", message: "Feedback submitted successfully!" });
+      setFeedback("");
+    } catch (error) {
+      setSubmitStatus({ type: "error", message: "Failed to submit feedback. Please try again." });
+    }
+  };
+
+  const handleSubmitComplaint = async (e) => {
+    e.preventDefault();
+    try {
+      const accessToken = getAccessToken();
+      await axios.post(
+        `${BASE_URL}/api/course/${id}/complaint`,
+        { complaint },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      setSubmitStatus({ type: "success", message: "Complaint submitted successfully!" });
+      setComplaint("");
+    } catch (error) {
+      setSubmitStatus({ type: "error", message: "Failed to submit complaint. Please try again." });
+    }
+  };
+
   if (loading) {
     return <div className="loader">Loading...</div>;
   }
@@ -63,31 +107,6 @@ const ViewCourseVideo = () => {
   return (
     <div className="course-container">
       <div className="course-wrapper">
-        {/* Course Header */}
-        {/* <div className="course-header">
-          <div className="course-header-content">
-            <div>
-              <h1 className="course-title">{course.course_title}</h1>
-              <p className="course-description">{course.course_description}</p>
-              <div className="course-meta">
-                <span className="course-price">₹{course.course_price}</span>
-                <span className={`course-status ${
-                  course.course_status === 'active' ? 'status-active' : 'status-inactive'
-                }`}>
-                  {course.course_status.charAt(0).toUpperCase() + course.course_status.slice(1)}
-                </span>
-                <span className="course-date">
-                  Last Updated: {formatDate(course.updated_at)}
-                </span>
-              </div>
-            </div>
-            <div className="instructor-info">
-              <div>Instructor: {course.course_teacher_username}</div>
-              <div>Contact: {course.course_teacher_email}</div>
-            </div>
-          </div>
-        </div> */}
-
         {/* Main Content */}
         <div className="main-content">
           {/* Video Player */}
@@ -110,6 +129,46 @@ const ViewCourseVideo = () => {
               <h2 className="video-title">{selectedVideo?.course_video_title}</h2>
               <p className="video-description">{selectedVideo?.course_video_description}</p>
             </div>
+
+            {/* Feedback and Complaint Section */}
+            <div className="feedback-complaint-section">
+  {submitStatus.message && (
+    <div className={`status-message ${
+      submitStatus.type === "success" ? "status-success" : "status-error"
+    }`}>
+      {submitStatus.message}
+    </div>
+  )}
+
+  {/* Feedback Form */}
+  <div className="form-container feedback-form">
+    <h3 className="form-title">Course Feedback</h3>
+    <form onSubmit={handleSubmitFeedback}>
+      <textarea
+        value={feedback}
+        onChange={(e) => setFeedback(e.target.value)}
+        className="form-textarea"
+        placeholder="Share your thoughts about this course..."
+        maxLength={500}
+        required
+      />
+      <div className={`char-count ${
+        feedback.length > 400 ? "limit-near" : ""
+      } ${feedback.length === 500 ? "limit-reached" : ""}`}>
+        {500 - feedback.length} characters remaining
+      </div>
+      <button
+        type="submit"
+        className="feedback-submit-btn"
+        disabled={!feedback.trim()}
+      >
+        Submit Feedback
+      </button>
+    </form>
+  </div>
+
+
+</div>
           </div>
 
           {/* Sidebar */}

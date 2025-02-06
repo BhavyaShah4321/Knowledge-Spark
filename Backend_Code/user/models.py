@@ -56,6 +56,9 @@ class User(AbstractUser):
     otp = models.IntegerField(null=True)
     type=models.CharField(max_length=7,choices=type_choices,null=True)
     is_active = models.BooleanField(default=False)
+    user_12th_marsheet_image=models.FileField(upload_to="user_12th_marsheet_image",default="",null=True,blank=True)
+    user_degree_certificate=models.FileField(upload_to="user_degree_certificate",default="",null=True,blank=True)
+    
     email_verified = models.BooleanField(default=False)
     gender=models.CharField(choices=gender_fields,default="",null=True,blank=True)
 

@@ -249,3 +249,174 @@ button:focus {
 }
 
 
+/* FeedbackComplaint.css */
+
+.feedback-complaint-section {
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-top: 2rem;
+}
+
+/* Common styles for both forms */
+.form-container {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.form-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 1rem;
+  margin: 1rem 0;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+/* Feedback specific styles */
+.feedback-form {
+  border-left: 4px solid #4299e1;
+}
+
+.feedback-submit-btn {
+  background-color: #4299e1;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.feedback-submit-btn:hover {
+  background-color: #3182ce;
+}
+
+/* Complaint specific styles */
+.complaint-form {
+  border-left: 4px solid #f56565;
+}
+
+.complaint-submit-btn {
+  background-color: #f56565;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.complaint-submit-btn:hover {
+  background-color: #e53e3e;
+}
+
+/* Status message styles */
+.status-message {
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.status-success {
+  background-color: #c6f6d5;
+  color: #2f855a;
+  border: 1px solid #9ae6b4;
+}
+
+.status-error {
+  background-color: #fed7d7;
+  color: #c53030;
+  border: 1px solid #feb2b2;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .feedback-complaint-section {
+    padding: 1rem;
+  }
+
+  .form-container {
+    padding: 1rem;
+  }
+
+  .form-textarea {
+    min-height: 120px;
+  }
+
+  .feedback-submit-btn,
+  .complaint-submit-btn {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+}
+
+/* Animation for status messages */
+@keyframes slideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.status-message {
+  animation: slideDown 0.3s ease-out;
+}
+
+/* Hover effects for form containers */
+.form-container:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+/* Disabled state styles */
+.feedback-submit-btn:disabled,
+.complaint-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Character count styles */
+.char-count {
+  font-size: 0.875rem;
+  color: #718096;
+  text-align: right;
+  margin-top: 0.5rem;
+}
+
+.char-count.limit-near {
+  color: #d69e2e;
+}
+
+.char-count.limit-reached {
+  color: #c53030;
+}

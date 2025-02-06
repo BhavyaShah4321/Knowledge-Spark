@@ -3,84 +3,52 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   RiseOutlined,
-  RobotOutlined
+  RobotOutlined,
 } from '@ant-design/icons';
 import { Button, Layout, Menu, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../../Image/logo.jpg';
 import '../../Styles/Common.scss';
+
 const { Sider } = Layout;
-const { SubMenu } = Menu;
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const parentKeys = {
-    '/die-grouplist': '2',
-    '/die-category': '2',
-    '/die-subcategory': '2',
-    '/die-size-list': '2',
-    '/die-press-list': '2',
-    '/die-type-list': '2',
-    '/under-group-list': '2',
-    '/account-group-list': '2',
-    '/customer-category-list': '2',
-    '/customer-type-list': '2',
-    '/tempers-list': '2',
-    '/manage-user': '3',
-    '/manage-user-group': '3',
-    '/die-profilelist': '4',
-    '/die-tool-list': '4',
-    '/customer-list': '5',
-    '/conversion-rate-list': '5',
-    '/quotation-list': '5',
-    '/die-quotation-list': '5',
-    '/work-order-list': '5',
-    '/proforma-list': '5',
-    '/bulk-order-list': '5',
-    '/Work-Order-Report': 7,
-    '/packing-report-list': 7,
-    '/packing-report': 7,
-  };
-
-  const [openKeys, setOpenKeys] = useState([parentKeys[location.pathname]]);
-
-  const handleOpenChange = (keys) => {
-    const latestOpenKey = keys.find((key) => !openKeys.includes(key));
-    if (latestOpenKey) {
-      setOpenKeys([latestOpenKey]);
-    } else {
-      setOpenKeys([]);
+  useEffect(() => {
+    const storedAuth = localStorage.getItem('auth_token');
+    if (storedAuth) {
+      const parsedAuth = JSON.parse(storedAuth);
+      const { user } = parsedAuth;
+      if (user) {
+        setUser(user);
+      }
     }
-  };
+  }, []);
+
+  if (!user) return null; // Show nothing until user data is loaded
+
+  // Define sidebar items with access control
+  const sidebarItems = [
+    { key: "/dashboard", label: "Dashboard", icon: <BarChartOutlined />, roles: ["Admin", "Teacher", "Student"] },
+    { key: "/mycourses", label: "My Course", icon: <BarChartOutlined />, roles: ["Student"] },
+    { key: "/teacher-list", label: "Teachers", icon: <RobotOutlined />, roles: ["Admin"] },
+    { key: "/student-list", label: "Students", icon: <BarChartOutlined />, roles: ["Admin", "Teacher"] },
+    { key: "/category-list", label: "Category", icon: <BarChartOutlined />, roles: ["Admin", "Teacher"] },
+    { key: "/course-list", label: "Courses", icon: <RiseOutlined />, roles: ["Admin", "Teacher", "Student"] },
+    { key: "/feedback", label: "Feedback", icon: <BarChartOutlined />, roles: ["Admin", "Student"] },
+    { key: "/complaints", label: "Complaints", icon: <BarChartOutlined />, roles: ["Admin", "Student","Teacher"] },
+  ];
+
+  // Filter items based on user type from localStorage
+  const filteredSidebarItems = sidebarItems.filter(item => item.roles.includes(user.type));
+
   const handleNavigate = (event) => {
     navigate(event.key);
-  };
-
-  useEffect(() => {
-    const currentPath = location.pathname;
-    if (parentKeys[currentPath]) {
-      setOpenKeys([parentKeys[currentPath]]);
-    }
-
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-      setIsMobile(window.innerWidth < 992);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, [location.pathname]);
-
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const [isMobile, setIsMobile] = useState(windowWidth < 992);
-
-  const handleCollapse = collapsed => {
-    setCollapsed(collapsed);
   };
 
   return (
@@ -89,90 +57,37 @@ export default function Sidebar() {
         width={280}
         collapsible
         collapsed={collapsed}
-        onBreakpoint={broken => console.log('Breakpoint:', broken)}
-        onCollapse={handleCollapse}
         trigger={null}
         className="sidebar_menu_section"
-        breakpoint="lg"
       >
         <div className="LogoSec">
-          <img
-            className="widhout-collapsed-logo"
-            src={Logo}
-            width={'181px'}
-            style={{ objectFit:"cover", objectPosition: "center" }}
-            height={'63px'}
-            alt=""
-          ></img>
-          <img
-            className="with-collapsed-logo"
-            src={Logo}
-            width={'50px'}
-            height={'49px'}
-            alt=""
-          ></img>
+          <img className="widhout-collapsed-logo" src={Logo} width="181px" height="63px" alt="Logo" />
+          <img className="with-collapsed-logo" src={Logo} width="50px" height="49px" alt="Logo" />
         </div>
 
         <Menu
           theme="light"
           mode="inline"
           selectedKeys={[location.pathname]}
-          openKeys={openKeys}
-          onOpenChange={handleOpenChange}
-          onClick={(event) => {
-            handleNavigate(event);
-          }}
+          onClick={handleNavigate}
           style={{ padding: '12px' }}
         >
-          <Menu.Item key="/dashboard" icon={<BarChartOutlined />}>
-            <Tooltip title="Dashboard" placement="right">
-              <span>Dashboard</span>
-            </Tooltip>
-          </Menu.Item>
-        
-            <Menu.Item key="/teacher-list"  icon={<RobotOutlined />}>
-              <Tooltip title="Teachers" placement="right">
-                <span>Teachers</span>
+          {filteredSidebarItems.map(item => (
+            <Menu.Item key={item.key} icon={item.icon}>
+              <Tooltip title={item.label} placement="right">
+                <span>{item.label}</span>
               </Tooltip>
             </Menu.Item>
- 
-        
-            <Menu.Item key="/student-list" icon={<BarChartOutlined />}>
-              <Tooltip title="Students" placement="right">
-                <span>Students</span>
-              </Tooltip>
-            </Menu.Item>
-
-  
-            <Menu.Item key="/course-list" icon={<RiseOutlined />}>
-              <Tooltip title="Courses" placement="right">
-                <span>Courses</span>
-              </Tooltip>
-            </Menu.Item>
-            <Menu.Item key="/category-list" icon={<BarChartOutlined />}>
-              <Tooltip title="Category" placement="right">
-                <span>Category</span>
-              </Tooltip>
-            </Menu.Item>
-
-            <Menu.Item key="/feedback" icon={<BarChartOutlined />}>
-              <Tooltip title="FeedBack" placement="right">
-                <span>Feedback</span>
-              </Tooltip>
-            </Menu.Item>
-        
+          ))}
         </Menu>
       </Sider>
+
       <Button
         type="text"
         className="toggleBtn"
         icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
         onClick={() => setCollapsed(!collapsed)}
-        style={{
-          fontSize: '16px',
-          width: 64,
-          height: 64,
-        }}
+        style={{ fontSize: '16px', width: 64, height: 64 }}
       />
     </section>
   );
