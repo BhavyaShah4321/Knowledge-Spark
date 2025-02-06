@@ -12,16 +12,7 @@ const PrivateRoute = ({ allowedRoles }) => {
     return <Navigate to="/dashboard" />;
   }
 
-  const userType = authToken.user.type;
-  console.log('type',userType);
   
-
-  if (!allowedRoles.includes(userType)) {
-    // Redirect to unauthorized or restricted page if access is denied
-    return <Navigate to="/unauthorized" />;
-  }
-
-  // If the user type is allowed, render the protected routes
   return  <AdminLayout>
   <Outlet />
 </AdminLayout>;

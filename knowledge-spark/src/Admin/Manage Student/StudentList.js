@@ -423,10 +423,10 @@ function StudentList() {
             name="username"
             label="Enter Name"
             rules={[
-              { required: true, message: "Please enter teacher name!" },
+              { required: true, message: "Please enter student name!" },
               {
                 pattern: /^[a-zA-Z\s]+$/,
-                message: "Teacher Name can only include letters and spaces!",
+                message: "student name can only include letters and spaces!",
               },
             ]}
           >
@@ -439,15 +439,15 @@ function StudentList() {
             rules={[
               {
                 required: true,
-                message: "Please enter a valid email address!",
+                message: "Please enter email!",
               },
               {
                 type: "email",
-                message: "Invalid email format!",
+                message: "Please enter valid email!",
               },
             ]}
           >
-            <Input placeholder="Enter Email Address" />
+            <Input placeholder="Enter Email " />
           </Form.Item>
           <Form.Item
             name="gender"
