@@ -5,5 +5,11 @@ step you must run during the project is
 4:- pip install -r requirements.txt
 5:- python ./manage.py runserver
 
+
+//start daphne 
+1:- open new tab in terminal
+2:- .venv/Scripts/activate 
+3:- daphne -b 0.0.0.0 -p 8001 final_year_project.asgi:application
+
 //create superuser comamnd 
 python ./manage.py createsuperuser

@@ -16,7 +16,7 @@ from utils.send_mail import send_email_with_template
 from django.db import transaction
 from utils.generate_otp import generate_otp, generate_token, decode_token
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from course.models import Course
 from faker import Faker
 
 # from rest_framework_simplejwt.tokens import OutstandingToken, BlacklistedToken
@@ -238,6 +238,26 @@ class UserViewSet(ModelViewSet):
                 {"success": False, "message": "You are not admin"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+            
+    @action(detail=False,methods=["GET"],url_path="dashboared-api")
+    def dashboared_api(self,request,*args,**kwargs):
+        user=request.user
+        print(request.user.is_superuser)
+        if not user.is_superuser:
+            return Response({"success":False,"message":"Only Admin can access this api"},status=status.HTTP_400_BAD_REQUEST)
+        
+        teachers=User.objects.filter(type="Teacher").count()
+        students=User.objects.filter(type="Students").count()
+        courses=Course.objects.all().count()
+        
+        data={
+            "total_teacher":teachers,
+            "total_student":students,
+            "total_courses":courses
+        }
+        
+        return Response({"success":True,"data":data},status=status.HTTP_200_OK)
+        
 
 
 class UserArchiveViewset(ModelViewSet):
@@ -870,3 +890,10 @@ class LoginWithGoogleViewSet(ModelViewSet):
                 {"success": False, "message": "Something went wrong ! Try again"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+
+    
+    
+    
+    
