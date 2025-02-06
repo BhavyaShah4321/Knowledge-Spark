@@ -142,8 +142,8 @@ import {
       },
       {
         title: "Course Name",
-        dataIndex: "course",
-        key: "course",
+        dataIndex: "course_title",
+        key: "course_title",
       },
     
       {
