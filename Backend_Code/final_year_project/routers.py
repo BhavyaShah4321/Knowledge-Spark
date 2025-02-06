@@ -2,7 +2,12 @@ from rest_framework.routers import DefaultRouter
 from user.views import UserViewSet,RegisterViewSet,ResendOtpViewSet,LoginViewSet,ForgotPasswordViewSet,ResetPasswordViewSet,ChangePasswordViewSet,LoginWithGoogleViewSet,VerifyEmailViewset,UserArchiveViewset,UserRestoreViewset
 
 from course.views import CourseVideoViewSet,CourseViewSet,CourseFeedbackViewSet,CourseCategoryViewSet
+
+from chat.views import ChatIDViewSet,ChatMessageViewSet
+from videocall.views import VideoRoomViewSet
+
 router=DefaultRouter()
+
 
 
 router.register("user",UserViewSet,basename="user")
@@ -29,6 +34,13 @@ router.register("course-video",CourseVideoViewSet,basename="course-video")
 router.register("course-feedback",CourseFeedbackViewSet,basename="course-feedback")
 router.register("course-category",CourseCategoryViewSet,basename="course-category")
 
+
+router.register("chat",ChatIDViewSet,basename="chat")
+router.register("chat-message",ChatMessageViewSet,basename="chat_message")
+
+
+
+router.register("video-call",VideoRoomViewSet,basename="video-call")
 
 
 
