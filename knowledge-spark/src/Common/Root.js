@@ -2,19 +2,22 @@ import React from 'react';
 import { Route, Routes } from "react-router-dom";
 import CourceDetails from '../Admin/CreateVideoCourse/CourceDetails';
 import Courses from '../Admin/CreateVideoCourse/Courses';
+import ViewCourseVideo from '../Admin/CreateVideoCourse/ViewCourseVideo';
 import Dashboard from '../Admin/Dashboard';
+import ChatList from '../Admin/Manage Chat/ChatList';
 import StudentList from '../Admin/Manage Student/StudentList';
+import CreateTeacher from '../Admin/ManageTeacher/CreateTeacher';
+import EditTeacher from '../Admin/ManageTeacher/EditTeacherList';
 import TeacherList from '../Admin/ManageTeacher/TeacherList';
 import Registration from '../Common/Authentication/Register';
+import Category from '../components/Category/Category';
+import FeedBack from '../components/FeedBack/FeedBack';
 import PrivateRoute from '../components/PrivateRoute';
 import Profile from '../components/UserProfile/Profile';
 import ForgetPassword from './Authentication/ForgetPassword';
 import Login from './Authentication/Login';
 import OTPVerification from './Authentication/OTPVerification';
 import ResetPassword from './Authentication/ResetPassword';
-import ViewCourseVideo from '../Admin/CreateVideoCourse/ViewCourseVideo';
-import FeedBack from '../components/FeedBack/FeedBack';
-import Category from '../components/Category/Category';
 
 
 const Root = () => {
@@ -36,10 +39,13 @@ const Root = () => {
       {/* Admin-Specific Routes */}
       <Route element={<PrivateRoute allowedRoles={["Admin"]} />}>
         <Route path="/teacher-list" element={<TeacherList />} />
+        <Route path="/create-teacher" element={<CreateTeacher />} />
+        <Route path="/edit-teacher/:id" element={<EditTeacher />} />
         <Route path="/student-list" element={<StudentList />} />
         <Route path="/course-list" element={<Courses />} />
         <Route path="/cource-details/:id" element={<CourceDetails />} />
         <Route path="/view-course/:id" element={<ViewCourseVideo />} />
+        <Route path="/chat-list" element={<ChatList />} />
         <Route path="/feedback" element={<FeedBack />} />
         <Route path="/category-list" element={<Category />} />
 
