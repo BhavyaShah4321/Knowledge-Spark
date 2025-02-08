@@ -1,28 +1,23 @@
 import {
-  DownOutlined,
   EditOutlined,
-  PlusOutlined,
-  SearchOutlined,
+  SearchOutlined
 } from "@ant-design/icons";
 import {
   Breadcrumb,
   Button,
   Col,
-  Dropdown,
+  Drawer,
+  Form,
   Input,
-  Menu,
   Row,
   Space,
   Table,
   Tooltip,
-  message,
-  Drawer,
-  Form,
+  message
 } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ReactComponent as EditIcon } from "../../Image/EditIcon.svg";
 import { ReactComponent as FilterIcon } from "../../Image/FilterIcon.svg";
 
 export default function Courses() {
@@ -158,6 +153,11 @@ export default function Courses() {
       title: "Teacher Name",
       dataIndex: "course_teacher_username",
       key: "course_teacher_username",
+    },
+    {
+      title: "Course Category",
+      dataIndex: "course_category",
+      key: "course_category",
     },
     {
       title: "Action",

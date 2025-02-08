@@ -9,28 +9,26 @@ import {
   Breadcrumb,
   Button,
   Col,
+  DatePicker,
   Drawer,
   Dropdown,
+  Form,
   Input,
   Menu,
+  message,
+  Radio,
   Row,
   Space,
   Table,
   Tooltip,
-  Form,
-  Select,
-  Upload,
-  Switch,
-  DatePicker,
-  message,
-  Radio,
+  Upload
 } from "antd";
 import axios from "axios";
+import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import dayjs from "dayjs";
-import { ReactComponent as FilterIcon } from "../../Image/FilterIcon.svg";
 import { ReactComponent as EditIcon } from "../../Image/EditIcon.svg";
+import { ReactComponent as FilterIcon } from "../../Image/FilterIcon.svg";
 
 function StudentList() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -400,7 +398,7 @@ function StudentList() {
                 <FilterIcon />
               </Button>
             </Tooltip>
-            <Tooltip title="Add Student">
+            {/* <Tooltip title="Add Student">
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
@@ -408,7 +406,7 @@ function StudentList() {
               >
                 Add Student
               </Button>
-            </Tooltip>
+            </Tooltip> */}
           </Space>
         </Col>
       </Row>
