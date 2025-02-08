@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'course',
     "chat",
+    "complaint",
     "videocall",
 ]
 
