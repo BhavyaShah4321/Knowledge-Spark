@@ -1,5 +1,7 @@
 import {
+  DeleteOutlined,
     DownOutlined,
+    EditOutlined,
     PlusOutlined,
     SearchOutlined,
   } from "@ant-design/icons";
@@ -229,8 +231,11 @@ import {
         render: (text, record) => (
           <Space>
             <Tooltip title="Edit Category">
-              <EditIcon onClick={() => handleOpenModal(record)} />
+              <Button icon={<EditOutlined/>} onClick={() => handleOpenModal(record)} />
             </Tooltip>
+            {/* <Tooltip title="Delete Category">
+              <Button icon={<DeleteOutlined/>} onClick={() => handleDelete(record)} />
+            </Tooltip> */}
           </Space>
         ),
       }
