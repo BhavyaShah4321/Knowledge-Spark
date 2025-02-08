@@ -14,7 +14,8 @@ from course.serializer import (
 )
 from utils.pagination import mypagination
 import json
-
+from user.models import User
+from rest_framework.decorators import action
 
 class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all().order_by("-id")
@@ -28,10 +29,10 @@ class CourseViewSet(ModelViewSet):
             "course_teacher_username",
             "course_teacher_email",
             "course_description",
-            "course_category__name",
             "course_thumbnail",
             "course_price",
             "course_status",
+            "course_category_name",
             "created_at",
             "updated_at",
     ]
@@ -40,7 +41,7 @@ class CourseViewSet(ModelViewSet):
             "course_teacher_username",
             "course_teacher_email",
             "course_description",
-            "course_category__name",
+            "course_category_name",
             "course_thumbnail",
             
             "course_price",
@@ -137,6 +138,20 @@ class CourseViewSet(ModelViewSet):
             {"success": True, "message": "Course deleted successfully."},
             status=status.HTTP_200_OK,
         )
+        
+        
+    @action(detail=False, methods=["GET"], url_path="get-course-according-teacher")
+    def get_course_according_to_teacher(self, request, *args, **kwargs):
+        user = request.user
+        
+        user_instance = User.objects.filter(id=user.id).first()
+        if not user_instance or user_instance.type != "Teacher":
+            return Response({"success": False, "message": "Oops! You are not a Teacher"}, status=status.HTTP_400_BAD_REQUEST)
+
+        course_instances = Course.objects.filter(course_teacher=user_instance.id)
+        serializer = CourseSerializer(course_instances, many=True)  # `many=True` to handle queryset properly
+
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
 
 class CourseVideoViewSet(ModelViewSet):
@@ -245,6 +260,7 @@ class CourseVideoViewSet(ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+    
 
 class CourseFeedbackViewSet(ModelViewSet):
     queryset = CourseFeedback.objects.all()
