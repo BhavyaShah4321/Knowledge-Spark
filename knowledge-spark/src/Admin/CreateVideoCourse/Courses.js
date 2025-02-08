@@ -1,5 +1,7 @@
 import {
   DownOutlined,
+  EditOutlined,
+  PlusOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
 import {
@@ -14,10 +16,13 @@ import {
   Table,
   Tooltip,
   message,
+  Drawer,
+  Form,
 } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { ReactComponent as EditIcon } from "../../Image/EditIcon.svg";
 import { ReactComponent as FilterIcon } from "../../Image/FilterIcon.svg";
 
 export default function Courses() {
@@ -27,6 +32,9 @@ export default function Courses() {
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
   const [courseData, setCourseData] = useState([]);
+  const [editDrawerOpen, setEditDrawerOpen] = useState(false);
+  const [editingCourse, setEditingCourse] = useState(null);
+  const [form] = Form.useForm();
   const navigate = useNavigate();
 
   const getAccessToken = () => {
@@ -63,47 +71,35 @@ export default function Courses() {
     fetchCourseDetails(currentPage);
   }, [currentPage]);
 
-  const onSearchChange = (e) => {
-    const value = e.target.value;
-    setSearchText(value);
-    
-    // Filter data locally
-    if (value) {
-      const filteredData = courseData.filter(
-        (item) =>
-          item.course_title.toLowerCase().includes(value.toLowerCase()) ||
-          item.course_description.toLowerCase().includes(value.toLowerCase()) ||
-          item.course_teacher_username.toLowerCase().includes(value.toLowerCase())
-      );
-      setCourseData(filteredData);
-    } else {
-      fetchCourseDetails(currentPage);
-    }
+  const openEditDrawer = (course) => {
+    setEditingCourse(course);
+    form.setFieldsValue(course);
+    setEditDrawerOpen(true);
   };
 
-  const resetFilter = () => {
-    setSearchText("");
-    setCurrentPage(1);
-    fetchCourseDetails(1);
-  };
-
-  const updateCourseStatus = async (id, status) => {
+  const handleEditSubmit = async (values) => {
     try {
-      setLoading(true);
-      const accessToken = getAccessToken();
+      if (!editingCourse?.id) {
+        message.error("No course selected for editing");
+        return;
+      }
 
       const formData = new FormData();
-      const form_data = {
-         course_status:status,
-      };
 
-      // Add form_data as a stringified JSON
-      formData.append("form_data", JSON.stringify(form_data));
   
+      const form_data = {
+        course_description: values.course_description,
+        course_title: values.course_title,
+        course_price: values.course_price,
+      };
+  
+      formData.append("form_data", JSON.stringify(form_data));
+      setLoading(true);
+      const accessToken = getAccessToken();
   
       const response = await axios.patch(
-        `http://localhost:8000/api/course/${id}/`,
-        formData,
+        `http://localhost:8000/api/course/${editingCourse.id}/`,
+         formData,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -113,41 +109,18 @@ export default function Courses() {
       );
   
       if (response.status === 200) {
-        // Update the local state immediately
-        setCourseData((prevData) =>
-          prevData.map((course) =>
-            course.id === id ? { ...course, course_status: status } : course
-          )
-        );
-        message.success("Course status updated successfully");
+        message.success("Course updated successfully");
+        setEditDrawerOpen(false);
+        fetchCourseDetails(currentPage); // Refresh course list
       }
     } catch (error) {
-      console.error("Error updating course status:", error);
-      message.error("Failed to update course status");
+      console.error("Error updating course:", error);
+      message.error("Failed to update course");
     } finally {
       setLoading(false);
     }
   };
   
-
-  const handleCourseClick = (course) => {
-    navigate(`/view-course/${course.id}`);
-  };
-
-  const menu = (record) => (
-    <Menu
-      onClick={({ key }) => {
-        updateCourseStatus(record.id, key); // Pass active/inactive
-      }}
-    >
-      <Menu.Item key="active" disabled={record.course_status === "active"}>
-        Set to Active
-      </Menu.Item>
-      <Menu.Item key="inactive" disabled={record.course_status === "inactive"}>
-        Set to Inactive
-      </Menu.Item>
-    </Menu>
-  );
 
   const columns = [
     {
@@ -160,12 +133,14 @@ export default function Courses() {
       dataIndex: "course_title",
       key: "course_title",
       render: (text, record) => (
+        <Tooltip title="View Course Video">
         <a
-          onClick={() => handleCourseClick(record)}
+          onClick={() => navigate(`/view-course/${record.id}`)}
           style={{ color: "#1890ff", cursor: "pointer" }}
         >
           {text}
         </a>
+        </Tooltip>
       ),
     },
     {
@@ -185,38 +160,18 @@ export default function Courses() {
       key: "course_teacher_username",
     },
     {
-      title: "Status",
-      key: "status",
+      title: "Action",
+      dataIndex: "action",
+      key: "action",
       render: (text, record) => (
         <Space>
-          <Tooltip title="Change Status">
-            <Dropdown overlay={menu(record)} trigger={["click"]}>
-              <Button
-                // type={record.course_status === "active" ? "primary" : "default"}
-                className={
-                  record.course_status === "active"
-                    ? "bg-green-500"
-                    : "bg-red-500"
-                }
-              >
-                {record.course_status === "active" ? "Active" : "Inactive"}{" "}
-                <DownOutlined />
-              </Button>
-            </Dropdown>
+          <Tooltip title="Edit">
+            <Button icon={<EditOutlined/>} style={{ cursor: "pointer" }} onClick={() => openEditDrawer(record)} />
           </Tooltip>
         </Space>
       ),
     },
   ];
-
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (keys) => setSelectedRowKeys(keys),
-  };
-
-  const handleTableChange = (pagination) => {
-    setCurrentPage(pagination.current);
-  };
 
   return (
     <div>
@@ -241,20 +196,30 @@ export default function Courses() {
               placeholder="Search"
               prefix={<SearchOutlined />}
               value={searchText}
-              onChange={onSearchChange}
-              style={{ width: "200px" }}
+              // onChange={onSearchChange}
+              style={{ width: "100%" }}
             />
             <Tooltip placement="top" title="Reset Filter">
-              <Button type="primary" className="iconlink" onClick={resetFilter}>
+              <Button type="primary" className="iconlink"
+              //  onClick={resetFilter}
+               >
                 <FilterIcon />
               </Button>
             </Tooltip>
+            {/* <Tooltip title="Add Student">
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                // onClick={showDrawer}
+              >
+                Add Student
+              </Button>
+            </Tooltip> */}
           </Space>
         </Col>
       </Row>
 
       <Table
-        // rowSelection={rowSelection}
         dataSource={Array.isArray(courseData) ? courseData : []}
         columns={columns}
         rowKey="id"
@@ -265,11 +230,48 @@ export default function Courses() {
           showSizeChanger: false,
         }}
         loading={loading}
-        onChange={handleTableChange}
-        scroll={{
-          x: 1500,
-        }}
       />
+
+      {/* Edit Drawer */}
+      <Drawer
+        title="Edit Course"
+        placement="right"
+        width={400}
+        onClose={() => setEditDrawerOpen(false)}
+        open={editDrawerOpen}
+      >
+        <Form form={form} layout="vertical" onFinish={handleEditSubmit}>
+          <Form.Item
+            label="Course Title"
+            name="course_title"
+            rules={[{ required: true, message: "Please enter course title" }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            label="Course Description"
+            name="course_description"
+            rules={[{ required: true, message: "Please enter course description" }]}
+          >
+            <Input.TextArea />
+          </Form.Item>
+
+          <Form.Item
+            label="Course Price"
+            name="course_price"
+            rules={[{ required: true, message: "Please enter course price" }]}
+          >
+            <Input type="number" />
+          </Form.Item>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit" loading={loading}>
+              Update Course
+            </Button>
+          </Form.Item>
+        </Form>
+      </Drawer>
     </div>
   );
 }
