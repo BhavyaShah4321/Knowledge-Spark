@@ -37,11 +37,14 @@ export default function Sidebar() {
     { key: "/dashboard", label: "Dashboard", icon: <BarChartOutlined />, roles: ["Admin", "Teacher", "Student"] },
     { key: "/mycourses", label: "My Course", icon: <BarChartOutlined />, roles: ["Student"] },
     { key: "/teacher-list", label: "Teachers", icon: <RobotOutlined />, roles: ["Admin"] },
-    { key: "/student-list", label: "Students", icon: <BarChartOutlined />, roles: ["Admin", "Teacher"] },
-    { key: "/category-list", label: "Category", icon: <BarChartOutlined />, roles: ["Admin", "Teacher"] },
-    { key: "/course-list", label: "Courses", icon: <RiseOutlined />, roles: ["Admin", "Teacher", "Student"] },
-    { key: "/feedback", label: "Feedback", icon: <BarChartOutlined />, roles: ["Admin", "Student"] },
-    { key: "/complaints", label: "Complaints", icon: <BarChartOutlined />, roles: ["Admin", "Student","Teacher"] },
+    { key: "/student-list", label: "Students", icon: <BarChartOutlined />, roles: ["Admin"] },
+    { key: "/category-list", label: "Category", icon: <BarChartOutlined />, roles: ["Admin"] },
+    { key: "/course-list", label: "Courses", icon: <RiseOutlined />, roles: ["Admin"] },
+    { key: "/feedback", label: "Feedback", icon: <BarChartOutlined />, roles: ["Admin"] },
+    { key: "/complaints", label: "Complaints", icon: <BarChartOutlined />, roles: ["Admin"] },
+    { key: "/manage-courses", label: "Course", icon: <RiseOutlined />, roles: ["Teacher"] },
+    { key: "/manage-course-video", label: "Course Video", icon: <RiseOutlined />, roles: ["Teacher"] },
+
   ];
 
   // Filter items based on user type from localStorage
