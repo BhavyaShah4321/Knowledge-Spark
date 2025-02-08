@@ -65,17 +65,38 @@ function TeacherList() {
 
   const updateTeacherStatus = async (id, isActive) => {
     try {
-      const accessToken = getAccessToken();
-      await axios.patch(
+      const authData = JSON.parse(localStorage.getItem("auth_token"));
+      if (!authData || !authData.access_token) {
+        console.error(
+          "Authentication tokens are missing. Please log in again."
+        );
+        return;
+      }
+
+
+      const accessToken = authData.access_token;
+
+      const formData = new FormData();
+      const form_data = {
+        is_active: isActive,
+      };
+
+      formData.append("form_data", JSON.stringify(form_data));
+      const response = await axios.patch(
         `http://localhost:8000/api/user/${id}/`,
-        { is_active: isActive },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
-      message.success("Teacher status updated successfully");
-      fetchTeacherDetails(currentPage);
+      if (response.status === 200) {
+        fetchTeacherDetails(currentPage); // Refresh the student list after updating
+      }
     } catch (error) {
-      console.error("Error updating teacher status:", error);
-      message.error("Failed to update teacher status");
+      console.error("Error updating student status:", error);
     }
   };
 
@@ -151,7 +172,7 @@ function TeacherList() {
           <a
             href={`http://localhost:8000${record.user_degree_certificate}`}
             target="_blank"
-            // rel="noopener noreferrer"
+          // rel="noopener noreferrer"
           >
             View Certificate
           </a>
@@ -159,7 +180,7 @@ function TeacherList() {
           "No Certificate"
         );
       },
-    },    
+    },
     {
       title: "Status",
       key: "status",

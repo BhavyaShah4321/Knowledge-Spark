@@ -13,6 +13,7 @@ import Registration from '../Common/Authentication/Register';
 import Category from '../components/Category/Category';
 import FeedBack from '../components/FeedBack/FeedBack';
 import PrivateRoute from '../components/PrivateRoute';
+import StudentCourses from '../components/studentCOurses/StudentCourses';
 import Profile from '../components/UserProfile/Profile';
 import ForgetPassword from './Authentication/ForgetPassword';
 import Login from './Authentication/Login';
@@ -59,6 +60,7 @@ const Root = () => {
 
       {/* Student-Specific Routes */}
       <Route element={<PrivateRoute allowedRoles={["Student"]} />}>
+        <Route path="/student-coures" element={<StudentCourses />} />
       </Route>
     </Routes>
   );

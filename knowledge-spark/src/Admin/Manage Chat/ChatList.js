@@ -1,10 +1,12 @@
-import { List, Spin, message } from "antd";
+import { UserOutlined } from "@ant-design/icons";
+import { Avatar, Input, Spin, Table, message } from "antd";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-function ChatList() {
+const ChatList = () => {
     const [chats, setChats] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState("");
 
     useEffect(() => {
         const fetchChats = async () => {
@@ -36,24 +38,69 @@ function ChatList() {
         fetchChats();
     }, []);
 
+    // Filtered chats based on search
+    const filteredChats = chats.filter(chat =>
+        chat.user_1_username.toLowerCase().includes(search.toLowerCase()) ||
+        chat.user_2_username.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const columns = [
+        {
+            title: "Sr. No.",
+            key: "srNo",
+            render: (text, record, index) => filteredChats.indexOf(record) + 1, // Ensures continuous numbering
+        },
+        {
+            title: "User 1",
+            dataIndex: "user_1_username",
+            key: "user_1",
+            render: (text) => (
+                <div className="user-cell">
+                    <Avatar size="large" icon={<UserOutlined />} />
+                    <span>{text}</span>
+                </div>
+            ),
+        },
+        {
+            title: "User 2",
+            dataIndex: "user_2_username",
+            key: "user_2",
+            render: (text) => (
+                <div className="user-cell">
+                    <Avatar size="large" icon={<UserOutlined />} />
+                    <span>{text}</span>
+                </div>
+            ),
+        },
+    ];
+
     return (
-        <div style={{ padding: "20px" }}>
-            <h2>Chat List</h2>
+        <div className="chat-container">
+            <div className="chat-header">
+                <h1>Chat List</h1>
+                <Input
+                    placeholder="Search chats..."
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="chat-search"
+                />
+            </div>
+
             {loading ? (
-                <Spin size="large" />
+                <div className="loading-container">
+                    <Spin size="large" />
+                </div>
             ) : (
-                <List
+                <Table
+                    className="chat-table"
+                    dataSource={filteredChats}
+                    columns={columns}
+                    rowKey={(record) => record.id}
+                    pagination={{ pageSize: 10 }} // ✅ Set pagination to 10 rows per page
                     bordered
-                    dataSource={chats}
-                    renderItem={(chat) => (
-                        <List.Item>
-                            <strong>{chat.user_1_username}</strong> &amp; <strong>{chat.user_2_username}</strong>
-                        </List.Item>
-                    )}
                 />
             )}
         </div>
     );
-}
+};
 
 export default ChatList;
