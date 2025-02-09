@@ -19,6 +19,9 @@ class CourseSerializer(serializers.ModelSerializer):
     allow_null=True)
     course_teacher_email=serializers.CharField(source="course_teacher.email",required=False,
     allow_null=True)
+    course_category_name=serializers.CharField(source="course_category.name",required=False,
+    allow_null=True)
+    
     class Meta:
         model = Course
         fields = [
@@ -31,6 +34,8 @@ class CourseSerializer(serializers.ModelSerializer):
             "course_description",
             
             "course_category",
+            "course_category_name",
+            
             "course_price",
             "course_status",
             "created_at",

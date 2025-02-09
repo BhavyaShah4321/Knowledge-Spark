@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from chat.models import ChatID,ChatMessage
 from chat.serilaizer import ChatIDSerializer,ChatMessageSerializer
-
+from rest_framework.decorators import action
 
 class ChatIDViewSet(ModelViewSet):
     queryset = ChatID.objects.all()
@@ -101,7 +101,6 @@ class ChatMessageViewSet(ModelViewSet):
             "sender__username",
             "message",
             "chatid__uuid",
-            
             "created_at",
             "updated_at",]
     ordering_fields = [
@@ -178,3 +177,15 @@ class ChatMessageViewSet(ModelViewSet):
             {"success": True, "message": "ChatID deleted successfully."},
             status=status.HTTP_204_NO_CONTENT,
         )
+        
+    @action(detail=False, methods=["GET"], url_path="chat-message-according-chat")
+    def chat_message_according_chat(self, request, *args, **kwargs):
+        chat_uuid = request.query_params.get("uuid")
+
+        if not chat_uuid:
+            return Response({"success": False, "message": "uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        chat_instances = ChatMessage.objects.filter(chatid__uuid=chat_uuid)
+        serializer = self.get_serializer(chat_instances, many=True)
+
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
