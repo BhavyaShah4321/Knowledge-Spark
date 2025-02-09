@@ -4,6 +4,7 @@ import {
   PlusOutlined,
   SearchOutlined,
   UploadOutlined,
+  VideoCameraOutlined,
 } from "@ant-design/icons";
 import {
   Breadcrumb,
@@ -36,16 +37,22 @@ export default function CourseList() {
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
   const [courseData, setCourseData] = useState([]);
-  // const [editDrawerOpen, setEditDrawerOpen] = useState(false);
-  const [editingCourse, setEditingCourse] = useState(null);
-  const [form] = Form.useForm();
-  const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const [openVideo, setOpenVideo] = useState(false);
   const [category, setCategory] = useState([]);
-   const [editDrawerOpen, setEditDrawerOpen] = useState(false);
-     
+  
+  // Drawer states
+  const [courseDrawerOpen, setCourseDrawerOpen] = useState(false);
+  const [courseVideoDrawerOpen, setCourseVideoDrawerOpen] = useState(false);
+  const [editingCourse, setEditingCourse] = useState(null);
   const [editingCourseVideo, setEditingCourseVideo] = useState(null);
+  
+  
+  // Forms
+  const [courseForm] = Form.useForm();
+  const [courseVideoForm] = Form.useForm();
+  const [teacherId, setTeacherId] = useState(null);
+
+  
+  const navigate = useNavigate();
 
   const fetchCategoryDetails = async (page = 1) => {
     try {
@@ -82,16 +89,234 @@ export default function CourseList() {
     return authData.access_token;
   };
 
+  // const fetchCourseDetails = async (page = 1) => {
+  //   try {
+  //     setLoading(true);
+  //     const accessToken = getAccessToken();
+
+  //     const response = await axios.get(`http://localhost:8000/api/course/`, {
+  //       headers: {
+  //         Authorization: `Bearer ${accessToken}`,
+  //       },
+  //     });
+
+  //     const CourseDetails = response.data;
+  //     setCourseData(CourseDetails.results.data || []);
+  //     setTotalItems(CourseDetails.count || 0);
+  //   } catch (error) {
+  //     console.error("Error fetching course details:", error);
+  //     message.error("Failed to fetch course details");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // const fetchCurrentTeacher = async () => {
+  //   try {
+  //     const accessToken = getAccessToken();
+  //     const authData = JSON.parse(localStorage.getItem("auth_data")); // Assuming you store user data here
+      
+  //     const response = await axios.get(
+  //       `http://localhost:8000/api/user/${authData.user.id}/`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${accessToken}`,
+  //         },
+  //       }
+  //     );
+
+  //     setCurrentTeacher(response.data);
+  //   } catch (error) {
+  //     console.error("Error fetching teacher details:", error);
+  //     message.error("Failed to fetch teacher details");
+  //   }
+  // };
+
+
+  useEffect(() => {
+    const authData = JSON.parse(localStorage.getItem("auth_token")); // Changed to "auth_token"
+    if (authData?.user?.id) {
+      setTeacherId(authData.user.id);
+    }
+    fetchCourseDetails(currentPage);
+    fetchCategoryDetails(currentPage);
+  }, [currentPage]);
+
+  const openCourseDrawer = (course = null) => {
+    setEditingCourse(course);
+    if (course) {
+      // Convert the thumbnail to format expected by Upload component
+      const formData = {
+        ...course,
+        course_thumbnail: course.course_thumbnail ? [{
+          uid: '-1',
+          name: 'current-thumbnail.jpg',
+          status: 'done',
+          url: course.course_thumbnail
+        }] : undefined
+      };
+      courseForm.setFieldsValue(formData);
+    } else {
+      courseForm.resetFields();
+    }
+    setCourseDrawerOpen(true);
+  };
+
+  const openCourseVideoDrawer = (course, video = null) => {
+    setEditingCourseVideo({
+      courseId: course.id,
+      courseTitle: course.course_title,
+      videoId: video ? video.id : null, // Include videoId if editing
+    });
+    if (video) {
+      // Set form values if editing
+      courseVideoForm.setFieldsValue({
+        course_video_title: video.course_video_title,
+        course_video_description: video.course_video_description,
+        course_video_thumbnail: video.course_video_thumbnail ? [{
+          uid: '-1',
+          name: 'current-thumbnail.jpg',
+          status: 'done',
+          url: video.course_video_thumbnail
+        }] : undefined,
+        course_video: video.course_video ? [{
+          uid: '-1',
+          name: 'current-video.mp4',
+          status: 'done',
+          url: video.course_video
+        }] : undefined,
+      });
+    } else {
+      courseVideoForm.resetFields();
+    }
+    setCourseVideoDrawerOpen(true);
+  };
+
+  const handleCourseSubmit = async (values) => {
+    try {
+      if (!teacherId) {
+        message.error("Teacher ID not available");
+        return;
+      }
+  
+      const accessToken = getAccessToken();
+      const endpoint = editingCourse
+        ? `http://localhost:8000/api/course/${editingCourse.id}/`
+        : "http://localhost:8000/api/course/";
+  
+      const method = editingCourse ? "patch" : "post";
+      const formData = new FormData();
+  
+      const form_data = {
+        course_title: values.course_title,
+        course_description: values.course_description,
+        course_category: values.course_category,
+        course_price: values.course_price,
+        course_teacher: teacherId
+      };
+  
+      // Handle thumbnail
+      if (values.course_thumbnail?.[0]?.originFileObj) {
+        formData.append("course_thumbnail", values.course_thumbnail[0].originFileObj);
+      } else if (editingCourse && editingCourse.course_thumbnail) {
+        // Preserve existing thumbnail during edit if no new one is uploaded
+        form_data.course_thumbnail = editingCourse.course_thumbnail;
+      }
+  
+      formData.append("form_data", JSON.stringify(form_data));
+  
+      const response = await axios({
+        method,
+        url: endpoint,
+        data: formData,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          // Don't set Content-Type - let browser handle it for FormData
+        }
+      });
+  
+      if (response.status === 200 || response.status === 201) {
+        message.success(`Course ${editingCourse ? "updated" : "added"} successfully`);
+        setCourseDrawerOpen(false);
+        courseForm.resetFields();
+        fetchCourseDetails(currentPage);
+      }
+    } catch (error) {
+      console.error("Error submitting course:", error);
+      if (error.response?.data) {
+        // Show specific error message from backend if available
+        message.error(error.response.data.message || "Failed to save course details");
+      } else {
+        message.error("Failed to save course details");
+      }
+    }
+  };
+  const handleCourseVideoSubmit = async (values) => {
+    try {
+      if (!teacherId) {
+        message.error("Teacher ID not available");
+        return;
+      }
+  
+      const accessToken = getAccessToken();
+      const endpoint = editingCourseVideo?.videoId
+        ? `http://localhost:8000/api/course-video/${editingCourseVideo.videoId}/`
+        : "http://localhost:8000/api/course-video/";
+  
+      const formData = new FormData();
+      
+      // Add files to FormData
+      if (values.course_video?.[0]?.originFileObj) {
+        formData.append("course_video", values.course_video[0].originFileObj);
+      }
+      if (values.course_video_thumbnail?.[0]?.originFileObj) {
+        formData.append("course_video_thumbnail", values.course_video_thumbnail[0].originFileObj);
+      }
+  
+      const form_data = {
+        course: editingCourseVideo.courseId,  // Changed to 'course' to match API
+        course_video_title: values.course_video_title,
+        course_video_description: values.course_video_description,
+        course_teacher: teacherId  // Using the correct field name 'teacher'
+      };
+  
+      formData.append("form_data", JSON.stringify(form_data));
+  
+      const response = await axios({
+        method: editingCourseVideo?.videoId ? "patch" : "post",
+        url: endpoint,
+        data: formData,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+  
+      if (response.status === 200 || response.status === 201) {
+        message.success(`Course video ${editingCourseVideo?.videoId ? "updated" : "added"} successfully`);
+        setCourseVideoDrawerOpen(false);
+        courseVideoForm.resetFields();
+        fetchCourseDetails(currentPage); // Refresh the course list
+      }
+    } catch (error) {
+      console.error("Error submitting course video:", error);
+      message.error("Failed to save course video details");
+    }
+  };
+
   const fetchCourseDetails = async (page = 1) => {
     try {
       setLoading(true);
       const accessToken = getAccessToken();
 
-      const response = await axios.get(`http://localhost:8000/api/course/`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const response = await axios.get(
+        `http://localhost:8000/api/course/?teacher=${teacherId}`,  // Updated query parameter
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
       const CourseDetails = response.data;
       setCourseData(CourseDetails.results.data || []);
@@ -102,77 +327,6 @@ export default function CourseList() {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchCourseDetails(currentPage);
-    fetchCategoryDetails(currentPage);
-  }, [currentPage]);
-
-  const openEditDrawer = (course) => {
-    setEditingCourse(course);
-    form.setFieldsValue(course);
-    setEditDrawerOpen(true);
-  };
-
-  const handleEditSubmit = async (values) => {
-    try {
-      if (!editingCourse?.id) {
-        message.error("No course selected for editing");
-        return;
-      }
-
-      const formData = new FormData();
-
-      const form_data = {
-        course_description: values.course_description,
-        course_title: values.course_title,
-        course_price: values.course_price,
-      };
-
-      formData.append("form_data", JSON.stringify(form_data));
-      setLoading(true);
-      const accessToken = getAccessToken();
-
-      const response = await axios.patch(
-        `http://localhost:8000/api/course/${editingCourse.id}/`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        message.success("Course updated successfully");
-        setEditDrawerOpen(false);
-        fetchCourseDetails(currentPage); // Refresh course list
-      }
-    } catch (error) {
-      console.error("Error updating course:", error);
-      message.error("Failed to update course");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const showDrawer = () => {
-    // seteditingCourse(null);
-    form.resetFields();
-    setOpen(true);
-  };
-
-  const onCloseVideo = () => {
-    setOpen(false);
-    form.resetFields();
-    // seteditingCourse(null);
-  };
-  const onClose = () => {
-    setOpen(false);
-    form.resetFields();
-    // seteditingCourse(null);
   };
   const columns = [
     {
@@ -208,162 +362,30 @@ export default function CourseList() {
     },
     {
       title: "Course Category Name",
-      dataIndex: "category_name",
-      key: "category_name",
+      dataIndex: "course_category_name",
+      key: "course_category_name",
     },
     {
       title: "Action",
-      dataIndex: "action",
       key: "action",
-      render: (text, record) => (
+      render: (_, record) => (
         <Space>
-          <Tooltip title="Edit">
+          <Tooltip title="Edit Course">
             <Button
               icon={<EditOutlined />}
-              style={{ cursor: "pointer" }}
-              onClick={() => openEditDrawer(record)}
+              onClick={() => openCourseDrawer(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Manage Course Videos">
+            <Button
+              icon={<VideoCameraOutlined />}
+              onClick={() => openCourseVideoDrawer(record)}
             />
           </Tooltip>
         </Space>
       ),
-    },
-  ];
-
-  const handleSubmit = async (values) => {
-    try {
-      // Get auth token
-      const authData = JSON.parse(localStorage.getItem("auth_token"));
-      if (!authData?.access_token) {
-        throw new Error(
-          "Authentication tokens are missing. Please log in again."
-        );
-      }
-      const accessToken = authData.access_token;
-
-      const endpoint = editingCourse
-        ? `http://localhost:8000/api/course/${editingCourse.id}/`
-        : "http://localhost:8000/api/course/";
-
-      const method = editingCourse ? "patch" : "post";
-
-      // Create FormData instance
-      const formData = new FormData();
-
-      // Create the form_data object
-      const form_data = {
-        // username: values.username,
-        // email: values.email,
-        // type: "Student",
-        // gender: values.gender,
-        // bio: values.bio,
-        // dob: values.dob ? values.dob.format("DD-MM-YYYY") : undefined,
-        course_title:values.course_title,
-        course_description:values.course_description,
-        course_category:values.course_category,
-        course_price:values.course_price,
-        
-      };
-
-      // Add form_data as a stringified JSON
-      formData.append("form_data", JSON.stringify(form_data));
-
-      // Send the request
-      const response = await axios({
-        method,
-        url: endpoint,
-        data: formData,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      if (response.status === 200 || response.status === 201) {
-        message.success(
-          `Category ${editingCourse ? "updated" : "added"} successfully`
-        );
-        setOpen(false);
-        form.resetFields();
-        // seteditingCourse(null);
-        // fetchStudentDetails(currentPage);
-      }
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      message.error("Failed to save category details");
     }
-  };
-
-    const handleSubmitCourseVideo = async (values) => {
-      try {
-        // Get auth token
-        const authData = JSON.parse(localStorage.getItem("auth_token"));
-        if (!authData?.access_token) {
-          throw new Error(
-            "Authentication tokens are missing. Please log in again."
-          );
-        }
-        const accessToken = authData.access_token;
-  
-        const endpoint = editingCourseVideo
-          ? `http://localhost:8000/api/user/${editingCourseVideo.id}/`
-          : "http://localhost:8000/api/user/";
-  
-        const method = editingCourseVideo ? "patch" : "post";
-  
-        // Create FormData instance
-        const formData = new FormData();
-  
-        // Create the form_data object
-        const form_data = {
-          username: values.username,
-          email: values.email,
-          type:'Student',
-          gender:values.gender,
-          bio: values.bio,
-          dob: values.dob ? values.dob.format("DD-MM-YYYY") : undefined,
-        };
-  
-        // Add form_data as a stringified JSON
-        formData.append("form_data", JSON.stringify(form_data));
-  
-       
-        // Send the request
-        const response = await axios({
-          method,
-          url: endpoint,
-          data: formData,
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-  
-        if (response.status === 200 || response.status === 201) {
-          message.success(
-            `Student ${editingCourseVideo ? "updated" : "added"} successfully`
-          );
-          setOpen(false);
-          form.resetFields();
-          // seteditingCourse(null);
-          // fetchStudentDetails(currentPage);
-        }
-      } catch (error) {
-        console.error("Error submitting form:", error);
-        message.error("Failed to save student details");
-      }
-    };
-  
-    const getProfilePictureUrl = (profilePicture) => {
-      if (!profilePicture) return null;
-  
-      // If the URL is already absolute (starts with http or https), return as is
-      if (profilePicture.startsWith("http")) {
-        return profilePicture;
-      }
-  
-      // Otherwise, prepend the base URL
-      return `http://localhost:8000${profilePicture}`;
-    };
+  ];
 
   return (
     <div>
@@ -388,15 +410,10 @@ export default function CourseList() {
               placeholder="Search"
               prefix={<SearchOutlined />}
               value={searchText}
-              // onChange={onSearchChange}
               style={{ width: "100%" }}
             />
             <Tooltip placement="top" title="Reset Filter">
-              <Button
-                type="primary"
-                className="iconlink"
-                //  onClick={resetFilter}
-              >
+              <Button type="primary" className="iconlink">
                 <FilterIcon />
               </Button>
             </Tooltip>
@@ -404,7 +421,7 @@ export default function CourseList() {
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
-                onClick={showDrawer}
+                onClick={() => openCourseDrawer()}
               >
                 Add Course
               </Button>
@@ -413,13 +430,14 @@ export default function CourseList() {
         </Col>
       </Row>
 
+      {/* Course Drawer */}
       <Drawer
         title={editingCourse ? "Edit Course" : "Add Course"}
-        onClose={onClose}
-        open={open}
+        onClose={() => setCourseDrawerOpen(false)}
+        open={courseDrawerOpen}
         width={400}
       >
-        <Form layout="vertical" form={form} onFinish={handleSubmit}>
+        <Form layout="vertical" form={courseForm} onFinish={handleCourseSubmit}>
           <Form.Item
             name="course_title"
             label="Course Title"
@@ -427,7 +445,7 @@ export default function CourseList() {
               { required: true, message: "Please enter course title!" },
               {
                 pattern: /^[a-zA-Z\s]+$/,
-                message: "course title can only include letters and spaces!",
+                message: "Course title can only include letters and spaces!",
               },
             ]}
           >
@@ -444,8 +462,9 @@ export default function CourseList() {
               },
             ]}
           >
-            <Input placeholder="Enter Course Description" />
+            <Input.TextArea placeholder="Enter Course Description" />
           </Form.Item>
+
           <Form.Item
             name="course_category"
             label="Course Category"
@@ -457,21 +476,36 @@ export default function CourseList() {
             ]}
           >
             <Select placeholder="Select Course Category">
-              {/* {category.map((el) => (
+              {category.map((el) => (
                 <Option key={el.id} value={el.id}>
                   {el.name}
                 </Option>
-              ))} */}
-
-              {
-                 category.map((el)=>(
-                  <Option key={el.id} value={el.id}>
-                    {el.name}
-                  </Option>
-                 ))
-              }
+              ))}
             </Select>
           </Form.Item>
+          <Form.Item
+            name="course_thumbnail"
+            label="Course Thumbnail"
+            rules={[
+              { required: true, message: "Please upload course  thumbnail" }
+            ]}
+            valuePropName="fileList"
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) return e;
+              return e?.fileList;
+            }}
+          >
+            <Upload
+              name="course_thumbnail"
+              listType="picture"
+              beforeUpload={() => false}
+              accept="image/*"
+              maxCount={1}
+            >
+              <Button icon={<UploadOutlined />}>Course Thumbnail</Button>
+            </Upload>
+          </Form.Item>
+
           <Form.Item
             name="course_price"
             label="Course Price"
@@ -496,13 +530,16 @@ export default function CourseList() {
           </Form.Item>
         </Form>
       </Drawer>
+
+      {/* Course Video Drawer */}
       <Drawer
-        title={editingCourseVideo ? "Edit Course Video" : "Add Course Video"}
-        onClose={onCloseVideo}
-        open={openVideo}
+        title={`${editingCourseVideo?.videoId ? "Edit" : "Add"} Course Video`}
+        onClose={() => setCourseVideoDrawerOpen(false)}
+        open={courseVideoDrawerOpen}
         width={400}
+        // form={form}
       >
-        <Form layout="vertical" form={form} onFinish={handleSubmitCourseVideo}>
+        <Form layout="vertical" form={courseVideoForm} onFinish={handleCourseVideoSubmit}>
           <Form.Item
             name="course_video_title"
             label="Course Video Title"
@@ -510,7 +547,7 @@ export default function CourseList() {
               { required: true, message: "Please enter course video title!" },
               {
                 pattern: /^[a-zA-Z\s]+$/,
-                message: "course video title can only include letters and spaces!",
+                message: "Course video title can only include letters and spaces!",
               },
             ]}
           >
@@ -525,22 +562,20 @@ export default function CourseList() {
                 required: true,
                 message: "Please enter course video description!",
               },
-              
             ]}
           >
-            <Input placeholder="Enter Course Video Description" />
+            <Input.TextArea placeholder="Enter Course Video Description" />
           </Form.Item>
+
           <Form.Item
             name="course_video_thumbnail"
             label="Course Video Thumbnail"
             rules={[
-              {required:true,message:'please upload course video thumbnail'}
+              { required: true, message: "Please upload course video thumbnail" }
             ]}
             valuePropName="fileList"
             getValueFromEvent={(e) => {
-              if (Array.isArray(e)) {
-                return e;
-              }
+              if (Array.isArray(e)) return e;
               return e?.fileList;
             }}
           >
@@ -550,71 +585,41 @@ export default function CourseList() {
               beforeUpload={() => false}
               accept="image/*"
               maxCount={1}
-              defaultFileList={
-                editingCourseVideo?.profile_picture
-                  ? [
-                      {
-                        uid: "-1",
-                        name: "Current Profile Picture",
-                        status: "done",
-                        url: getProfilePictureUrl(
-                          editingCourseVideo.profile_picture
-                        ),
-                      },
-                    ]
-                  : []
-              }
             >
-              <Button icon={<UploadOutlined />}>Upload Course Video Thumbnail</Button>
+              <Button icon={<UploadOutlined />}>Upload Thumbnail</Button>
             </Upload>
           </Form.Item>
+
           <Form.Item
             name="course_video"
             label="Course Video"
             rules={[
-              {required:true,message:'please upload course video'}
+              { required: true, message: "Please upload course video" }
             ]}
             valuePropName="fileList"
             getValueFromEvent={(e) => {
-              if (Array.isArray(e)) {
-                return e;
-              }
+              if (Array.isArray(e)) return e;
               return e?.fileList;
             }}
           >
             <Upload
               name="course_video"
-              listType="picture"
+              listType="text"
               beforeUpload={() => false}
-              accept="image/*"
+              accept="video/*"
               maxCount={1}
-              defaultFileList={
-                editingCourseVideo?.profile_picture
-                  ? [
-                      {
-                        uid: "-1",
-                        name: "Current Profile Picture",
-                        status: "done",
-                        url: getProfilePictureUrl(
-                          editingCourseVideo.profile_picture
-                        ),
-                      },
-                    ]
-                  : []
-              }
             >
-              <Button icon={<UploadOutlined />}>Upload Course Video</Button>
+              <Button icon={<UploadOutlined />}>Upload Video</Button>
             </Upload>
           </Form.Item>
-          
 
           <Form.Item>
             <Button
               type="primary"
               htmlType="submit"
-              icon={editingCourseVideo ? <EditIcon /> : <PlusOutlined />}
+              icon={editingCourseVideo?.videoId ? <EditIcon /> : <PlusOutlined />}
             >
-              {editingCourseVideo ? "Update Course Video" : "Add Course Video"}
+              {editingCourseVideo?.videoId ? "Update" : "Add"} Course Video
             </Button>
           </Form.Item>
         </Form>
@@ -632,49 +637,6 @@ export default function CourseList() {
         }}
         loading={loading}
       />
-
-      {/* Edit Drawer */}
-      <Drawer
-        title="Edit Course"
-        placement="right"
-        width={400}
-        onClose={() => setEditDrawerOpen(false)}
-        open={editDrawerOpen}
-      >
-        <Form form={form} layout="vertical" onFinish={handleEditSubmit}>
-          <Form.Item
-            label="Course Title"
-            name="course_title"
-            rules={[{ required: true, message: "Please enter course title" }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="Course Description"
-            name="course_description"
-            rules={[
-              { required: true, message: "Please enter course description" },
-            ]}
-          >
-            <Input.TextArea />
-          </Form.Item>
-
-          <Form.Item
-            label="Course Price"
-            name="course_price"
-            rules={[{ required: true, message: "Please enter course price" }]}
-          >
-            <Input type="number" />
-          </Form.Item>
-
-          <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              Update Course
-            </Button>
-          </Form.Item>
-        </Form>
-      </Drawer>
     </div>
   );
 }

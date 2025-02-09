@@ -41,9 +41,10 @@ export default function Sidebar() {
     { key: "/category-list", label: "Category", icon: <BarChartOutlined />, roles: ["Admin"] },
     { key: "/course-list", label: "Courses", icon: <RiseOutlined />, roles: ["Admin"] },
     { key: "/feedback", label: "Feedback", icon: <BarChartOutlined />, roles: ["Admin"] },
-    { key: "/complaints", label: "Complaints", icon: <BarChartOutlined />, roles: ["Admin"] },
+    // { key: "/complaints", label: "Complaints", icon: <BarChartOutlined />, roles: ["Admin"] },
     { key: "/manage-courses", label: "Course", icon: <RiseOutlined />, roles: ["Teacher"] },
-    // { key: "/manage-course-video", label: "Course Video", icon: <RiseOutlined />, roles: ["Teacher"] },
+    { key: "/complaint-list", label: "Complaints", icon: <RiseOutlined />, roles: ["Admin","Teacher"] },
+    { key: "/create-complaint", label: "Complaint", icon: <RiseOutlined />, roles: ["Teacher","Student",] },
 
   ];
 
