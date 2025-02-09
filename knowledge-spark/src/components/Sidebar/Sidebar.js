@@ -43,7 +43,7 @@ export default function Sidebar() {
     { key: "/feedback", label: "Feedback", icon: <BarChartOutlined />, roles: ["Admin"] },
     { key: "/complaints", label: "Complaints", icon: <BarChartOutlined />, roles: ["Admin"] },
     { key: "/manage-courses", label: "Course", icon: <RiseOutlined />, roles: ["Teacher"] },
-    { key: "/manage-course-video", label: "Course Video", icon: <RiseOutlined />, roles: ["Teacher"] },
+    // { key: "/manage-course-video", label: "Course Video", icon: <RiseOutlined />, roles: ["Teacher"] },
 
   ];
 
