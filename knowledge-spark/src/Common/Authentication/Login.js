@@ -3,6 +3,8 @@ import { Form, Input, message } from "antd";
 import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Logo from '../../Image/logo.jpg';
+
 import loginimg from "../../Image/login-img.png";
 
 function Login() {
@@ -12,6 +14,9 @@ function Login() {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
+ 
+
 
   const handleSubmit = async (values) => {
     const { email, password } = values;
@@ -24,11 +29,27 @@ function Login() {
       const normalResponse = await axios.post(normalUserApi, { email, password });
 
       if (normalResponse.status === 200 && normalResponse.data.success) {
-        const { token } = normalResponse.data;
+        const { token, data } = normalResponse.data; // Destructure token and additional user data
 
-        localStorage.setItem("auth_token", token);
+        // Store the token and additional data in localStorage
+        localStorage.setItem(
+          "auth_token",
+          JSON.stringify({
+            access_token: token.access_token,
+            refresh_token: token.refresh_token,
+            user: {
+              id: data.id,
+              username:data.username,
+              email: data.email,
+              type: data.type,
+              profile_picture: data.profile_picture,
+              created_at: data.created_at,
+            },
+            user_type: "Member", // or 'Normal User'
+          })
+        );
+
         message.success("User login successful!");
-
         navigate("/dashboard");
         return;
       }
@@ -38,20 +59,36 @@ function Login() {
         const adminResponse = await axios.post(adminApi, { email, password });
 
         if (adminResponse.status === 200 && adminResponse.data.success) {
-          const { token } = adminResponse.data;
+          const { token, data } = adminResponse.data; // Destructure token and additional user data
 
-          localStorage.setItem("auth_token", token);
+          // Store the token and additional data in localStorage
+          localStorage.setItem(
+            "auth_token",
+            JSON.stringify({
+              access_token: token.access_token,
+              refresh_token: token.refresh_token,
+              user: {
+                id: data.id,
+                username:data.username,
+                email: data.email,
+                type: data.type,
+                profile_picture: data.profile_picture,
+                created_at: data.created_at,
+              },
+              user_type: "Admin",
+            })
+          );
+
           message.success("Admin login successful!");
-
           navigate("/dashboard");
           return;
         }
       } catch (adminError) {
-        // Both normal and admin login failed
         message.error("Invalid email or password. Please try again.");
       }
     }
   };
+
 
   return (
     <div className="login-container">
@@ -71,6 +108,14 @@ function Login() {
 
       <div className="login-right">
         <div className="login-form">
+        {/* <div className="logod">
+                <img
+                  className="NavLogo"
+                  src={Logo}
+                  width={'120px'}
+                  alt=""
+                ></img>
+              </div> */}
           <h1>Login into Your Account</h1>
           <Form
             name="login-form"
@@ -141,15 +186,15 @@ function Login() {
             {/* Submit Button */}
             <Form.Item>
               <button type="submit" className="btn btn-login">
-                Sign Up
+                Sign In
               </button>
             </Form.Item>
 
-            <div className="login-alternate">
+            {/* <div className="login-alternate">
               <p>Or Log in with</p>
               <button className="btn btn-google">Log In using Google</button>
               <button className="btn btn-facebook">Log In using Facebook</button>
-            </div>
+            </div> */}
 
             <p className="new-user">
               New User? <Link to="/register">Create an Account</Link>
