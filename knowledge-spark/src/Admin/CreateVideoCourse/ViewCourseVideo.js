@@ -1,8 +1,7 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "../../Styles/Main.css";
-import axios from "axios";
-import { Alert } from "antd";
 
 const ViewCourseVideo = () => {
   const { id } = useParams();
@@ -132,43 +131,41 @@ const ViewCourseVideo = () => {
 
             {/* Feedback and Complaint Section */}
             <div className="feedback-complaint-section">
-  {submitStatus.message && (
-    <div className={`status-message ${
-      submitStatus.type === "success" ? "status-success" : "status-error"
-    }`}>
-      {submitStatus.message}
-    </div>
-  )}
+              {submitStatus.message && (
+                <div className={`status-message ${submitStatus.type === "success" ? "status-success" : "status-error"
+                  }`}>
+                  {submitStatus.message}
+                </div>
+              )}
 
-  {/* Feedback Form */}
-  <div className="form-container feedback-form">
-    <h3 className="form-title">Course Feedback</h3>
-    <form onSubmit={handleSubmitFeedback}>
-      <textarea
-        value={feedback}
-        onChange={(e) => setFeedback(e.target.value)}
-        className="form-textarea"
-        placeholder="Share your thoughts about this course..."
-        maxLength={500}
-        required
-      />
-      <div className={`char-count ${
-        feedback.length > 400 ? "limit-near" : ""
-      } ${feedback.length === 500 ? "limit-reached" : ""}`}>
-        {500 - feedback.length} characters remaining
-      </div>
-      <button
-        type="submit"
-        className="feedback-submit-btn"
-        disabled={!feedback.trim()}
-      >
-        Submit Feedback
-      </button>
-    </form>
-  </div>
+              {/* Feedback Form */}
+              <div className="form-container feedback-form">
+                <h3 className="form-title">Course Feedback</h3>
+                <form onSubmit={handleSubmitFeedback}>
+                  <textarea
+                    value={feedback}
+                    onChange={(e) => setFeedback(e.target.value)}
+                    className="form-textarea"
+                    placeholder="Share your thoughts about this course..."
+                    maxLength={500}
+                    required
+                  />
+                  <div className={`char-count ${feedback.length > 400 ? "limit-near" : ""
+                    } ${feedback.length === 500 ? "limit-reached" : ""}`}>
+                    {500 - feedback.length} characters remaining
+                  </div>
+                  <button
+                    type="submit"
+                    className="feedback-submit-btn"
+                    disabled={!feedback.trim()}
+                  >
+                    Submit Feedback
+                  </button>
+                </form>
+              </div>
 
 
-</div>
+            </div>
           </div>
 
           {/* Sidebar */}
