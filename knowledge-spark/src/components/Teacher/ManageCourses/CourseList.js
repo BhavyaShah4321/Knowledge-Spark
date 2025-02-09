@@ -3,6 +3,7 @@ import {
   EditOutlined,
   PlusOutlined,
   SearchOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import {
   Breadcrumb,
@@ -19,6 +20,7 @@ import {
   Drawer,
   Form,
   Select,
+  Upload,
 } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
@@ -34,12 +36,16 @@ export default function CourseList() {
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
   const [courseData, setCourseData] = useState([]);
-  const [editDrawerOpen, setEditDrawerOpen] = useState(false);
+  // const [editDrawerOpen, setEditDrawerOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [openVideo, setOpenVideo] = useState(false);
   const [category, setCategory] = useState([]);
+   const [editDrawerOpen, setEditDrawerOpen] = useState(false);
+     
+  const [editingCourseVideo, setEditingCourseVideo] = useState(null);
 
   const fetchCategoryDetails = async (page = 1) => {
     try {
@@ -158,12 +164,16 @@ export default function CourseList() {
     setOpen(true);
   };
 
+  const onCloseVideo = () => {
+    setOpen(false);
+    form.resetFields();
+    // seteditingCourse(null);
+  };
   const onClose = () => {
     setOpen(false);
     form.resetFields();
     // seteditingCourse(null);
   };
-
   const columns = [
     {
       title: "Sr. No.",
@@ -282,6 +292,78 @@ export default function CourseList() {
       message.error("Failed to save category details");
     }
   };
+
+    const handleSubmitCourseVideo = async (values) => {
+      try {
+        // Get auth token
+        const authData = JSON.parse(localStorage.getItem("auth_token"));
+        if (!authData?.access_token) {
+          throw new Error(
+            "Authentication tokens are missing. Please log in again."
+          );
+        }
+        const accessToken = authData.access_token;
+  
+        const endpoint = editingCourseVideo
+          ? `http://localhost:8000/api/user/${editingCourseVideo.id}/`
+          : "http://localhost:8000/api/user/";
+  
+        const method = editingCourseVideo ? "patch" : "post";
+  
+        // Create FormData instance
+        const formData = new FormData();
+  
+        // Create the form_data object
+        const form_data = {
+          username: values.username,
+          email: values.email,
+          type:'Student',
+          gender:values.gender,
+          bio: values.bio,
+          dob: values.dob ? values.dob.format("DD-MM-YYYY") : undefined,
+        };
+  
+        // Add form_data as a stringified JSON
+        formData.append("form_data", JSON.stringify(form_data));
+  
+       
+        // Send the request
+        const response = await axios({
+          method,
+          url: endpoint,
+          data: formData,
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+  
+        if (response.status === 200 || response.status === 201) {
+          message.success(
+            `Student ${editingCourseVideo ? "updated" : "added"} successfully`
+          );
+          setOpen(false);
+          form.resetFields();
+          // seteditingCourse(null);
+          // fetchStudentDetails(currentPage);
+        }
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        message.error("Failed to save student details");
+      }
+    };
+  
+    const getProfilePictureUrl = (profilePicture) => {
+      if (!profilePicture) return null;
+  
+      // If the URL is already absolute (starts with http or https), return as is
+      if (profilePicture.startsWith("http")) {
+        return profilePicture;
+      }
+  
+      // Otherwise, prepend the base URL
+      return `http://localhost:8000${profilePicture}`;
+    };
 
   return (
     <div>
@@ -410,6 +492,129 @@ export default function CourseList() {
               icon={editingCourse ? <EditIcon /> : <PlusOutlined />}
             >
               {editingCourse ? "Update Course" : "Add Course"}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Drawer>
+      <Drawer
+        title={editingCourseVideo ? "Edit Course Video" : "Add Course Video"}
+        onClose={onCloseVideo}
+        open={openVideo}
+        width={400}
+      >
+        <Form layout="vertical" form={form} onFinish={handleSubmitCourseVideo}>
+          <Form.Item
+            name="course_video_title"
+            label="Course Video Title"
+            rules={[
+              { required: true, message: "Please enter course video title!" },
+              {
+                pattern: /^[a-zA-Z\s]+$/,
+                message: "course video title can only include letters and spaces!",
+              },
+            ]}
+          >
+            <Input placeholder="Enter Course Video Title" />
+          </Form.Item>
+
+          <Form.Item
+            name="course_video_description"
+            label="Course Video Description"
+            rules={[
+              {
+                required: true,
+                message: "Please enter course video description!",
+              },
+              
+            ]}
+          >
+            <Input placeholder="Enter Course Video Description" />
+          </Form.Item>
+          <Form.Item
+            name="course_video_thumbnail"
+            label="Course Video Thumbnail"
+            rules={[
+              {required:true,message:'please upload course video thumbnail'}
+            ]}
+            valuePropName="fileList"
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) {
+                return e;
+              }
+              return e?.fileList;
+            }}
+          >
+            <Upload
+              name="course_video_thumbnail"
+              listType="picture"
+              beforeUpload={() => false}
+              accept="image/*"
+              maxCount={1}
+              defaultFileList={
+                editingCourseVideo?.profile_picture
+                  ? [
+                      {
+                        uid: "-1",
+                        name: "Current Profile Picture",
+                        status: "done",
+                        url: getProfilePictureUrl(
+                          editingCourseVideo.profile_picture
+                        ),
+                      },
+                    ]
+                  : []
+              }
+            >
+              <Button icon={<UploadOutlined />}>Upload Course Video Thumbnail</Button>
+            </Upload>
+          </Form.Item>
+          <Form.Item
+            name="course_video"
+            label="Course Video"
+            rules={[
+              {required:true,message:'please upload course video'}
+            ]}
+            valuePropName="fileList"
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) {
+                return e;
+              }
+              return e?.fileList;
+            }}
+          >
+            <Upload
+              name="course_video"
+              listType="picture"
+              beforeUpload={() => false}
+              accept="image/*"
+              maxCount={1}
+              defaultFileList={
+                editingCourseVideo?.profile_picture
+                  ? [
+                      {
+                        uid: "-1",
+                        name: "Current Profile Picture",
+                        status: "done",
+                        url: getProfilePictureUrl(
+                          editingCourseVideo.profile_picture
+                        ),
+                      },
+                    ]
+                  : []
+              }
+            >
+              <Button icon={<UploadOutlined />}>Upload Course Video</Button>
+            </Upload>
+          </Form.Item>
+          
+
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              icon={editingCourseVideo ? <EditIcon /> : <PlusOutlined />}
+            >
+              {editingCourseVideo ? "Update Course Video" : "Add Course Video"}
             </Button>
           </Form.Item>
         </Form>
