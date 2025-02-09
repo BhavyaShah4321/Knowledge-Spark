@@ -587,7 +587,8 @@ class LoginViewSet(ModelViewSet):
                         "email": user.email,
                         "type":user.type,
                         "username": user.username,
-                        "is_superuser":user.is_superuser
+                        "is_superuser":user.is_superuser,
+                        "profile_picture":f'/media/{str(user.profile_picture)}'
                     },
                 },
                 status=status.HTTP_200_OK,
