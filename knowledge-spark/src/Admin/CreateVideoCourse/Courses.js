@@ -10,11 +10,13 @@ import {
   Form,
   Input,
   Row,
+  Select,
   Space,
   Table,
   Tooltip,
   message
 } from "antd";
+import { Option } from "antd/es/mentions";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -29,8 +31,44 @@ export default function Courses() {
   const [courseData, setCourseData] = useState([]);
   const [editDrawerOpen, setEditDrawerOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
+  const [categories, setCategories] = useState([]);
   const [form] = Form.useForm();
   const navigate = useNavigate();
+
+
+
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const authData = JSON.parse(localStorage.getItem("auth_token"));
+        if (!authData || !authData.access_token) {
+          console.error("Authentication tokens are missing. Please log in again.");
+          return;
+        }
+        const accessToken = authData.access_token;
+        const response = await axios.get("http://localhost:8000/api/course-category/", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          }
+        });
+        const categories = response.data.results.data;
+        console.log(categories);  // Check the output here
+        setCategories(categories); // Update the state with the fetched categories
+      } catch (error) {
+        console.error("Error fetching categories:", error);  // Make sure to log errors as well
+        message.error("Failed to fetch categories.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+
+
 
   const getAccessToken = () => {
     const authData = JSON.parse(localStorage.getItem("auth_token"));
@@ -44,7 +82,7 @@ export default function Courses() {
     try {
       setLoading(true);
       const accessToken = getAccessToken();
-      
+
       const response = await axios.get(`http://localhost:8000/api/course/`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -81,20 +119,21 @@ export default function Courses() {
 
       const formData = new FormData();
 
-  
+
       const form_data = {
         course_description: values.course_description,
         course_title: values.course_title,
         course_price: values.course_price,
+        course_category: values.course_category,
       };
-  
+
       formData.append("form_data", JSON.stringify(form_data));
       setLoading(true);
       const accessToken = getAccessToken();
-  
+
       const response = await axios.patch(
         `http://localhost:8000/api/course/${editingCourse.id}/`,
-         formData,
+        formData,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -102,7 +141,7 @@ export default function Courses() {
           },
         }
       );
-  
+
       if (response.status === 200) {
         message.success("Course updated successfully");
         setEditDrawerOpen(false);
@@ -115,7 +154,7 @@ export default function Courses() {
       setLoading(false);
     }
   };
-  
+
 
   const columns = [
     {
@@ -129,12 +168,12 @@ export default function Courses() {
       key: "course_title",
       render: (text, record) => (
         <Tooltip title="View Course Video">
-        <a
-          onClick={() => navigate(`/view-course/${record.id}`)}
-          style={{ color: "#1890ff", cursor: "pointer" }}
-        >
-          {text}
-        </a>
+          <a
+            onClick={() => navigate(`/view-course/${record.id}`)}
+            style={{ color: "#1890ff", cursor: "pointer" }}
+          >
+            {text}
+          </a>
         </Tooltip>
       ),
     },
@@ -158,6 +197,11 @@ export default function Courses() {
       title: "Course Category",
       dataIndex: "course_category",
       key: "course_category",
+      render: (categoryId) => {
+        // Find the category name based on the ID
+        const category = categories.find(cat => cat.id === categoryId);
+        return category ? category.name : "N/A"; // Return category name if found, else "N/A"
+      },
     },
     {
       title: "Action",
@@ -166,7 +210,7 @@ export default function Courses() {
       render: (text, record) => (
         <Space>
           <Tooltip title="Edit">
-            <Button icon={<EditOutlined/>} style={{ cursor: "pointer" }} onClick={() => openEditDrawer(record)} />
+            <Button icon={<EditOutlined />} style={{ cursor: "pointer" }} onClick={() => openEditDrawer(record)} />
           </Tooltip>
         </Space>
       ),
@@ -202,7 +246,7 @@ export default function Courses() {
             <Tooltip placement="top" title="Reset Filter">
               <Button type="primary" className="iconlink"
               //  onClick={resetFilter}
-               >
+              >
                 <FilterIcon />
               </Button>
             </Tooltip>
@@ -263,6 +307,29 @@ export default function Courses() {
             rules={[{ required: true, message: "Please enter course price" }]}
           >
             <Input type="number" />
+          </Form.Item>
+
+          <Form.Item
+            label="Course Category"
+            name="course_category"  // Use 'course_category' here to match API field
+            rules={[{ required: true, message: "Please select a course category" }]}>
+            <Select
+              loading={loading} // Show loading state while fetching categories
+              placeholder="Select a category"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().includes(input.toLowerCase())
+              }
+              // Set the selected category in the dropdown
+              value={editingCourse?.course_category || undefined} // This will be the category of the course being edited
+            >
+              {categories.map((category) => (
+                <Option key={category.id} value={category.id}>
+                  {category.name}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
 
           <Form.Item>
