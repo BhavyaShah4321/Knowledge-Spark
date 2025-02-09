@@ -1,5 +1,6 @@
 import {
   DownOutlined,
+  EditOutlined,
   PlusOutlined,
   SearchOutlined,
   UploadOutlined,
@@ -119,7 +120,7 @@ function StudentList() {
 
       const formData = new FormData();
       const form_data = {
-         is_active:isActive,
+        is_active: isActive,
       };
 
       formData.append("form_data", JSON.stringify(form_data));
@@ -195,7 +196,7 @@ function StudentList() {
       email: student.email,
       dob: formattedDob,
       bio: student.bio,
-      gender:student.gender,
+      gender: student.gender,
       profile_picture: fileList,
     });
     setOpen(true);
@@ -286,10 +287,8 @@ function StudentList() {
       key: "action",
       render: (text, record) => (
         <Space>
-          <Tooltip title="Edit Student">
-            <Button type="link" onClick={() => handleEdit(record)}>
-              <EditIcon />
-            </Button>
+          <Tooltip title="Edit">
+            <Button icon={<EditOutlined />} style={{ cursor: "pointer" }} onClick={() => handleEdit(record)} />
           </Tooltip>
         </Space>
       ),
@@ -324,8 +323,8 @@ function StudentList() {
       const form_data = {
         username: values.username,
         email: values.email,
-        type:'Student',
-        gender:values.gender,
+        type: 'Student',
+        gender: values.gender,
         bio: values.bio,
         dob: values.dob ? values.dob.format("DD-MM-YYYY") : undefined,
       };
@@ -462,7 +461,6 @@ function StudentList() {
               <Space direction="horizontal">
                 <Radio value="male">Male</Radio>
                 <Radio value="female">Female</Radio>
-                <Radio value="other">Other</Radio>
               </Space>
             </Radio.Group>
           </Form.Item>
@@ -491,15 +489,15 @@ function StudentList() {
               defaultFileList={
                 editingStudent?.profile_picture
                   ? [
-                      {
-                        uid: "-1",
-                        name: "Current Profile Picture",
-                        status: "done",
-                        url: getProfilePictureUrl(
-                          editingStudent.profile_picture
-                        ),
-                      },
-                    ]
+                    {
+                      uid: "-1",
+                      name: "Current Profile Picture",
+                      status: "done",
+                      url: getProfilePictureUrl(
+                        editingStudent.profile_picture
+                      ),
+                    },
+                  ]
                   : []
               }
             >

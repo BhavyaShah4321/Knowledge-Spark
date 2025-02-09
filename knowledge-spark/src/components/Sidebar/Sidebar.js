@@ -1,9 +1,13 @@
 import {
   BarChartOutlined,
+  CreditCardOutlined,
+  FundProjectionScreenOutlined,
+  LaptopOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   RiseOutlined,
   RobotOutlined,
+  WechatOutlined,
 } from '@ant-design/icons';
 import { Button, Layout, Menu, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
@@ -40,11 +44,16 @@ export default function Sidebar() {
     { key: "/student-list", label: "Students", icon: <BarChartOutlined />, roles: ["Admin"] },
     { key: "/category-list", label: "Category", icon: <BarChartOutlined />, roles: ["Admin"] },
     { key: "/course-list", label: "Courses", icon: <RiseOutlined />, roles: ["Admin"] },
+    { key: "/chat-list", label: "Chat", icon: <WechatOutlined />, roles: ["Admin"] },
     { key: "/feedback", label: "Feedback", icon: <BarChartOutlined />, roles: ["Admin"] },
     // { key: "/complaints", label: "Complaints", icon: <BarChartOutlined />, roles: ["Admin"] },
     { key: "/manage-courses", label: "Course", icon: <RiseOutlined />, roles: ["Teacher"] },
-    { key: "/complaint-list", label: "Complaints", icon: <RiseOutlined />, roles: ["Admin","Teacher"] },
-    { key: "/create-complaint", label: "Complaint", icon: <RiseOutlined />, roles: ["Teacher","Student",] },
+    { key: "/complaint-list", label: "Complaints", icon: <RiseOutlined />, roles: ["Admin", "Teacher"] },
+    { key: "/create-complaint", label: "Complaint", icon: <RiseOutlined />, roles: ["Teacher", "Student",] },
+    { key: "/mycourses", label: "My Course", icon: <FundProjectionScreenOutlined />, roles: ["Student"] },
+    { key: "/student-coures", label: "Cource", icon: <LaptopOutlined />, roles: ["Student"] },
+    { key: "/student-payment", label: "Payment", icon: <CreditCardOutlined />, roles: ["Student"] },
+    { key: "/complain", label: "Complain", icon: <CreditCardOutlined />, roles: ["Student"] },
 
   ];
 

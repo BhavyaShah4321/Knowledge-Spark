@@ -1,5 +1,6 @@
 import {
   DownOutlined,
+  EditOutlined,
   SearchOutlined
 } from "@ant-design/icons";
 import {
@@ -19,7 +20,8 @@ import {
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ReactComponent as EditIcon } from "../../Image/EditIcon.svg";
+
+import { ReactComponent as FilterIcon } from "../../Image/FilterIcon.svg";
 
 function TeacherList() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -125,6 +127,12 @@ function TeacherList() {
     );
   };
 
+  const resetFilter = () => {
+    setSearchText("");
+    setCurrentPage(1);
+    fetchTeacherDetails(1);
+  };
+
   const columns = [
     {
       title: "Sr. No.",
@@ -198,15 +206,22 @@ function TeacherList() {
       title: "Action",
       key: "action",
       render: (record) => (
+        // <Space>
+        //   <Tooltip title="Edit Teacher">
+        //     <Link to={`/edit-teacher/${record.id}`}>
+        //       <Button type="link">
+        //         <EditIcon />
+        //       </Button>
+        //     </Link>
+        //   </Tooltip>
+
+        // </Space>
         <Space>
-          <Tooltip title="Edit Teacher">
+          <Tooltip title="Edit">
             <Link to={`/edit-teacher/${record.id}`}>
-              <Button type="link">
-                <EditIcon />
-              </Button>
+              <Button icon={<EditOutlined />} style={{ cursor: "pointer" }} />
             </Link>
           </Tooltip>
-
         </Space>
       ),
     },
@@ -232,6 +247,13 @@ function TeacherList() {
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
             />
+          </Col>
+          <Col>
+            <Tooltip placement="top" title="Reset Filter">
+              <Button type="primary" className="iconlink" onClick={resetFilter}>
+                <FilterIcon />
+              </Button>
+            </Tooltip>
           </Col>
           {/* <Col>
             <Tooltip title="Add Teacher">

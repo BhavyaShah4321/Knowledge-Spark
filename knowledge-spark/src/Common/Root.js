@@ -5,24 +5,24 @@ import Courses from '../Admin/CreateVideoCourse/Courses';
 import ViewCourseVideo from '../Admin/CreateVideoCourse/ViewCourseVideo';
 import Dashboard from '../Admin/Dashboard';
 import ChatList from '../Admin/Manage Chat/ChatList';
+import ChatMessage from '../Admin/Manage Chat/ChatMessage';
 import StudentList from '../Admin/Manage Student/StudentList';
 import CreateTeacher from '../Admin/ManageTeacher/CreateTeacher';
 import EditTeacher from '../Admin/ManageTeacher/EditTeacherList';
 import TeacherList from '../Admin/ManageTeacher/TeacherList';
 import Registration from '../Common/Authentication/Register';
 import Category from '../components/Category/Category';
+import ComplaintList from '../components/complaint/ComplaintList';
+import ComplaintModal from '../components/complaint/CreateComplain';
 import FeedBack from '../components/FeedBack/FeedBack';
 import PrivateRoute from '../components/PrivateRoute';
 import StudentCourses from '../components/studentCOurses/StudentCourses';
+import CourseList from '../components/Teacher/ManageCourses/CourseList';
 import Profile from '../components/UserProfile/Profile';
 import ForgetPassword from './Authentication/ForgetPassword';
 import Login from './Authentication/Login';
 import OTPVerification from './Authentication/OTPVerification';
 import ResetPassword from './Authentication/ResetPassword';
-import CourseList from '../components/Teacher/ManageCourses/CourseList';
-import ComplaintList from '../components/complaint/ComplaintList';
-import CreateComplain from '../components/complaint/CreateComplain';
-import ComplaintModal from '../components/complaint/CreateComplain';
 
 
 const Root = () => {
@@ -48,6 +48,7 @@ const Root = () => {
         <Route path="/edit-teacher/:id" element={<EditTeacher />} />
         <Route path="/student-list" element={<StudentList />} />
         <Route path="/course-list" element={<Courses />} />
+        <Route path="/chat-message" element={<ChatMessage />} />
         <Route path="/cource-details/:id" element={<CourceDetails />} />
         <Route path="/view-course/:id" element={<ViewCourseVideo />} />
         <Route path="/chat-list" element={<ChatList />} />
