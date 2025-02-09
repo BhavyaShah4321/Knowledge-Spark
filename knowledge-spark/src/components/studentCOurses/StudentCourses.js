@@ -1,10 +1,12 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const StudentCourses = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -51,6 +53,7 @@ const StudentCourses = () => {
                       : "https://via.placeholder.com/300x200?text=No+Image"
                 }
                 alt={course.course_title}
+                onClick={() => navigate(`/view-course/${course.id}`)}
               />
               <div className="course-badge">
                 <span className={`badge ${course.course_status}`}>
@@ -58,13 +61,13 @@ const StudentCourses = () => {
                 </span>
               </div>
             </div>
-            <div className="course-card-content">
-              <h2 className="course-title">{course.course_title}</h2>
-              <p className="course-teacher">By {course.course_teacher_username}</p>
+            <div className="course-card-content" >
+              <h2 className="course-title" >{course.course_title}</h2>
+              <p className="course-teacher" >By {course.course_teacher_username}</p>
               <p className="course-description">{course.course_description}</p>
               <div className="course-footer">
                 <p className="course-price">₹{course.course_price || "Free"}</p>
-                <button className="course-button">Enroll Now</button>
+                <button className="course-button">Purchase Now</button>
               </div>
             </div>
           </div>
