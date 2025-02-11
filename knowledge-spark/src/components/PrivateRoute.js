@@ -4,7 +4,6 @@ import AdminLayout from './AdminLayout/AdminLayout';
 
 const PrivateRoute = ({ allowedRoles }) => {
   const authToken = JSON.parse(localStorage.getItem("auth_token"));
-  console.log("auth",authToken);
   
 
   if (!authToken) {

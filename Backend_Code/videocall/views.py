@@ -4,10 +4,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
+from rest_framework.decorators import action
 from videocall.models import VideoRoom
 from videocall.serilaizer import VideoRoomSerializer
 import uuid
+from django.utils import timezone  
 
 class VideoRoomViewSet(ModelViewSet):
     queryset = VideoRoom.objects.all()
@@ -16,8 +17,8 @@ class VideoRoomViewSet(ModelViewSet):
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
 
-    search_fields = ["uuid", "created_by__username"]
-    ordering_fields = ["uuid", "created_at", "updated_at"]
+    search_fields = ["uuid", "created_by__username","teacher_username","student_username","start","end","duration"]
+    ordering_fields = ["uuid", "created_at", "updated_at","teacher_username","student_username","start","end","duration"]
 
     def list(self, request, *args, **kwargs):
         """Get a list of all video rooms"""
@@ -41,7 +42,9 @@ class VideoRoomViewSet(ModelViewSet):
         """Create a new video room"""
         data = request.data.copy()
         data["created_by"] = request.user.id  # Assign current user
-        data["uuid"] = str(uuid.uuid4())  # Generate unique UUID
+        data["uuid"] = str(uuid.uuid4())
+
+        data["created_at"]=timezone.now()# Generate unique UUID
         print(data)
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
@@ -58,6 +61,8 @@ class VideoRoomViewSet(ModelViewSet):
     def update(self, request, *args, **kwargs):
         """Update a video room (partial update allowed)"""
         instance = self.get_object()
+        request.data["updated_at"]=timezone.now()# Generate unique UUID
+        
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -77,4 +82,41 @@ class VideoRoomViewSet(ModelViewSet):
         return Response(
             {"success": True, "message": "Video room deleted successfully."}, 
             status=status.HTTP_204_NO_CONTENT
+        )
+
+
+    @action(detail=False, methods=["POST"], url_path="endvideocall")
+    def endvideocall(self, request, *args, **kwargs):
+        id = request.data.get("id")  # Use `.get()` instead of `()`
+
+        try:
+            video_instance = VideoRoom.objects.get(id=id)
+        except VideoRoom.DoesNotExist:
+            return Response(
+                {"success": False, "message": f"No VideoRoom with id {id} found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if not video_instance.start:
+            return Response(
+                {"success": False, "message": "Start time is missing."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        video_instance.end = timezone.now()
+        duration = (video_instance.end - video_instance.start).total_seconds()  # Duration in seconds
+
+        video_instance.status = "Completed"
+        video_instance.duration=f"{int(duration // 60)} minutes {int(duration % 60)} seconds"
+        video_instance.save()
+        
+        serilaizer=self.serializer_class(video_instance)
+
+        return Response(
+            {
+                "success": True,
+                "message": "Video call ended successfully.",
+                "data": serilaizer.data,
+            },
+            status=status.HTTP_200_OK,
         )
