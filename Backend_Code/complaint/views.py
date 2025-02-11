@@ -98,3 +98,18 @@ class ComplaintViewSet(ModelViewSet):
         serializer = self.get_serializer(complaints, many=True)
 
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+
+
+    @action(detail=False, methods=["POST"], url_path="complaint-according-user")
+    def complaint_according_user(self, request, *args, **kwargs):
+        user_id = request.data.get("user_id")
+
+        if not user_id:
+            return Response({"success": False, "message": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        complaints = Complaint.objects.filter(user__id=user_id)
+        serializer = self.serializer_class(complaints, many=True)
+
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+
+

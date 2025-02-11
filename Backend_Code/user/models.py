@@ -42,6 +42,9 @@ class User(AbstractUser):
     type_choices=[
         ("Student","Student"),
         ("Teacher","Teacher"),
+        ("Admin","Admin"),
+        
+
         
     ]
     gender_fields=[
@@ -68,6 +71,8 @@ class User(AbstractUser):
     bio=models.TextField(null=True)
     
     created_at=models.DateTimeField(auto_now_add=True,null=True)
+    updated_at=models.DateTimeField(auto_now_add=True,null=True)
+    
         
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

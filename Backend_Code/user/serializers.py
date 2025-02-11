@@ -25,6 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
             "dob",
             "bio",
             "created_at",
+            "updated_at",
             "deleted"
         ]
         
