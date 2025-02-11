@@ -26,7 +26,7 @@ from rest_framework_simplejwt.token_blacklist.models import (
     BlacklistedToken,
 )
 
-
+from datetime import datetime
 from rest_framework import status
 from decouple import config
 from django.contrib.auth.hashers import check_password
@@ -118,7 +118,7 @@ class UserViewSet(ModelViewSet):
             data["profile_picture"] = profile_picture
             
         
-
+        data["updated_at"]=datetime.now()
         serializer = self.serializer_class(instance=instance, data=data, partial=True)
 
         if serializer.is_valid():
@@ -247,7 +247,7 @@ class UserViewSet(ModelViewSet):
             return Response({"success":False,"message":"Only Admin can access this api"},status=status.HTTP_400_BAD_REQUEST)
         
         teachers=User.objects.filter(type="Teacher").count()
-        students=User.objects.filter(type="Students").count()
+        students=User.objects.filter(type="Student").count()
         courses=Course.objects.all().count()
         
         data={
@@ -635,6 +635,7 @@ class LoginViewSet(ModelViewSet):
 
         user_instance.is_active=True
         user_instance.email_verified=True
+        user_instance.type="Admin"
         user_instance.save()
 
         serializer = UserSerializer(user_instance)
@@ -643,7 +644,7 @@ class LoginViewSet(ModelViewSet):
         serializer_data_updated=serializer.data
         
         serializer_data_updated["is_superuser"]=True
-        serializer_data_updated["type"]="Admin"
+        # serializer_data_updated["type"]="Admin"
         
         return Response(
             {
