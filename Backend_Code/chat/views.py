@@ -7,6 +7,7 @@ from rest_framework import status
 from chat.models import ChatID,ChatMessage
 from chat.serilaizer import ChatIDSerializer,ChatMessageSerializer
 from rest_framework.decorators import action
+from django.db.models import Q
 
 class ChatIDViewSet(ModelViewSet):
     queryset = ChatID.objects.all()
@@ -87,9 +88,31 @@ class ChatIDViewSet(ModelViewSet):
             {"success": True, "message": "ChatID deleted successfully."},
             status=status.HTTP_204_NO_CONTENT,
         )
+        
+    @action(detail=False, methods=["POST"], url_path="chatid-according-user")
+    def chatid_according_user(self, request, *args, **kwargs):
+        user_id = request.data.get("user_id")
 
+        if not user_id:
+            return Response(
+                {"success": False, "message": "user_id is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
+        try:
+            user_id = int(user_id)
+        except ValueError:
+            return Response(
+                {"success": False, "message": "Invalid user_id format."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
+        chatid_instance = ChatID.objects.filter(Q(user_1__id=user_id) | Q(user_2__id=user_id))
+
+        serializer = self.get_serializer(chatid_instance, many=True) 
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+    
+    
 class ChatMessageViewSet(ModelViewSet):
     queryset = ChatMessage.objects.all()
     serializer_class = ChatMessageSerializer

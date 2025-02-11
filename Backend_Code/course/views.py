@@ -140,14 +140,12 @@ class CourseViewSet(ModelViewSet):
         )
         
         
-    @action(detail=False, methods=["GET"], url_path="get-course-according-teacher")
+    @action(detail=False, methods=["POST"], url_path="get-course-according-teacher")
     def get_course_according_to_teacher(self, request, *args, **kwargs):
-        user = request.user
-        
-        user_instance = User.objects.filter(id=user.id).first()
+        user_id = request.data.get("user_id")
+        user_instance = User.objects.filter(id=user_id).first()
         if not user_instance or user_instance.type != "Teacher":
             return Response({"success": False, "message": "Oops! You are not a Teacher"}, status=status.HTTP_400_BAD_REQUEST)
-
         course_instances = Course.objects.filter(course_teacher=user_instance.id)
         serializer = CourseSerializer(course_instances, many=True)  # `many=True` to handle queryset properly
 
@@ -259,8 +257,20 @@ class CourseVideoViewSet(ModelViewSet):
             {"success": True, "message": "Course video deleted successfully."},
             status=status.HTTP_200_OK,
         )
+        
+    @action(detail=False, methods=["POST"], url_path="get-course-video-according-course")
+    def get_course_video_according_course(self, request, *args, **kwargs):
+        course_id = request.data.get("course_id")
+        
+        if not course_id:
+            return Response({"success": False, "message": "Course_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+        course_instances = CourseVideo.objects.filter(course=course_id)
+        serializer = self.serializer_class(course_instances, many=True)  
 
-    
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+
 
 class CourseFeedbackViewSet(ModelViewSet):
     queryset = CourseFeedback.objects.all()
@@ -272,16 +282,16 @@ class CourseFeedbackViewSet(ModelViewSet):
     search_fields = [
         "feedback_student__username",
         "status",
-            "course_title",
+            "course__course_title",
         
-        "feedback_student_username",
-            "feedback_student_profile_picture",
-            "feedback_student_email",
+        "feedback_student__username",
+            "feedback_student__profile_picture",
+            "feedback_student__email",
     ]
-    ordering_fields = ["created_at", "updated_at","status", "feedback_student_username",
-            "feedback_student_profile_picture",
-            "course_title",
-            "feedback_student_email",]
+    ordering_fields = ["created_at", "updated_at","status", "feedback_student__username",
+            "feedback_student_profile__picture",
+            "course__course_title",
+            "feedback_student__email",]
 
     def list(self, request, *args, **kwargs):
         """List all feedback."""
@@ -364,6 +374,33 @@ class CourseFeedbackViewSet(ModelViewSet):
             {"success": True, "message": "Feedback deleted successfully."},
             status=status.HTTP_200_OK,
         )
+        
+    @action(detail=False,methods=["POST"],url_path="get-course-feedback-according-user")
+    def get_course_feedback_according_user(self,request,*args,**kwargs):
+        user_id = request.data.get("user_id")
+        
+        if not user_id:
+            return Response({"success": False, "message": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        course_feedback = CourseFeedback.objects.filter(feedback_student=user_id)
+        serializer = self.serializer_class(course_feedback, many=True)  
+
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+    
+    @action(detail=False,methods=["POST"],url_path="get-course-feedback-according-course")
+    def get_course_feedback_according_course(self,request,*args,**kwargs):
+        course_id = request.data.get("course_id")
+        
+        if not course_id:
+            return Response({"success": False, "message": "course_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        course_feedback = CourseVideo.objects.filter(course=course_id)
+        serializer = self.serializer_class(course_feedback, many=True)  
+
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+
+
+
 
 
 class CourseCategoryViewSet(ModelViewSet):
