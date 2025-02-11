@@ -1,4 +1,5 @@
 import {
+  DownOutlined,
   EditOutlined,
   SearchOutlined
 } from "@ant-design/icons";
@@ -7,8 +8,10 @@ import {
   Button,
   Col,
   Drawer,
+  Dropdown,
   Form,
   Input,
+  Menu,
   Row,
   Select,
   Space,
@@ -154,6 +157,54 @@ export default function Courses() {
       setLoading(false);
     }
   };
+  const menu = (record) => (
+    <Menu
+      onClick={({ key }) => {
+        updateCourseStatus(record.id, key);
+      }}
+    >
+      <Menu.Item key="active" disabled={record.course_status === "active"}>
+        Set to Active
+      </Menu.Item>
+      <Menu.Item key="inactive" disabled={record.course_status === "inactive"}>
+        Set to Inactive
+      </Menu.Item>
+    </Menu>
+  );
+  
+  // Update the status update function
+  const updateCourseStatus = async (id, status) => {
+    try {
+      setLoading(true);
+      const accessToken = getAccessToken();
+  
+      const response = await axios.patch(
+        `http://localhost:8000/api/course/${id}/`,
+        {
+          form_data: JSON.stringify({
+            course_status: status
+          })
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        message.success(`Course status updated to ${status} successfully`);
+        fetchCourseDetails(currentPage);
+      }
+    } catch (error) {
+      console.error("Error updating course status:", error);
+      message.error("Failed to update course status");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
 
 
   const columns = [
@@ -202,6 +253,21 @@ export default function Courses() {
         const category = categories.find(cat => cat.id === categoryId);
         return category ? category.name : "N/A"; // Return category name if found, else "N/A"
       },
+    },
+    {
+      title: "Status",
+      key: "course_status",
+      render: (text, record) => (
+        <Space>
+          <Tooltip title="Change Status">
+            <Dropdown overlay={menu(record)} trigger={["click"]}>
+              <Button>
+                {record.course_status?.charAt(0).toUpperCase() + record.course_status?.slice(1)} <DownOutlined />
+              </Button>
+            </Dropdown>
+          </Tooltip>
+        </Space>
+      ),
     },
     {
       title: "Action",

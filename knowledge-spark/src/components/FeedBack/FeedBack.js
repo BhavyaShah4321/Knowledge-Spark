@@ -167,9 +167,9 @@ export default function FeedBack() {
       key: "feedback_student_username",
     },
     {
-      title: "Student ID",
-      dataIndex: "feedback_student",
-      key: "feedback_student",
+      title: "Course Name",
+      dataIndex: "course_title",
+      key: "course_title",
     },
     {
       title: "Feedback",

@@ -144,7 +144,7 @@ function EditTeacher() {
 
                         <Col xs={24} sm={6}>
                             <Form.Item name="email" label="Email" rules={[{ required: true, type: "email", message: "Invalid email!" }]}>
-                                <Input placeholder="Enter Email Address" />
+                                <Input placeholder="Enter Email Address"  disabled />
                             </Form.Item>
                         </Col>
 
@@ -187,8 +187,10 @@ function EditTeacher() {
                                     beforeUpload={() => false} // Prevent auto-upload
                                     accept="image/*"
                                     maxCount={1}
+                                    disabled
+                                    
                                 >
-                                    <Button icon={<UploadOutlined />}>Upload Profile Picture</Button>
+                                    <Button icon={<UploadOutlined />} disabled>Upload Profile Picture</Button>
                                 </Upload>
                             </Form.Item>
                         </Col>
@@ -206,8 +208,10 @@ function EditTeacher() {
                                     beforeUpload={() => false}
                                     accept=".pdf,.jpg,.jpeg,.png"
                                     maxCount={1}
+                                    disabled
+                                   
                                 >
-                                    <Button icon={<UploadOutlined />}>Upload Certificate</Button>
+                                    <Button icon={<UploadOutlined />}  disabled>Upload Certificate</Button>
                                 </Upload>
                             </Form.Item>
                         </Col>

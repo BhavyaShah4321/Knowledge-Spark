@@ -3,8 +3,6 @@ import { Form, Input, message } from "antd";
 import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Logo from '../../Image/logo.jpg';
-
 import loginimg from "../../Image/login-img.png";
 
 function Login() {
@@ -15,12 +13,8 @@ function Login() {
     setShowPassword(!showPassword);
   };
 
- 
-
-
   const handleSubmit = async (values) => {
     const { email, password } = values;
-
     const normalUserApi = "http://localhost:8000/api/login/";
     const adminApi = "http://localhost:8000/api/login/admin-login/";
 
@@ -29,7 +23,13 @@ function Login() {
       const normalResponse = await axios.post(normalUserApi, { email, password });
 
       if (normalResponse.status === 200 && normalResponse.data.success) {
-        const { token, data } = normalResponse.data; // Destructure token and additional user data
+        const { token, data } = normalResponse.data;
+
+        // Check user status if they are a teacher or student
+        if ((data.type === 'teacher' || data.type === 'student') && data.status === 'inactive') {
+          message.error("Your account is currently inactive. Please contact the administrator.");
+          return;
+        }
 
         // Store the token and additional data in localStorage
         localStorage.setItem(
@@ -39,17 +39,18 @@ function Login() {
             refresh_token: token.refresh_token,
             user: {
               id: data.id,
-              username:data.username,
+              username: data.username,
               email: data.email,
               type: data.type,
+              status: data.status,
               profile_picture: data.profile_picture,
               created_at: data.created_at,
             },
-            user_type: "Member", // or 'Normal User'
+            user_type: "Member",
           })
         );
 
-        message.success("User login successful!");
+        message.success("Login successful!");
         navigate("/dashboard");
         return;
       }
@@ -59,7 +60,7 @@ function Login() {
         const adminResponse = await axios.post(adminApi, { email, password });
 
         if (adminResponse.status === 200 && adminResponse.data.success) {
-          const { token, data } = adminResponse.data; // Destructure token and additional user data
+          const { token, data } = adminResponse.data;
 
           // Store the token and additional data in localStorage
           localStorage.setItem(
@@ -69,9 +70,10 @@ function Login() {
               refresh_token: token.refresh_token,
               user: {
                 id: data.id,
-                username:data.username,
+                username: data.username,
                 email: data.email,
                 type: data.type,
+                status: data.status,
                 profile_picture: data.profile_picture,
                 created_at: data.created_at,
               },
@@ -84,11 +86,15 @@ function Login() {
           return;
         }
       } catch (adminError) {
-        message.error("Invalid email or password. Please try again.");
+        // Check if the error response contains status information
+        if (adminError.response?.data?.status === 'inactive') {
+          message.error("Your account is currently inactive. Please contact the administrator.");
+        } else {
+          message.error("Invalid email or password. Please try again.");
+        }
       }
     }
   };
-
 
   return (
     <div className="login-container">
@@ -108,14 +114,6 @@ function Login() {
 
       <div className="login-right">
         <div className="login-form">
-        {/* <div className="logod">
-                <img
-                  className="NavLogo"
-                  src={Logo}
-                  width={'120px'}
-                  alt=""
-                ></img>
-              </div> */}
           <h1>Login into Your Account</h1>
           <Form
             name="login-form"
@@ -123,7 +121,6 @@ function Login() {
             onFinish={handleSubmit}
             autoComplete="off"
           >
-            {/* Email Field */}
             <Form.Item
               label="Email"
               name="email"
@@ -144,7 +141,6 @@ function Login() {
               />
             </Form.Item>
 
-            {/* Password Field */}
             <Form.Item
               label="Password"
               name="password"
@@ -183,18 +179,11 @@ function Login() {
               </label>
             </div>
 
-            {/* Submit Button */}
             <Form.Item>
               <button type="submit" className="btn btn-login">
                 Sign In
               </button>
             </Form.Item>
-
-            {/* <div className="login-alternate">
-              <p>Or Log in with</p>
-              <button className="btn btn-google">Log In using Google</button>
-              <button className="btn btn-facebook">Log In using Facebook</button>
-            </div> */}
 
             <p className="new-user">
               New User? <Link to="/register">Create an Account</Link>
