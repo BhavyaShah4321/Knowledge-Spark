@@ -158,6 +158,8 @@
 // }
 
 
+
+
 import { DownOutlined, LogoutOutlined, PlusOutlined } from '@ant-design/icons';
 import { Avatar, Button, Dropdown, Layout, Menu, message, Modal } from 'antd';
 import axios from 'axios';
@@ -183,16 +185,45 @@ export default function AppHeader() {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState('');
   const [profilePicture, setProfilePicture] = useState('');
+  const [userId, setUserId] = useState('');
 
   useEffect(() => {
     const authData = JSON.parse(localStorage.getItem('auth_token'));
     if (authData && authData.user && authData.user.email) {
       setUserEmail(authData.user.email);
-      setProfilePicture(authData.user.profile_picture || '');  // Set profile picture from localStorage
+      setUserId(authData.user.id);
     } else {
       setUserEmail('N/A');
     }
   }, []);
+
+  useEffect(() => {
+    if (userId) {
+      const authData = JSON.parse(localStorage.getItem('auth_token'));
+
+      if (!authData || !authData.refresh_token) {
+        message.error('No refresh token found. Please log in again.');
+        return;
+      }
+
+      const accessToken = authData.access_token;
+      axios
+        .get(`http://localhost:8000/api/user/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        })
+        .then((response) => {
+          const { profile_picture } = response.data;
+          setProfilePicture(profile_picture || '');  // Update profile picture
+        })
+
+        .catch((error) => {
+          console.error('Error fetching user data:', error);
+          message.error('Failed to load user data.');
+        });
+    }
+  }, [userId]);
 
   const handleMenuClick = (e) => {
     switch (e.key) {
@@ -289,14 +320,24 @@ export default function AppHeader() {
       </Menu.Item>
     </Menu>
   );
-
   return (
     <Header>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <Dropdown overlay={userMenu} trigger={['click']} className="usermenu">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {profilePicture ? (
-              <Avatar src={`http://localhost:8000${profilePicture}`} /> 
+              <img
+                src={`${profilePicture}`}
+                alt="User Profile"
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '2px solid #ddd',
+                }}
+              />
+              
             ) : (
               <Avatar style={{ backgroundColor: backgroundColor, color: '#fff' }}>
                 {getInitials(userEmail)}

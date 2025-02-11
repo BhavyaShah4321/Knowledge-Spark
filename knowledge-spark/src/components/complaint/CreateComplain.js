@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Form, Select, Button, Input, Card, Tag, Timeline, Row, Col, Typography, Space, message, Popconfirm } from 'antd';
-import { FormOutlined, ClockCircleOutlined, CheckCircleOutlined, LoadingOutlined, UserOutlined, SafetyOutlined, DeleteOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, FormOutlined, LoadingOutlined, UserOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Form, Input, message, Popconfirm, Row, Select, Space, Tag, Timeline, Typography } from 'antd';
 import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 
 const { TextArea } = Input;
 const { Title, Text } = Typography;
@@ -123,13 +123,13 @@ const CreateComplaint = () => {
       <Col xs={24} lg={12}>
         <Card title={<><FormOutlined /> Add New Complaint</>} bordered={false}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            <Form.Item name="priority" label="Priority" rules={[{ required: true, message: 'Please select priority' }]}> 
+            {/* <Form.Item name="priority" label="Priority" rules={[{ required: true, message: 'Please select priority' }]}> 
               <Select>
                 <Option value="High">High</Option>
                 <Option value="Medium">Medium</Option>
                 <Option value="Low">Low</Option>
               </Select>
-            </Form.Item>
+            </Form.Item> */}
             <Form.Item name="message" label="Message" rules={[{ required: true, message: 'Please enter your message' }]}> 
               <TextArea placeholder="Describe your issue in detail" rows={4} showCount maxLength={500} />
             </Form.Item>
