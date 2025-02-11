@@ -11,7 +11,7 @@ function Register() {
         email: "",
         password: "",
         confirmPassword: "",
-        type: "Student",
+        type: "",
     };
 
     const [state, setState] = useState(initialstate);
@@ -123,7 +123,7 @@ function Register() {
                     </Link>
                 </div>
                 <div className="register-form">
-                    <h1>Sign Up into Your Account</h1>
+                    <h1>Sign Up Into Your Account</h1>
                     <Form
                         layout="vertical"
                         onFinish={handleSubmit} // Attach the handleSubmit function here
@@ -134,7 +134,7 @@ function Register() {
                             rules={[
                                 {
                                     required: true,
-                                    message: "Please input your username!",
+                                    message: "Please enter username!",
                                 },
                             ]}
                         >
@@ -142,7 +142,7 @@ function Register() {
                                 name="username"
                                 value={state.username}
                                 onChange={handleChange}
-                                placeholder="Enter your Name"
+                                placeholder="Enter Username"
                                 className="register-username-field"
                             />
                         </Form.Item>
@@ -153,7 +153,7 @@ function Register() {
                             rules={[
                                 {
                                     required: true,
-                                    message: "Please input your email!",
+                                    message: "Please enter email!",
                                 },
                                 {
                                     type: "email",
@@ -165,7 +165,7 @@ function Register() {
                                 name="email"
                                 value={state.email}
                                 onChange={handleChange}
-                                placeholder="Enter your email address"
+                                placeholder="Enter your email "
                                 className="register-email-field"
                             />
                         </Form.Item>
@@ -175,7 +175,7 @@ function Register() {
                             rules={[
                                 {
                                     required: true,
-                                    message: "Please select your type!",
+                                    message: "Please select type!",
                                 },
                             ]}
                         >
@@ -199,7 +199,7 @@ function Register() {
                             rules={[
                                 {
                                     required: true,
-                                    message: "Please input your password!",
+                                    message: "Please enter password!",
                                 },
                                 {
                                     min: 8,
@@ -290,11 +290,11 @@ function Register() {
                             </button>
                         </Form.Item>
 
-                        <div className="Sign-alternate">
+                        {/* <div className="Sign-alternate">
                             <p>Or Sign in with</p>
                             <button className="btn btn-google">Sign In using Google</button>
                             <button className="btn btn-facebook">Sign In using Facebook</button>
-                        </div>
+                        </div> */}
                     </Form>
                 </div>
             </div>

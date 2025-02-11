@@ -208,7 +208,7 @@ class ChatMessageViewSet(ModelViewSet):
         if not chat_uuid:
             return Response({"success": False, "message": "uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        chat_instances = ChatMessage.objects.filter(chatid__uuid=chat_uuid)
+        chat_instances = ChatMessage.objects.filter(chatid__uuid=chat_uuid).order_by("id")
         serializer = self.get_serializer(chat_instances, many=True)
 
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
