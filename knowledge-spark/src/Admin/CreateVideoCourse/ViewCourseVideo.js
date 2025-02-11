@@ -1,7 +1,8 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import "../../Styles/Main.css";
+import { Breadcrumb, Col, Row } from "antd";
 
 const ViewCourseVideo = () => {
   const { id } = useParams();
@@ -11,16 +12,28 @@ const ViewCourseVideo = () => {
   const [feedback, setFeedback] = useState("");
   const [complaint, setComplaint] = useState("");
   const [submitStatus, setSubmitStatus] = useState({ type: "", message: "" });
+  const [currentUser, setCurrentUser] = useState(null);
 
   const BASE_URL = "http://localhost:8000";
 
   const getAccessToken = () => {
     const authData = JSON.parse(localStorage.getItem("auth_token"));
     if (!authData?.access_token) {
-      throw new Error("Authentication tokens are missing. Please log in again.");
+      throw new Error(
+        "Authentication tokens are missing. Please log in again."
+      );
     }
     return authData.access_token;
   };
+
+  useEffect(() => {
+    const authData = JSON.parse(localStorage.getItem("auth_token"));
+    if (authData?.user.type) {
+      console.log("Type", authData?.user);
+
+      setCurrentUser(authData.user);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -48,52 +61,66 @@ const ViewCourseVideo = () => {
   }, [id]);
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   const handleSubmitFeedback = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent default form submission behavior
+
+    const form_data = {
+      feedback_student: currentUser.id, // Assuming currentUser is the student's ID or name
+      feedback_message: feedback,
+      course:parseInt(id), // Assuming the course ID is needed for the feedback
+    };
+
     try {
       const accessToken = getAccessToken();
+
       await axios.post(
-        `${BASE_URL}/api/course/${id}/feedback`,
-        { feedback },
+        `${BASE_URL}/api/course-feedback/`,
+        form_data, // Send form_data directly
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         }
       );
-      setSubmitStatus({ type: "success", message: "Feedback submitted successfully!" });
+      setSubmitStatus({
+        type: "success",
+        message: "Feedback submitted successfully!",
+      });
       setFeedback("");
     } catch (error) {
-      setSubmitStatus({ type: "error", message: "Failed to submit feedback. Please try again." });
+      setSubmitStatus({
+        type: "error",
+        message: "Failed to submit feedback. Please try again.",
+      });
     }
   };
 
-  const handleSubmitComplaint = async (e) => {
-    e.preventDefault();
-    try {
-      const accessToken = getAccessToken();
-      await axios.post(
-        `${BASE_URL}/api/course/${id}/complaint`,
-        { complaint },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      setSubmitStatus({ type: "success", message: "Complaint submitted successfully!" });
-      setComplaint("");
-    } catch (error) {
-      setSubmitStatus({ type: "error", message: "Failed to submit complaint. Please try again." });
-    }
-  };
+  // const handleSubmitComplaint = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const accessToken = getAccessToken();
+  //     await axios.post(
+  //       `${BASE_URL}/api/course/${id}/complaint`,
+  //       { complaint },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${accessToken}`,
+  //         },
+  //       }
+  //     );
+  //     setSubmitStatus({ type: "success", message: "Complaint submitted successfully!" });
+  //     setComplaint("");
+  //   } catch (error) {
+  //     setSubmitStatus({ type: "error", message: "Failed to submit complaint. Please try again." });
+  //   }
+  // };
 
   if (loading) {
     return <div className="loader">Loading...</div>;
@@ -104,6 +131,24 @@ const ViewCourseVideo = () => {
   }
 
   return (
+    <>
+    <Row className="pagenamerow mb-0" justify="space-between" align="middle">
+    <Col>
+      <h2>View Course Video</h2>
+      <div className="bredcrumbwrp">
+        <Link to="/manage-courses" className="back">
+          BACK
+        </Link>
+        <Breadcrumb
+          items={[
+            { title: <Link to="/manage-courses">Home</Link> },
+            { title: "view Course Video" },
+          ]}
+        />
+      </div>
+    </Col>
+    
+  </Row>
     <div className="course-container">
       <div className="course-wrapper">
         {/* Main Content */}
@@ -119,52 +164,62 @@ const ViewCourseVideo = () => {
                   playsInline
                 />
               ) : (
-                <div className="video-player no-video">
-                  No video available
-                </div>
+                <div className="video-player no-video">No video available</div>
               )}
             </div>
             <div className="video-info">
-              <h2 className="video-title">{selectedVideo?.course_video_title}</h2>
-              <p className="video-description">{selectedVideo?.course_video_description}</p>
+              <h2 className="video-title">
+                {selectedVideo?.course_video_title}
+              </h2>
+              <p className="video-description">
+                {selectedVideo?.course_video_description}
+              </p>
             </div>
 
             {/* Feedback and Complaint Section */}
             <div className="feedback-complaint-section">
               {submitStatus.message && (
-                <div className={`status-message ${submitStatus.type === "success" ? "status-success" : "status-error"
-                  }`}>
+                <div
+                  className={`status-message ${
+                    submitStatus.type === "success"
+                      ? "status-success"
+                      : "status-error"
+                  }`}
+                >
                   {submitStatus.message}
                 </div>
               )}
 
-              {/* Feedback Form */}
-              <div className="form-container feedback-form">
-                <h3 className="form-title">Course Feedback</h3>
-                <form onSubmit={handleSubmitFeedback}>
-                  <textarea
-                    value={feedback}
-                    onChange={(e) => setFeedback(e.target.value)}
-                    className="form-textarea"
-                    placeholder="Share your thoughts about this course..."
-                    maxLength={500}
-                    required
-                  />
-                  <div className={`char-count ${feedback.length > 400 ? "limit-near" : ""
-                    } ${feedback.length === 500 ? "limit-reached" : ""}`}>
-                    {500 - feedback.length} characters remaining
-                  </div>
-                  <button
-                    type="submit"
-                    className="feedback-submit-btn"
-                    disabled={!feedback.trim()}
-                  >
-                    Submit Feedback
-                  </button>
-                </form>
-              </div>
-
-
+              {currentUser.type == "Student" && (
+                <div className="form-container feedback-form">
+                  <h3 className="form-title">Course Feedback</h3>
+                  <form onSubmit={handleSubmitFeedback}>
+                    <textarea
+                      name="feedback_message"
+                      value={feedback}
+                      onChange={(e) => setFeedback(e.target.value)}
+                      className="form-textarea"
+                      placeholder="Share your thoughts about this course..."
+                      maxLength={500}
+                      required
+                    />
+                    <div
+                      className={`char-count ${
+                        feedback.length > 400 ? "limit-near" : ""
+                      } ${feedback.length === 500 ? "limit-reached" : ""}`}
+                    >
+                      {500 - feedback.length} characters remaining
+                    </div>
+                    <button
+                      type="submit"
+                      className="feedback-submit-btn"
+                      disabled={!feedback.trim()}
+                    >
+                      Submit Feedback
+                    </button>
+                  </form>
+                </div>
+              )}
             </div>
           </div>
 
@@ -172,20 +227,28 @@ const ViewCourseVideo = () => {
           <div className="sidebar">
             <div className="sidebar-header">
               <h2 className="sidebar-title">Course Content</h2>
-              <p className="video-count">{course.videos.length} video lessons</p>
+              <p className="video-count">
+                {course.videos.length} video lessons
+              </p>
             </div>
             <div className="video-list">
               {course.videos.map((video, index) => (
                 <div
                   key={video.id}
-                  className={`video-item ${selectedVideo?.id === video.id ? 'active' : ''}`}
+                  className={`video-item ${
+                    selectedVideo?.id === video.id ? "active" : ""
+                  }`}
                 >
                   <button onClick={() => setSelectedVideo(video)}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ display: "flex", alignItems: "center" }}>
                       <div className="lesson-number">{index + 1}</div>
                       <div className="lesson-info">
-                        <div className="lesson-title">{video.course_video_title}</div>
-                        <div className="lesson-date">{formatDate(video.created_at)}</div>
+                        <div className="lesson-title">
+                          {video.course_video_title}
+                        </div>
+                        <div className="lesson-date">
+                          {formatDate(video.created_at)}
+                        </div>
                       </div>
                     </div>
                   </button>
@@ -196,7 +259,8 @@ const ViewCourseVideo = () => {
         </div>
       </div>
     </div>
-  );
+    </>
+);
 };
 
 export default ViewCourseVideo;

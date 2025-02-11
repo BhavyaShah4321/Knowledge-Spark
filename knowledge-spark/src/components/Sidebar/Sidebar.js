@@ -46,11 +46,11 @@ export default function Sidebar() {
     { key: "/chat-list", label: "Chat", icon: <WechatOutlined />, roles: ["Admin"] },
     { key: "/feedback", label: "Feedback", icon: <BarChartOutlined />, roles: ["Admin"] },
     // { key: "/complaints", label: "Complaints", icon: <BarChartOutlined />, roles: ["Admin"] },
-    { key: "/manage-courses", label: "Course", icon: <RiseOutlined />, roles: ["Teacher"] },
+    { key: "/manage-courses", label: "Course", icon: <RobotOutlined />, roles: ["Teacher"] },
     { key: "/student-coures", label: "Courses", icon: <LaptopOutlined />, roles: ["Student"] },
     { key: "/create-complaint", label: "Complaint", icon: <RiseOutlined />, roles: ["Teacher", "Student",] },
     { key: "/student-payment", label: "Purchase Course", icon: <CreditCardOutlined />, roles: ["Student"] },
-    { key: "/complaint-list", label: "Complaints", icon: <RiseOutlined />, roles: ["Admin", "Teacher"] },
+    { key: "/complaint-list", label: "Complaints", icon: <RiseOutlined />, roles: ["Admin",] },
 
   ];
 
@@ -71,7 +71,8 @@ export default function Sidebar() {
         className="sidebar_menu_section"
       >
         <div className="LogoSec">
-          <img className="widhout-collapsed-logo" src={Logo} width="181px" height="63px" alt="Logo" />
+          <img className="widhout-collapsed-logo" src={Logo} width="181px" alt="Logo" style={{height: "62px",
+    objectFit: "cover"}} />
           <img className="with-collapsed-logo" src={Logo} width="50px" height="49px" alt="Logo" />
         </div>
 

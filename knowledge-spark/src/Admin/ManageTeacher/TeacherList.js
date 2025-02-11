@@ -241,19 +241,21 @@ function TeacherList() {
         </Col>
         <Row>
           <Col>
+            <Space size="small">
             <Input
               placeholder="Search"
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
             />
-          </Col>
-          <Col>
+        
+          
             <Tooltip placement="top" title="Reset Filter">
               <Button type="primary" className="iconlink" onClick={resetFilter}>
                 <FilterIcon />
               </Button>
             </Tooltip>
+            </Space>
           </Col>
           {/* <Col>
             <Tooltip title="Add Teacher">
@@ -267,7 +269,7 @@ function TeacherList() {
         </Row>
       </Row>
       <Table
-        rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
+        // rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
         columns={columns}
         dataSource={data}
         loading={loading}

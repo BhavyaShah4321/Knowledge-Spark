@@ -366,6 +366,11 @@ export default function CourseList() {
       key: "course_category_name",
     },
     {
+      title:'Course Status',
+      data:'course_status',
+      key:'course_status'
+    },
+    {
       title: "Action",
       key: "action",
       render: (_, record) => (

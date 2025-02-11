@@ -444,7 +444,7 @@ function StudentList() {
               },
             ]}
           >
-            <Input placeholder="Enter Email " />
+            <Input placeholder="Enter Email " disabled />
           </Form.Item>
           <Form.Item
             name="gender"
@@ -486,6 +486,7 @@ function StudentList() {
               beforeUpload={() => false}
               accept="image/*"
               maxCount={1}
+              disabled
               defaultFileList={
                 editingStudent?.profile_picture
                   ? [
@@ -501,7 +502,7 @@ function StudentList() {
                   : []
               }
             >
-              <Button icon={<UploadOutlined />}>Upload Profile Picture</Button>
+              <Button icon={<UploadOutlined />} disabled>Upload Profile Picture</Button>
             </Upload>
           </Form.Item>
 
