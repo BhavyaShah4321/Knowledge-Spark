@@ -1,7 +1,7 @@
-import { CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, FormOutlined, LoadingOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Form, Input, message, Popconfirm, Row, Select, Space, Tag, Timeline, Typography } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Form, Select, Button, Input, Card, Tag, Timeline, Row, Col, Typography, Space, message, Popconfirm } from 'antd';
+import { FormOutlined, ClockCircleOutlined, CheckCircleOutlined, LoadingOutlined, UserOutlined, SafetyOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
 
 const { TextArea } = Input;
 const { Title, Text } = Typography;
@@ -29,14 +29,32 @@ const CreateComplaint = () => {
     }
     return authData.access_token;
   };
+  const getCurrentUserId = () => {
+    const authData = JSON.parse(localStorage.getItem("auth_token"));
+    return authData?.user?.id;
+  };
+
+
 
   const fetchUserComplaints = async () => {
+    const userId = getCurrentUserId();
+
+    if (!userId) {
+            message.error("User ID not found. Please login again.");
+            return;
+          }
     setFetchingComplaints(true);
     try {
       const accessToken = getAccessToken();
-      const response = await axios.get('http://localhost:8000/api/complaint/', {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
+      const response = await axios.post(
+        `http://localhost:8000/api/complaint/complaint-according-user/`,
+        {user_id:userId},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       setComplaints(Array.isArray(response.data.data) ? response.data.data : [response.data]);
     } catch (error) {
       message.error('Failed to fetch complaints');
@@ -52,7 +70,7 @@ const CreateComplaint = () => {
         type_of_issue: "Other",
         message: values.message,
         user: currentUser.id,
-        priority: values.priority
+       
       };
 
       const response = await axios.post('http://localhost:8000/api/complaint/', complaintData, {
@@ -123,13 +141,13 @@ const CreateComplaint = () => {
       <Col xs={24} lg={12}>
         <Card title={<><FormOutlined /> Add New Complaint</>} bordered={false}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            {/* <Form.Item name="priority" label="Priority" rules={[{ required: true, message: 'Please select priority' }]}> 
+            <Form.Item name="type_of_issue" label="Type Of Issue" rules={[{ required: true, message: 'Please select type of issue' }]}> 
               <Select>
-                <Option value="High">High</Option>
-                <Option value="Medium">Medium</Option>
-                <Option value="Low">Low</Option>
+                <Option value="Course Releted">Course Releted</Option>
+                <Option value="Technicle Problem">Technicle Releted</Option>
+                <Option value="Payment Releted">Payment Releted</Option>
               </Select>
-            </Form.Item> */}
+            </Form.Item>
             <Form.Item name="message" label="Message" rules={[{ required: true, message: 'Please enter your message' }]}> 
               <TextArea placeholder="Describe your issue in detail" rows={4} showCount maxLength={500} />
             </Form.Item>
