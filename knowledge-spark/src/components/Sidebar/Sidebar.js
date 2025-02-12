@@ -6,6 +6,7 @@ import {
   MenuUnfoldOutlined,
   RiseOutlined,
   RobotOutlined,
+  VideoCameraOutlined,
   WechatOutlined
 } from '@ant-design/icons';
 import { Button, Layout, Menu, Tooltip } from 'antd';
@@ -60,6 +61,7 @@ export default function Sidebar() {
     { key: "/category-list", label: "Category", icon: <BarChartOutlined />, roles: ["Admin"] },
     { key: "/course-list", label: "Courses", icon: <RiseOutlined />, roles: ["Admin"] },
     { key: "/chat-list", label: "Chat", icon: <WechatOutlined />, roles: ["Admin"] },
+    { key: "/manage-video-chat", label: "Vido Call", icon: <VideoCameraOutlined />, roles: ["Admin"] },
     { key: "/feedback", label: "Feedback", icon: <BarChartOutlined />, roles: ["Admin"] },
     // { key: "/complaints", label: "Complaints", icon: <BarChartOutlined />, roles: ["Admin"] },
     { key: "/manage-courses", label: "Course", icon: <RobotOutlined />, roles: ["Teacher"] },
