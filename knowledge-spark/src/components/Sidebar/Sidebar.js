@@ -23,16 +23,32 @@ export default function Sidebar() {
   const location = useLocation();
 
   useEffect(() => {
-    const storedAuth = localStorage.getItem('auth_token');
-    if (storedAuth) {
-      const parsedAuth = JSON.parse(storedAuth);
-      const { user } = parsedAuth;
-      if (user) {
-        setUser(user);
+    const fetchUserData = () => {
+      const storedAuth = localStorage.getItem('auth_token');
+      if (storedAuth) {
+        const parsedAuth = JSON.parse(storedAuth);
+  
+        // ✅ Ensure type is never null, set it to "Admin" if missing
+        if (!parsedAuth.user.type) {
+          parsedAuth.user.type = "Admin";
+          localStorage.setItem('auth_token', JSON.stringify(parsedAuth)); // Save updated data
+        }
+  
+        setUser(parsedAuth.user);
       }
-    }
+    };
+  
+    fetchUserData(); // Initial fetch
+  
+    // Listen for storage changes
+    const handleStorageChange = () => fetchUserData();
+    window.addEventListener('storage', handleStorageChange);
+  
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
-
+    
   if (!user) return null; // Show nothing until user data is loaded
 
   // Define sidebar items with access control

@@ -1,34 +1,31 @@
 import {
-  DownOutlined,
   EditOutlined,
   PlusOutlined,
   SearchOutlined,
   UploadOutlined,
-  VideoCameraOutlined,
+  VideoCameraOutlined
 } from "@ant-design/icons";
 import {
   Breadcrumb,
   Button,
   Col,
-  Dropdown,
+  Drawer,
+  Form,
   Input,
-  Menu,
   Row,
+  Select,
   Space,
   Table,
   Tooltip,
-  message,
-  Drawer,
-  Form,
-  Select,
   Upload,
+  message
 } from "antd";
+import { Option } from "antd/es/mentions";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ReactComponent as EditIcon } from "../../../Image/EditIcon.svg";
 import { ReactComponent as FilterIcon } from "../../../Image/FilterIcon.svg";
-import { Option } from "antd/es/mentions";
 
 export default function CourseList() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
