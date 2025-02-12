@@ -304,13 +304,28 @@ export default function CourseList() {
     }
   };
 
+  const getCurrentUserId = () => {
+    const authData = JSON.parse(localStorage.getItem("auth_token"));
+    return authData?.user?.id;
+  };
+
   const fetchCourseDetails = async (page = 1) => {
     try {
       setLoading(true);
       const accessToken = getAccessToken();
+      const userId = getCurrentUserId();
 
-      const response = await axios.get(
-        `http://localhost:8000/api/course/?teacher=${teacherId}`,  // Updated query parameter
+      console.log("access",accessToken);
+      
+
+      if (!userId) {
+        message.error("User ID not found. Please login again.");
+        return;
+      }
+
+      const response = await axios.post(
+        `http://localhost:8000/api/course/get-course-according-teacher/`,
+        {user_id:userId},
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -318,9 +333,12 @@ export default function CourseList() {
         }
       );
 
-      const CourseDetails = response.data;
-      setCourseData(CourseDetails.results.data || []);
-      setTotalItems(CourseDetails.count || 0);
+      const courseDetails = response.data.data;
+      console.log("details",courseDetails);
+      
+        setCourseData(courseDetails || []);
+        setTotalItems(courseDetails.count || 0);
+      
     } catch (error) {
       console.error("Error fetching course details:", error);
       message.error("Failed to fetch course details");
@@ -328,6 +346,67 @@ export default function CourseList() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const userId = getCurrentUserId();
+    if (userId) {
+      setTeacherId(userId);
+      fetchCourseDetails(currentPage);
+      fetchCategoryDetails(currentPage);
+    } else {
+      message.error("Please login to view courses");
+      // Optionally redirect to login page
+      // navigate('/login');
+    }
+  }, [currentPage]);
+
+
+  const menu = (record) => (
+    <Menu
+      onClick={({ key }) => {
+        updateCourseStatus(record.id, key);
+      }}
+    >
+      <Menu.Item key="active" disabled={record.course_status === "active"}>
+        Set to Active
+      </Menu.Item>
+      <Menu.Item key="inactive" disabled={record.course_status === "inactive"}>
+        Set to Inactive
+      </Menu.Item>
+    </Menu>
+  );
+  const updateCourseStatus = async (id, status) => {
+    try {
+      setLoading(true);
+      const accessToken = getAccessToken();
+  
+      const response = await axios.patch(
+        `http://localhost:8000/api/course/${id}/`,
+        {
+          form_data: JSON.stringify({
+            course_status: status
+          })
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        message.success(`Course status updated to ${status} successfully`);
+        fetchCourseDetails(currentPage);
+      }
+    } catch (error) {
+      console.error("Error updating course status:", error);
+      message.error("Failed to update course status");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const columns = [
     {
       title: "Sr. No.",
@@ -366,10 +445,20 @@ export default function CourseList() {
       key: "course_category_name",
     },
     {
-      title:'Course Status',
-      data:'course_status',
-      key:'course_status'
-    },
+         title: "Status",
+         key: "course_status",
+         render: (text, record) => (
+           <Space>
+             <Tooltip title="Change Status">
+               <Dropdown overlay={menu(record)} trigger={["click"]}>
+                 <Button>
+                   {record.course_status?.charAt(0).toUpperCase() + record.course_status?.slice(1)} <DownOutlined />
+                 </Button>
+               </Dropdown>
+             </Tooltip>
+           </Space>
+         ),
+       },
     {
       title: "Action",
       key: "action",
