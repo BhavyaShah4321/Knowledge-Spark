@@ -7,6 +7,9 @@ import Dashboard from '../Admin/Dashboard';
 import ChatList from '../Admin/Manage Chat/ChatList';
 import ChatMessage from '../Admin/Manage Chat/ChatMessage';
 import StudentList from '../Admin/Manage Student/StudentList';
+import CreateVideoCall from '../Admin/Manage Video Call/CreateVideoCall';
+import EditVideoCall from '../Admin/Manage Video Call/EditVideoCall';
+import ManageVideochat from '../Admin/Manage Video Call/ManageVideochat';
 import CreateTeacher from '../Admin/ManageTeacher/CreateTeacher';
 import EditTeacher from '../Admin/ManageTeacher/EditTeacherList';
 import TeacherList from '../Admin/ManageTeacher/TeacherList';
@@ -55,6 +58,9 @@ const Root = () => {
         <Route path="/feedback" element={<FeedBack />} />
         <Route path="/category-list" element={<Category />} />
         <Route path="/manage-courses" element={<CourseList />} />
+        <Route path="/manage-video-chat" element={<ManageVideochat />} />
+        <Route path="/create-video-call" element={<CreateVideoCall />} />
+        <Route path="/edit-video-call" element={<EditVideoCall />} />
         <Route path="/complaint-list" element={<ComplaintList />} />
         <Route path="/create-complaint" element={<ComplaintModal />} />
 
