@@ -177,8 +177,10 @@ const ViewCourseVideo = () => {
   return (
     <>
       <div className="course-container">
+
       <div className="course-wrapper">
         <div className="main-content">
+
           <div className="video-section">
             <div className="video-container">
               {selectedVideo ? (
@@ -261,10 +263,9 @@ const ViewCourseVideo = () => {
             </div>
 
           </div>
+      
         </div>
-        
-      </div>
-      <div style={{display:'flex',justifyContent:'end'}}>
+        <div style={{display:'flex',justifyContent:'end',marginTop:'20px'}}>
       {currentUser?.type === "Teacher" && (
           <Col>
             <Button
@@ -278,6 +279,8 @@ const ViewCourseVideo = () => {
           </Col>
         )}
         </div>
+      </div>
+      
 
      <Modal
         title={`${editingCourseVideo?.videoId ? "Edit" : "Add"} Course Video`}
@@ -288,6 +291,7 @@ const ViewCourseVideo = () => {
         }}
         footer={null}
         width={600}
+        centered
       >
         <Form 
           layout="vertical" 
@@ -364,16 +368,16 @@ const ViewCourseVideo = () => {
               accept="video/*"
               maxCount={1}
             >
-              <Button icon={<UploadOutlined />}>Upload Video</Button>
+              <Button icon={<UploadOutlined />}  >Upload Video</Button>
             </Upload>
           </Form.Item>
 
-          <Form.Item className="text-right mb-0">
-            <Button className="mr-2" onClick={() => setModalVisible(false)}>
+          <Form.Item className="text-right mb-0 " style={{display:'flex',justifyContent:'flex-end'}}>
+            <Button className="mr-2 " type="primary" onClick={() => setModalVisible(false)}>
               Cancel
             </Button>
-            <Button type="primary" htmlType="submit">
-              {editingCourseVideo?.videoId ? "Update" : "Add"} Video
+            <Button type="primary" htmlType="submit"  style={{marginLeft:'10px'}}>
+              {editingCourseVideo?.videoId ? "Edit" : "Add"} Video
             </Button>
           </Form.Item>
         </Form>
