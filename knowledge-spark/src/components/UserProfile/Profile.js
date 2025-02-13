@@ -5,7 +5,6 @@ import {
   Card,
   Col,
   DatePicker,
-  Divider,
   Form,
   Input,
   message,
@@ -13,13 +12,13 @@ import {
   Row,
   Space,
   Typography,
-  Upload
+  Upload,
 } from 'antd';
 import { CameraOutlined, UploadOutlined, EditOutlined, SaveOutlined, LockOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import axios from 'axios';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 const { TextArea } = Input;
 
 function Profile() {
@@ -28,6 +27,7 @@ function Profile() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [fileList, setFileList] = useState([]);
   const [certificateList, setCertificateList] = useState([]);
+  const [userId,setUserId]=useState(null);
   const [profile, setProfile] = useState({
     username: '',
     email: '',
@@ -35,81 +35,117 @@ function Profile() {
     dob: null,
     gender: '',
     bio: '',
-    user_degree_certificate: ''
+    user_degree_certificate: '',
   });
 
+  
+
+  
+  const getAccessToken = () => {
+    const authData = JSON.parse(localStorage.getItem("auth_token"));
+    if (!authData?.access_token) {
+      throw new Error(
+        "Authentication tokens are missing. Please log in again."
+      );
+    }
+    return authData.access_token;
+  };
+
   useEffect(() => {
-    loadProfileData();
+    const authData = JSON.parse(localStorage.getItem("auth_token"));
+    if (authData?.user?.id) {
+      setUserId(authData.user.id);
+    }
   }, []);
+  
+  useEffect(() => {
+    if (userId) {
+      loadProfileData();
+    }
+  }, [userId]);
+  // Fetch user profile data from the API
+  const loadProfileData = async () => {
+    
+    try {
+      const accessToken = getAccessToken();
 
-  const loadProfileData = () => {
-    const storedAuth = localStorage.getItem('auth_token');
-    if (storedAuth) {
-      const { user } = JSON.parse(storedAuth);
-      if (user) {
-        // Handle profile picture URL
-        const profile_picture = user.profile_picture || '';
-
-        // Handle certificate URL
-        const user_degree_certificate = user.user_degree_certificate
-          ? `http://localhost:8000${user.user_degree_certificate}`
-          : null;
-
-        // Create the profile object
-        const profileData = {
-          username: user.username || '',
-          email: user.email || '',
-          profile_picture,
-          dob: user.dob ? dayjs(user.dob) : null,
-          gender: user.gender || '',
-          bio: user.bio || '',
-          user_degree_certificate
-        };
-
-        // Set profile state
-        setProfile(profileData);
-
-        // Set form values
-        form.setFieldsValue({
-          username: user.username,
-          email: user.email,
-          dob: user.dob ? dayjs(user.dob) : null,
-          gender: user.gender,
-          bio: user.bio
-        });
-
-        // Handle profile picture file list
-        if (profile_picture) {
-          setFileList([{
-            uid: '-1',
-            name: 'profile_image.png',
-            status: 'done',
-            url: profile_picture
-          }]);
+      const response = await axios.get(
+        `http://localhost:8000/api/user/${userId}/`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         }
+      );
+      console.log("newres",response);
+      
+      const userData = response.data;
 
-        // Handle certificate file list
-        if (user_degree_certificate) {
-          setCertificateList([{
-            uid: '-1',
-            name: 'degree_certificate.pdf',
-            status: 'done',
-            url: user_degree_certificate
-          }]);
-        }
+      // Handle profile picture URL
+      const profile_picture = userData.profile_picture || '';
+
+      // Handle certificate URL
+      const user_degree_certificate = userData.user_degree_certificate
+        ? `http://localhost:8000${userData.user_degree_certificate}`
+        : null;
+
+      // Create the profile object
+      const profileData = {
+        username: userData.username || '',
+        email: userData.email || '',
+        profile_picture,
+        dob: dayjs(userData.dob).format('DD-MM-YYYY') ||"N/A",
+        gender: userData.gender || '',
+        bio: userData.bio || '',
+        user_degree_certificate,
+      };
+
+      // Set profile state
+      setProfile(profileData);
+
+      // Set form values
+      form.setFieldsValue({
+        username: userData.username,
+        email: userData.email,
+        dob: userData.dob ? dayjs(userData.dob) : null,
+        gender: userData.gender,
+        bio: userData.bio,
+      });
+
+      // Handle profile picture file list
+      if (profile_picture) {
+        setFileList([{
+          uid: '-1',
+          name: 'profile_image.png',
+          status: 'done',
+          url: profile_picture,
+        }]);
       }
+
+      // Handle certificate file list
+      if (user_degree_certificate) {
+        setCertificateList([{
+          uid: '-1',
+          name: 'degree_certificate.pdf',
+          status: 'done',
+          url: user_degree_certificate,
+        }]);
+      }
+    } catch (error) {
+      message.error('Failed to load profile data');
+      console.error('Error loading profile data:', error);
     }
   };
 
-  // Modify handleSave to include auth token
+  // Save updated profile data using the API
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
       const formData = new FormData();
-      
+
       const formDataObj = {
         ...values,
-        dob: values.dob ? dayjs(values.dob).format('YYYY-MM-DD') : null
+        dob: values.dob ? dayjs(values.dob).format('YYYY-MM-DD') : null,
       };
       formData.append('form_data', JSON.stringify(formDataObj));
 
@@ -121,33 +157,30 @@ function Profile() {
         formData.append('user_degree_certificate', certificateList[0].originFileObj);
       }
 
-      const storedAuth = localStorage.getItem('auth_token');
-      if (storedAuth) {
-        const { access_token, user } = JSON.parse(storedAuth);
-        
-        const response = await axios.patch(
-          `http://localhost:8000/api/user/${user.id}/`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${access_token}`,
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
+      const accessToken = getAccessToken();
 
-        if (response.status === 200) {
-          message.success('Profile updated successfully!');
-          setIsEditing(false);
-          
-          // Reload profile data after successful update
-          loadProfileData();
+      const response = await axios.patch(
+        `http://localhost:8000/api/user/${userId}/`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         }
+      );
+
+      if (response.status === 200) {
+        message.success('Profile updated successfully!');
+        setIsEditing(false);
+
+        // Reload profile data after successful update
+        loadProfileData();
       }
     } catch (error) {
       message.error('Failed to update profile');
+      console.error('Error updating profile:', error);
     }
-  }
+  };
 
   const handlePasswordChange = async (values) => {
     try {
@@ -234,7 +267,7 @@ function Profile() {
                       name="email"
                       rules={[
                         { required: true, message: 'Email is required' },
-                        { type: 'email', message: 'Invalid email format' }
+                        { type: 'email', message: 'Invalid email format' },
                       ]}
                     >
                       <Input disabled={!isEditing} />
