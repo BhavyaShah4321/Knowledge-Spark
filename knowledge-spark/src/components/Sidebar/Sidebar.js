@@ -65,10 +65,13 @@ export default function Sidebar() {
     { key: "/feedback", label: "Feedback", icon: <BarChartOutlined />, roles: ["Admin"] },
     // { key: "/complaints", label: "Complaints", icon: <BarChartOutlined />, roles: ["Admin"] },
     { key: "/manage-courses", label: "Course", icon: <RobotOutlined />, roles: ["Teacher"] },
+    { key: "/teacher-chat", label: "Chat", icon: <WechatOutlined />, roles: ["Teacher"] },
     { key: "/student-coures", label: "Courses", icon: <LaptopOutlined />, roles: ["Student"] },
+    { key: "/student-chat", label: "Chat", icon: <WechatOutlined />, roles: ["Student"] },
     { key: "/create-complaint", label: "Complaint", icon: <RiseOutlined />, roles: ["Teacher", "Student",] },
     { key: "/student-payment", label: "Purchase Course", icon: <CreditCardOutlined />, roles: ["Student"] },
     { key: "/complaint-list", label: "Complaints", icon: <RiseOutlined />, roles: ["Admin",] },
+
 
   ];
 
