@@ -4,7 +4,7 @@ import {
   PlusOutlined,
   SearchOutlined,
   UploadOutlined,
-  VideoCameraOutlined
+  VideoCameraOutlined,
 } from "@ant-design/icons";
 import {
   Breadcrumb,
@@ -21,7 +21,8 @@ import {
   Table,
   Tooltip,
   Upload,
-  message
+  message,
+  Modal,
 } from "antd";
 import { Option } from "antd/es/mentions";
 import axios from "axios";
@@ -38,20 +39,21 @@ export default function CourseList() {
   const [loading, setLoading] = useState(false);
   const [courseData, setCourseData] = useState([]);
   const [category, setCategory] = useState([]);
-  
+
   // Drawer states
   const [courseDrawerOpen, setCourseDrawerOpen] = useState(false);
   const [courseVideoDrawerOpen, setCourseVideoDrawerOpen] = useState(false);
+
+  const [courseModalOpen, setCourseModalOpen] = useState(false);
+  const [courseVideoModalOpen, setCourseVideoModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
   const [editingCourseVideo, setEditingCourseVideo] = useState(null);
-  
-  
+
   // Forms
   const [courseForm] = Form.useForm();
   const [courseVideoForm] = Form.useForm();
   const [teacherId, setTeacherId] = useState(null);
 
-  
   const navigate = useNavigate();
 
   const fetchCategoryDetails = async (page = 1) => {
@@ -89,49 +91,65 @@ export default function CourseList() {
     return authData.access_token;
   };
 
-  // const fetchCourseDetails = async (page = 1) => {
-  //   try {
-  //     setLoading(true);
-  //     const accessToken = getAccessToken();
+  const openCourseModal = (course = null) => {
+    setEditingCourse(course);
+    if (course) {
+      const formData = {
+        ...course,
+        course_thumbnail: course.course_thumbnail
+          ? [
+              {
+                uid: "-1",
+                name: "current-thumbnail.jpg",
+                status: "done",
+                url: course.course_thumbnail,
+              },
+            ]
+          : undefined,
+      };
+      courseForm.setFieldsValue(formData);
+    } else {
+      courseForm.resetFields();
+    }
+    setCourseModalOpen(true);
+  };
 
-  //     const response = await axios.get(`http://localhost:8000/api/course/`, {
-  //       headers: {
-  //         Authorization: `Bearer ${accessToken}`,
-  //       },
-  //     });
-
-  //     const CourseDetails = response.data;
-  //     setCourseData(CourseDetails.results.data || []);
-  //     setTotalItems(CourseDetails.count || 0);
-  //   } catch (error) {
-  //     console.error("Error fetching course details:", error);
-  //     message.error("Failed to fetch course details");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // const fetchCurrentTeacher = async () => {
-  //   try {
-  //     const accessToken = getAccessToken();
-  //     const authData = JSON.parse(localStorage.getItem("auth_data")); // Assuming you store user data here
-      
-  //     const response = await axios.get(
-  //       `http://localhost:8000/api/user/${authData.user.id}/`,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${accessToken}`,
-  //         },
-  //       }
-  //     );
-
-  //     setCurrentTeacher(response.data);
-  //   } catch (error) {
-  //     console.error("Error fetching teacher details:", error);
-  //     message.error("Failed to fetch teacher details");
-  //   }
-  // };
-
+  const openCourseVideoModal = (course, video = null) => {
+    setEditingCourseVideo({
+      courseId: course.id,
+      courseTitle: course.course_title,
+      videoId: video ? video.id : null,
+    });
+    if (video) {
+      courseVideoForm.setFieldsValue({
+        course_video_title: video.course_video_title,
+        course_video_description: video.course_video_description,
+        course_video_thumbnail: video.course_video_thumbnail
+          ? [
+              {
+                uid: "-1",
+                name: "current-thumbnail.jpg",
+                status: "done",
+                url: video.course_video_thumbnail,
+              },
+            ]
+          : undefined,
+        course_video: video.course_video
+          ? [
+              {
+                uid: "-1",
+                name: "current-video.mp4",
+                status: "done",
+                url: video.course_video,
+              },
+            ]
+          : undefined,
+      });
+    } else {
+      courseVideoForm.resetFields();
+    }
+    setCourseVideoModalOpen(true);
+  };
 
   useEffect(() => {
     const authData = JSON.parse(localStorage.getItem("auth_token")); // Changed to "auth_token"
@@ -142,89 +160,42 @@ export default function CourseList() {
     fetchCategoryDetails(currentPage);
   }, [currentPage]);
 
-  const openCourseDrawer = (course = null) => {
-    setEditingCourse(course);
-    if (course) {
-      // Convert the thumbnail to format expected by Upload component
-      const formData = {
-        ...course,
-        course_thumbnail: course.course_thumbnail ? [{
-          uid: '-1',
-          name: 'current-thumbnail.jpg',
-          status: 'done',
-          url: course.course_thumbnail
-        }] : undefined
-      };
-      courseForm.setFieldsValue(formData);
-    } else {
-      courseForm.resetFields();
-    }
-    setCourseDrawerOpen(true);
-  };
-
-  const openCourseVideoDrawer = (course, video = null) => {
-    setEditingCourseVideo({
-      courseId: course.id,
-      courseTitle: course.course_title,
-      videoId: video ? video.id : null, // Include videoId if editing
-    });
-    if (video) {
-      // Set form values if editing
-      courseVideoForm.setFieldsValue({
-        course_video_title: video.course_video_title,
-        course_video_description: video.course_video_description,
-        course_video_thumbnail: video.course_video_thumbnail ? [{
-          uid: '-1',
-          name: 'current-thumbnail.jpg',
-          status: 'done',
-          url: video.course_video_thumbnail
-        }] : undefined,
-        course_video: video.course_video ? [{
-          uid: '-1',
-          name: 'current-video.mp4',
-          status: 'done',
-          url: video.course_video
-        }] : undefined,
-      });
-    } else {
-      courseVideoForm.resetFields();
-    }
-    setCourseVideoDrawerOpen(true);
-  };
-
   const handleCourseSubmit = async (values) => {
     try {
       if (!teacherId) {
         message.error("Teacher ID not available");
         return;
       }
-  
+
       const accessToken = getAccessToken();
       const endpoint = editingCourse
         ? `http://localhost:8000/api/course/${editingCourse.id}/`
         : "http://localhost:8000/api/course/";
-  
+
       const method = editingCourse ? "patch" : "post";
       const formData = new FormData();
-  
+
       const form_data = {
         course_title: values.course_title,
         course_description: values.course_description,
         course_category: values.course_category,
         course_price: values.course_price,
-        course_teacher: teacherId
+        course_teacher: teacherId,
       };
-  
+
       // Handle thumbnail
       if (values.course_thumbnail?.[0]?.originFileObj) {
-        formData.append("course_thumbnail", values.course_thumbnail[0].originFileObj);
+        formData.append(
+          "course_thumbnail",
+          values.course_thumbnail[0].originFileObj
+        );
       } else if (editingCourse && editingCourse.course_thumbnail) {
         // Preserve existing thumbnail during edit if no new one is uploaded
         form_data.course_thumbnail = editingCourse.course_thumbnail;
       }
-  
+
       formData.append("form_data", JSON.stringify(form_data));
-  
+
       const response = await axios({
         method,
         url: endpoint,
@@ -232,12 +203,14 @@ export default function CourseList() {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           // Don't set Content-Type - let browser handle it for FormData
-        }
+        },
       });
-  
+
       if (response.status === 200 || response.status === 201) {
-        message.success(`Course ${editingCourse ? "updated" : "added"} successfully`);
-        setCourseDrawerOpen(false);
+        message.success(
+          `Course ${editingCourse ? "updated" : "added"} successfully`
+        );
+        setCourseModalOpen(false);
         courseForm.resetFields();
         fetchCourseDetails(currentPage);
       }
@@ -245,7 +218,9 @@ export default function CourseList() {
       console.error("Error submitting course:", error);
       if (error.response?.data) {
         // Show specific error message from backend if available
-        message.error(error.response.data.message || "Failed to save course details");
+        message.error(
+          error.response.data.message || "Failed to save course details"
+        );
       } else {
         message.error("Failed to save course details");
       }
@@ -257,31 +232,34 @@ export default function CourseList() {
         message.error("Teacher ID not available");
         return;
       }
-  
+
       const accessToken = getAccessToken();
       const endpoint = editingCourseVideo?.videoId
         ? `http://localhost:8000/api/course-video/${editingCourseVideo.videoId}/`
         : "http://localhost:8000/api/course-video/";
-  
+
       const formData = new FormData();
-      
+
       // Add files to FormData
       if (values.course_video?.[0]?.originFileObj) {
         formData.append("course_video", values.course_video[0].originFileObj);
       }
       if (values.course_video_thumbnail?.[0]?.originFileObj) {
-        formData.append("course_video_thumbnail", values.course_video_thumbnail[0].originFileObj);
+        formData.append(
+          "course_video_thumbnail",
+          values.course_video_thumbnail[0].originFileObj
+        );
       }
-  
+
       const form_data = {
-        course: editingCourseVideo.courseId,  // Changed to 'course' to match API
+        course: editingCourseVideo.courseId, // Changed to 'course' to match API
         course_video_title: values.course_video_title,
         course_video_description: values.course_video_description,
-        course_teacher: teacherId  // Using the correct field name 'teacher'
+        course_teacher: teacherId, // Using the correct field name 'teacher'
       };
-  
+
       formData.append("form_data", JSON.stringify(form_data));
-  
+
       const response = await axios({
         method: editingCourseVideo?.videoId ? "patch" : "post",
         url: endpoint,
@@ -291,10 +269,14 @@ export default function CourseList() {
           "Content-Type": "multipart/form-data",
         },
       });
-  
+
       if (response.status === 200 || response.status === 201) {
-        message.success(`Course video ${editingCourseVideo?.videoId ? "updated" : "added"} successfully`);
-        setCourseVideoDrawerOpen(false);
+        message.success(
+          `Course video ${
+            editingCourseVideo?.videoId ? "updated" : "added"
+          } successfully`
+        );
+         setCourseVideoModalOpen(false);
         courseVideoForm.resetFields();
         fetchCourseDetails(currentPage); // Refresh the course list
       }
@@ -315,8 +297,7 @@ export default function CourseList() {
       const accessToken = getAccessToken();
       const userId = getCurrentUserId();
 
-      console.log("access",accessToken);
-      
+      console.log("access", accessToken);
 
       if (!userId) {
         message.error("User ID not found. Please login again.");
@@ -325,7 +306,7 @@ export default function CourseList() {
 
       const response = await axios.post(
         `http://localhost:8000/api/course/get-course-according-teacher/`,
-        {user_id:userId},
+        { user_id: userId },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -334,11 +315,10 @@ export default function CourseList() {
       );
 
       const courseDetails = response.data.data;
-      console.log("details",courseDetails);
-      
-        setCourseData(courseDetails || []);
-        setTotalItems(courseDetails.count || 0);
-      
+      console.log("details", courseDetails);
+
+      setCourseData(courseDetails || []);
+      setTotalItems(courseDetails.count || 0);
     } catch (error) {
       console.error("Error fetching course details:", error);
       message.error("Failed to fetch course details");
@@ -360,7 +340,6 @@ export default function CourseList() {
     }
   }, [currentPage]);
 
-
   const menu = (record) => (
     <Menu
       onClick={({ key }) => {
@@ -379,13 +358,13 @@ export default function CourseList() {
     try {
       setLoading(true);
       const accessToken = getAccessToken();
-  
+
       const response = await axios.patch(
         `http://localhost:8000/api/course/${id}/`,
         {
           form_data: JSON.stringify({
-            course_status: status
-          })
+            course_status: status,
+          }),
         },
         {
           headers: {
@@ -394,7 +373,7 @@ export default function CourseList() {
           },
         }
       );
-  
+
       if (response.status === 200) {
         message.success(`Course status updated to ${status} successfully`);
         fetchCourseDetails(currentPage);
@@ -445,20 +424,22 @@ export default function CourseList() {
       key: "course_category_name",
     },
     {
-         title: "Status",
-         key: "course_status",
-         render: (text, record) => (
-           <Space>
-             <Tooltip title="Change Status">
-               <Dropdown overlay={menu(record)} trigger={["click"]}>
-                 <Button>
-                   {record.course_status?.charAt(0).toUpperCase() + record.course_status?.slice(1)} <DownOutlined />
-                 </Button>
-               </Dropdown>
-             </Tooltip>
-           </Space>
-         ),
-       },
+      title: "Status",
+      key: "course_status",
+      render: (text, record) => (
+        <Space>
+          <Tooltip title="Change Status">
+            <Dropdown overlay={menu(record)} trigger={["click"]}>
+              <Button>
+                {record.course_status?.charAt(0).toUpperCase() +
+                  record.course_status?.slice(1)}{" "}
+                <DownOutlined />
+              </Button>
+            </Dropdown>
+          </Tooltip>
+        </Space>
+      ),
+    },
     {
       title: "Action",
       key: "action",
@@ -467,18 +448,18 @@ export default function CourseList() {
           <Tooltip title="Edit Course">
             <Button
               icon={<EditOutlined />}
-              onClick={() => openCourseDrawer(record)}
+              onClick={() => openCourseModal(record)}
             />
           </Tooltip>
           <Tooltip title="Manage Course Videos">
             <Button
               icon={<VideoCameraOutlined />}
-              onClick={() => openCourseVideoDrawer(record)}
+              onClick={() => openCourseVideoModal(record)}
             />
           </Tooltip>
         </Space>
       ),
-    }
+    },
   ];
 
   return (
@@ -515,7 +496,7 @@ export default function CourseList() {
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
-                onClick={() => openCourseDrawer()}
+                onClick={() => openCourseModal()}
               >
                 Add Course
               </Button>
@@ -524,14 +505,16 @@ export default function CourseList() {
         </Col>
       </Row>
 
-      {/* Course Drawer */}
-      <Drawer
+      <Modal
         title={editingCourse ? "Edit Course" : "Add Course"}
-        onClose={() => setCourseDrawerOpen(false)}
-        open={courseDrawerOpen}
-        width={400}
+        open={courseModalOpen}
+        onCancel={() => setCourseModalOpen(false)}
+        footer={null}
+        width={600}
+        centered
       >
         <Form layout="vertical" form={courseForm} onFinish={handleCourseSubmit}>
+          {/* ... keep existing form items unchanged */}
           <Form.Item
             name="course_title"
             label="Course Title"
@@ -577,11 +560,12 @@ export default function CourseList() {
               ))}
             </Select>
           </Form.Item>
+
           <Form.Item
             name="course_thumbnail"
             label="Course Thumbnail"
             rules={[
-              { required: true, message: "Please upload course  thumbnail" }
+              { required: true, message: "Please upload course thumbnail" },
             ]}
             valuePropName="fileList"
             getValueFromEvent={(e) => {
@@ -613,27 +597,36 @@ export default function CourseList() {
             <Input placeholder="Enter Course Price" />
           </Form.Item>
 
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              icon={editingCourse ? <EditIcon /> : <PlusOutlined />}
-            >
-              {editingCourse ? "Update Course" : "Add Course"}
-            </Button>
+          <Form.Item className="text-right">
+            <Space>
+              <Button onClick={() => setCourseModalOpen(false)}>Cancel</Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                icon={editingCourse ? <EditIcon /> : <PlusOutlined />}
+              >
+                {editingCourse ? "Update Course" : "Add Course"}
+              </Button>
+            </Space>
           </Form.Item>
         </Form>
-      </Drawer>
+      </Modal>
 
-      {/* Course Video Drawer */}
-      <Drawer
+      {/* Course Video Modal */}
+      <Modal
         title={`${editingCourseVideo?.videoId ? "Edit" : "Add"} Course Video`}
-        onClose={() => setCourseVideoDrawerOpen(false)}
-        open={courseVideoDrawerOpen}
-        width={400}
-        // form={form}
+        open={courseVideoModalOpen}
+        onCancel={() => setCourseVideoModalOpen(false)}
+        footer={null}
+        width={600}
+        centered
       >
-        <Form layout="vertical" form={courseVideoForm} onFinish={handleCourseVideoSubmit}>
+        <Form
+          layout="vertical"
+          form={courseVideoForm}
+          onFinish={handleCourseVideoSubmit}
+        >
+          {/* ... keep existing form items unchanged */}
           <Form.Item
             name="course_video_title"
             label="Course Video Title"
@@ -641,7 +634,8 @@ export default function CourseList() {
               { required: true, message: "Please enter course video title!" },
               {
                 pattern: /^[a-zA-Z\s]+$/,
-                message: "Course video title can only include letters and spaces!",
+                message:
+                  "Course video title can only include letters and spaces!",
               },
             ]}
           >
@@ -665,7 +659,10 @@ export default function CourseList() {
             name="course_video_thumbnail"
             label="Course Video Thumbnail"
             rules={[
-              { required: true, message: "Please upload course video thumbnail" }
+              {
+                required: true,
+                message: "Please upload course video thumbnail",
+              },
             ]}
             valuePropName="fileList"
             getValueFromEvent={(e) => {
@@ -687,9 +684,7 @@ export default function CourseList() {
           <Form.Item
             name="course_video"
             label="Course Video"
-            rules={[
-              { required: true, message: "Please upload course video" }
-            ]}
+            rules={[{ required: true, message: "Please upload course video" }]}
             valuePropName="fileList"
             getValueFromEvent={(e) => {
               if (Array.isArray(e)) return e;
@@ -707,17 +702,24 @@ export default function CourseList() {
             </Upload>
           </Form.Item>
 
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              icon={editingCourseVideo?.videoId ? <EditIcon /> : <PlusOutlined />}
-            >
-              {editingCourseVideo?.videoId ? "Update" : "Add"} Course Video
-            </Button>
+          <Form.Item className="text-right">
+            <Space>
+              <Button onClick={() => setCourseVideoModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                icon={
+                  editingCourseVideo?.videoId ? <EditIcon /> : <PlusOutlined />
+                }
+              >
+                {editingCourseVideo?.videoId ? "Update" : "Add"} Course Video
+              </Button>
+            </Space>
           </Form.Item>
         </Form>
-      </Drawer>
+      </Modal>
 
       <Table
         dataSource={Array.isArray(courseData) ? courseData : []}
