@@ -17,7 +17,8 @@ import {
   Space,
   Table,
   Tooltip,
-  message
+  message,
+  Modal
 } from "antd";
 import { Option } from "antd/es/mentions";
 import axios from "axios";
@@ -37,6 +38,7 @@ export default function Courses() {
   const [categories, setCategories] = useState([]);
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
 
 
@@ -107,10 +109,15 @@ export default function Courses() {
     fetchCourseDetails(currentPage);
   }, [currentPage]);
 
-  const openEditDrawer = (course) => {
+  const openEditModal = (course) => {
     setEditingCourse(course);
     form.setFieldsValue(course);
-    setEditDrawerOpen(true);
+    setIsModalOpen(true);
+  };
+
+  const handleModalCancel = () => {
+    setIsModalOpen(false);
+    form.resetFields();
   };
 
   const handleEditSubmit = async (values) => {
@@ -121,8 +128,6 @@ export default function Courses() {
       }
 
       const formData = new FormData();
-
-
       const form_data = {
         course_description: values.course_description,
         course_title: values.course_title,
@@ -147,8 +152,9 @@ export default function Courses() {
 
       if (response.status === 200) {
         message.success("Course updated successfully");
-        setEditDrawerOpen(false);
-        fetchCourseDetails(currentPage); // Refresh course list
+        setIsModalOpen(false);
+        form.resetFields();
+        fetchCourseDetails(currentPage);
       }
     } catch (error) {
       console.error("Error updating course:", error);
@@ -276,7 +282,11 @@ export default function Courses() {
       render: (text, record) => (
         <Space>
           <Tooltip title="Edit">
-            <Button icon={<EditOutlined />} style={{ cursor: "pointer" }} onClick={() => openEditDrawer(record)} />
+            <Button 
+              icon={<EditOutlined />} 
+              style={{ cursor: "pointer" }} 
+              onClick={() => openEditModal(record)} 
+            />
           </Tooltip>
         </Space>
       ),
@@ -342,15 +352,22 @@ export default function Courses() {
         loading={loading}
       />
 
+
       {/* Edit Drawer */}
-      <Drawer
+      <Modal
         title="Edit Course"
-        placement="right"
-        width={400}
-        onClose={() => setEditDrawerOpen(false)}
-        open={editDrawerOpen}
+        open={isModalOpen}
+        onCancel={handleModalCancel}
+        footer={null}
+        centered
+        width={600}
       >
-        <Form form={form} layout="vertical" onFinish={handleEditSubmit}>
+        <Form 
+          form={form} 
+          layout="vertical" 
+          onFinish={handleEditSubmit}
+          className="pt-4"
+        >
           <Form.Item
             label="Course Title"
             name="course_title"
@@ -377,18 +394,18 @@ export default function Courses() {
 
           <Form.Item
             label="Course Category"
-            name="course_category"  // Use 'course_category' here to match API field
-            rules={[{ required: true, message: "Please select a course category" }]}>
+            name="course_category"
+            rules={[{ required: true, message: "Please select a course category" }]}
+          >
             <Select
-              loading={loading} // Show loading state while fetching categories
+              loading={loading}
               placeholder="Select a category"
               showSearch
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option.children.toLowerCase().includes(input.toLowerCase())
               }
-              // Set the selected category in the dropdown
-              value={editingCourse?.course_category || undefined} // This will be the category of the course being edited
+              value={editingCourse?.course_category || undefined}
             >
               {categories.map((category) => (
                 <Option key={category.id} value={category.id}>
@@ -398,13 +415,18 @@ export default function Courses() {
             </Select>
           </Form.Item>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              Update Course
-            </Button>
+          <Form.Item className="mb-0">
+            <Space>
+              <Button onClick={handleModalCancel}>
+                Cancel
+              </Button>
+              <Button type="primary" htmlType="submit" loading={loading}>
+                Update Course
+              </Button>
+            </Space>
           </Form.Item>
         </Form>
-      </Drawer>
+      </Modal>
     </div>
   );
 }

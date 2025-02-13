@@ -240,6 +240,7 @@ function Profile() {
                       <Input disabled={!isEditing} />
                     </Form.Item>
                   </Col>
+                  
                   <Col xs={24} sm={12}>
                     <Form.Item
                       label="Date of Birth"

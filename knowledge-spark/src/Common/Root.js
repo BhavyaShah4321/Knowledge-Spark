@@ -11,7 +11,7 @@ import CreateVideoCall from '../Admin/Manage Video Call/CreateVideoCall';
 import EditVideoCall from '../Admin/Manage Video Call/EditVideoCall';
 import ManageVideochat from '../Admin/Manage Video Call/ManageVideochat';
 import CreateTeacher from '../Admin/ManageTeacher/CreateTeacher';
-import EditTeacher from '../Admin/ManageTeacher/EditTeacherList';
+// import EditTeacher from '../Admin/ManageTeacher/EditTeacherList';
 import TeacherList from '../Admin/ManageTeacher/TeacherList';
 import Registration from '../Common/Authentication/Register';
 import Category from '../components/Category/Category';
@@ -48,7 +48,7 @@ const Root = () => {
       <Route element={<PrivateRoute allowedRoles={["Admin"]} />}>
         <Route path="/teacher-list" element={<TeacherList />} />
         <Route path="/create-teacher" element={<CreateTeacher />} />
-        <Route path="/edit-teacher/:id" element={<EditTeacher />} />
+        {/* <Route path="/edit-teacher/:id" element={<EditTeacher />} /> */}
         <Route path="/student-list" element={<StudentList />} />
         <Route path="/course-list" element={<Courses />} />
         <Route path="/chat-message" element={<ChatMessage />} />

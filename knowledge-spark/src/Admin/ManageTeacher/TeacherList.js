@@ -22,6 +22,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { ReactComponent as FilterIcon } from "../../Image/FilterIcon.svg";
+import EditTeacherModal from "./EditTeacherModal";
 
 function TeacherList() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -30,6 +31,12 @@ function TeacherList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+      const [selectedTeacherId, setSelectedTeacherId] = useState(null);
+      const handleEdit = (record) => {
+          setSelectedTeacherId(record.id);
+          setIsModalVisible(true);
+      };
 
   const getAccessToken = () => {
     const authData = JSON.parse(localStorage.getItem("auth_token") || "{}");
@@ -206,21 +213,12 @@ function TeacherList() {
       title: "Action",
       key: "action",
       render: (record) => (
-        // <Space>
-        //   <Tooltip title="Edit Teacher">
-        //     <Link to={`/edit-teacher/${record.id}`}>
-        //       <Button type="link">
-        //         <EditIcon />
-        //       </Button>
-        //     </Link>
-        //   </Tooltip>
-
-        // </Space>
+        
         <Space>
           <Tooltip title="Edit">
-            <Link to={`/edit-teacher/${record.id}`}>
-              <Button icon={<EditOutlined />} style={{ cursor: "pointer" }} />
-            </Link>
+            {/* <Link to={`/edit-teacher/${record.id}`}> */}
+              <Button icon={<EditOutlined />} style={{ cursor: "pointer" }} onClick={()=>handleEdit(record)}/>
+            {/* </Link> */}
           </Tooltip>
         </Space>
       ),
@@ -276,6 +274,14 @@ function TeacherList() {
         pagination={{ current: currentPage, total: totalItems }}
         onChange={(pagination) => setCurrentPage(pagination.current)}
       />
+       <EditTeacherModal
+        visible={isModalVisible}
+        teacherId={selectedTeacherId}
+        onClose={() => setIsModalVisible(false)}
+        onSuccess={() => {
+            // Refresh your teacher list or perform other updates
+        }}
+    />
     </div>
   );
 }
