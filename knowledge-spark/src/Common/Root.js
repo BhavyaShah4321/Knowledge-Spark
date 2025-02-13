@@ -19,7 +19,9 @@ import ComplaintList from '../components/complaint/ComplaintList';
 import ComplaintModal from '../components/complaint/CreateComplain';
 import FeedBack from '../components/FeedBack/FeedBack';
 import PrivateRoute from '../components/PrivateRoute';
+import StudentChat from '../components/Student Chat/StudentChat';
 import StudentCourses from '../components/studentCOurses/StudentCourses';
+import TeacherChat from '../components/Teacher Chat/TeacherChat';
 import CourseList from '../components/Teacher/ManageCourses/CourseList';
 import Profile from '../components/UserProfile/Profile';
 import ForgetPassword from './Authentication/ForgetPassword';
@@ -69,12 +71,14 @@ const Root = () => {
 
       {/* Teacher-Specific Routes */}
       <Route element={<PrivateRoute allowedRoles={["Teacher"]} />}>
+        <Route path="/teacher-chat" element={<TeacherChat />} />
       </Route>
 
 
       {/* Student-Specific Routes */}
       <Route element={<PrivateRoute allowedRoles={["Student"]} />}>
         <Route path="/student-coures" element={<StudentCourses />} />
+        <Route path="/student-chat" element={<StudentChat />} />
       </Route>
     </Routes>
   );
