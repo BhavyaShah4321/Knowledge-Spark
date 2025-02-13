@@ -16,8 +16,8 @@ import {
   Table,
   Tooltip,
   message,
-  Drawer,
   Form,
+  Modal,
 } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
@@ -31,7 +31,7 @@ export default function FeedBack() {
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
   const [courseData, setCourseData] = useState([]);
-  const [editDrawerOpen, setEditDrawerOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingFeedback, setEditingFeedback] = useState(null);
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -70,49 +70,13 @@ export default function FeedBack() {
     fetchCourseDetails(currentPage);
   }, [currentPage]);
 
-  const onSearchChange = (e) => {
-    const value = e.target.value;
-    setSearchText(value);
-
-    if (value) {
-      const filteredData = courseData.filter(
-        (item) =>
-          item.course_title.toLowerCase().includes(value.toLowerCase()) ||
-          item.feedback_message.toLowerCase().includes(value.toLowerCase()) ||
-          item.feedback_student_username.toLowerCase().includes(value.toLowerCase())
-      );
-      setCourseData(filteredData);
-    } else {
-      fetchCourseDetails(currentPage);
-    }
-  };
-
-  const resetFilter = () => {
-    setSearchText("");
-    setCurrentPage(1);
-    fetchCourseDetails(1);
-  };
-
-  const getProfilePictureUrl = (feedback_student_profile_picture) => {
-    if (!feedback_student_profile_picture) return null;
-    return `http://localhost:8000/media/${feedback_student_profile_picture}`;
-  };
-
   const handleEditClick = (record) => {
     setEditingFeedback(record);
     form.setFieldsValue({
       feedback_message: record.feedback_message,
     });
-    setEditDrawerOpen(true);
+    setEditModalOpen(true);
   };
-
-  // const handleEditClick = (record) => {
-  //   setEditingFeedback(record);
-  //   form.setFieldsValue({
-  //     feedback_message: record.feedback_message,
-  //   });
-  //   setEditDrawerOpen(true);
-  // };
 
   const handleEditSubmit = async (values) => {
     try {
@@ -143,7 +107,7 @@ export default function FeedBack() {
 
       if (response.status === 200) {
         message.success("Feedback updated successfully");
-        setEditDrawerOpen(false);
+        setEditModalOpen(false);
         fetchCourseDetails(currentPage);
       }
     } catch (error) {
@@ -153,7 +117,6 @@ export default function FeedBack() {
       setLoading(false);
     }
   };
-
 
   const columns = [
     {
@@ -188,7 +151,6 @@ export default function FeedBack() {
   ];
 
   return (
-
     <div>
       <Row className="pagenamerow mb-0" justify="space-between" align="middle">
         <Col>
@@ -199,22 +161,6 @@ export default function FeedBack() {
             </Link>
             <Breadcrumb items={[{ title: <Link to="/dashboard">Home</Link> }, { title: "Feedback" }]} />
           </div>
-        </Col>
-        <Col>
-          <Space size="small">
-            <Input
-              placeholder="Search"
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={onSearchChange}
-              style={{ width: "200px" }}
-            />
-            <Tooltip placement="top" title="Reset Filter">
-              <Button type="primary" className="iconlink" onClick={resetFilter}>
-                <FilterIcon />
-              </Button>
-            </Tooltip>
-          </Space>
         </Col>
       </Row>
       <Table
@@ -231,7 +177,13 @@ export default function FeedBack() {
         scroll={{ x: 1500 }}
       />
 
-      <Drawer title="Edit Feedback" placement="right" onClose={() => setEditDrawerOpen(false)} open={editDrawerOpen}>
+      <Modal
+        title="Edit Feedback"
+        open={editModalOpen}
+        onCancel={() => setEditModalOpen(false)}
+        footer={null}
+        centered
+      >
         <Form form={form} layout="vertical" onFinish={handleEditSubmit}>
           <Form.Item label="Feedback" name="feedback_message" rules={[{ required: true, message: "Enter feedback" }]}> 
             <Input.TextArea />
@@ -242,7 +194,7 @@ export default function FeedBack() {
             </Button>
           </Form.Item>
         </Form>
-      </Drawer>
+      </Modal>
     </div>
   );
 }
