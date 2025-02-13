@@ -22,7 +22,8 @@ import {
   Space,
   Table,
   Tooltip,
-  Upload
+  Upload,
+  Modal
 } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -35,13 +36,13 @@ function StudentList() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [data, setData] = useState([]);
+  const [open,setOpen]=useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
   const [editingStudent, setEditingStudent] = useState(null);
-
   // Fetch students details from the API
   const fetchStudentDetails = async (page = 1, searchQuery = "") => {
     try {
@@ -158,27 +159,18 @@ function StudentList() {
       </Menu.Item>
     </Menu>
   );
-  const showDrawer = () => {
+  const showModal = () => {
     setEditingStudent(null);
     form.resetFields();
-    setOpen(true);
+    setIsModalOpen(true);
   };
-  const onClose = () => {
-    setOpen(false);
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
     form.resetFields();
     setEditingStudent(null);
   };
-  const getProfilePictureUrl = (profilePicture) => {
-    if (!profilePicture) return null;
 
-    // If the URL is already absolute (starts with http or https), return as is
-    if (profilePicture.startsWith("http")) {
-      return profilePicture;
-    }
-
-    // Otherwise, prepend the base URL
-    return `http://localhost:8000${profilePicture}`;
-  };
   const handleEdit = (student) => {
     setEditingStudent(student);
     const formattedDob = student.dob ? dayjs(student.dob, "DD-MM-YYYY") : null;
@@ -199,8 +191,21 @@ function StudentList() {
       gender: student.gender,
       profile_picture: fileList,
     });
-    setOpen(true);
+    setIsModalOpen(true);
   };
+
+  const getProfilePictureUrl = (profilePicture) => {
+    if (!profilePicture) return null;
+
+    // If the URL is already absolute (starts with http or https), return as is
+    if (profilePicture.startsWith("http")) {
+      return profilePicture;
+    }
+
+    // Otherwise, prepend the base URL
+    return `http://localhost:8000${profilePicture}`;
+  };
+  
 
   // Table columns configuration
   const columns = [
@@ -356,6 +361,7 @@ function StudentList() {
           `Student ${editingStudent ? "updated" : "added"} successfully`
         );
         setOpen(false);
+        setIsModalOpen(false);
         form.resetFields();
         setEditingStudent(null);
         fetchStudentDetails(currentPage);
@@ -409,11 +415,13 @@ function StudentList() {
           </Space>
         </Col>
       </Row>
-      <Drawer
+      <Modal
         title={editingStudent ? "Edit Student" : "Add Student"}
-        onClose={onClose}
-        open={open}
-        width={400}
+        open={isModalOpen}
+        onCancel={handleCancel}
+        footer={null}
+        width={600}
+        centered
       >
         <Form layout="vertical" form={form} onFinish={handleSubmit}>
           <Form.Item
@@ -444,8 +452,9 @@ function StudentList() {
               },
             ]}
           >
-            <Input placeholder="Enter Email " disabled />
+            <Input placeholder="Enter Email" disabled />
           </Form.Item>
+
           <Form.Item
             name="gender"
             label="Gender"
@@ -487,36 +496,21 @@ function StudentList() {
               accept="image/*"
               maxCount={1}
               disabled
-              defaultFileList={
-                editingStudent?.profile_picture
-                  ? [
-                    {
-                      uid: "-1",
-                      name: "Current Profile Picture",
-                      status: "done",
-                      url: getProfilePictureUrl(
-                        editingStudent.profile_picture
-                      ),
-                    },
-                  ]
-                  : []
-              }
             >
               <Button icon={<UploadOutlined />} disabled>Upload Profile Picture</Button>
             </Upload>
           </Form.Item>
 
           <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              icon={editingStudent ? <EditIcon /> : <PlusOutlined />}
-            >
-              {editingStudent ? "Update Student" : "Add Student"}
-            </Button>
+            <Space>
+              <Button type="primary" htmlType="submit" icon={editingStudent ? <EditIcon /> : <PlusOutlined />}>
+                {editingStudent ? "Update Student" : "Add Student"}
+              </Button>
+              <Button onClick={handleCancel}>Cancel</Button>
+            </Space>
           </Form.Item>
         </Form>
-      </Drawer>
+      </Modal>
 
       <Table
         // rowSelection={rowSelection}

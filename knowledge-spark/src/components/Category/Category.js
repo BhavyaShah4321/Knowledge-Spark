@@ -311,6 +311,7 @@ import {
                 fontWeight: 'bold',
               }}
               disabled={loading}
+            
             >
               Cancel
             </Button>,
@@ -329,9 +330,10 @@ import {
             </Button>,
           ]}
           mask={false}
-          style={{
-            top: '20%',
-          }}
+          // style={{
+          //   top: '20%',
+          // }}
+          centered
         >
           <Spin spinning={loading}>
             <div>
