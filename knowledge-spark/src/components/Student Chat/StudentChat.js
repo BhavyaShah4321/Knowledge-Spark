@@ -229,7 +229,6 @@
 
 // export default StudentChat
 
-
 import axios from 'axios';
 import { Search, Send, User } from "lucide-react";
 import React, { useEffect, useRef, useState } from 'react';
@@ -260,14 +259,38 @@ const getUsers = async () => {
             { headers: authHeader() }
         );
 
-        return response.data.data;
+        const usersWithLastMessage = await Promise.all(response.data.data.map(async (chat) => {
+            const lastMessageResponse = await axios.get(
+                `http://localhost:8000/api/chat-message/chat-message-according-chat/?uuid=${chat.uuid}`,
+                { headers: authHeader() }
+            );
+
+            const messages = lastMessageResponse.data.data;
+            const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+            const oppositeUserId = loggedInUserId === chat.user_1 ? chat.user_2 : chat.user_1;
+            const oppositeUsername = loggedInUserId === chat.user_1 ? chat.user_2_username : chat.user_1_username;
+
+            return {
+                id: oppositeUserId,
+                name: oppositeUsername,
+                uuid: chat.uuid,
+                status: 'online',
+                lastMessage: lastMessage ? lastMessage.message : 'No messages yet',
+                lastTime: lastMessage ? new Date(lastMessage.created_at).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }) : ''
+            };
+        }));
+
+        return usersWithLastMessage;
     } catch (error) {
         console.error("Error fetching users:", error);
         return [];
     }
 };
 
-// FETCH MESSAGES ACCORDING TO CHAT UUID
+
 const getMessagesByChatUUID = async (uuid) => {
     try {
         const response = await axios.get(
@@ -293,17 +316,11 @@ const StudentChat = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             const data = await getUsers();
-            const formattedUsers = data.map((chat) => ({
-                id: chat.user_1,
-                name: chat.user_1_username,
-                uuid: chat.uuid,
-                status: 'online',
-                lastMessage: 'Last message here...',
-            }));
-            setUsers(formattedUsers);
+            setUsers(data);
         };
         fetchUsers();
-    }, []);
+    }, [messages]);
+
 
     useEffect(() => {
         const fetchMessages = async () => {
@@ -338,28 +355,50 @@ const StudentChat = () => {
     const filteredUsers = users.filter((user) =>
         user.name.toLowerCase().includes(userSearch.toLowerCase())
     );
-
     const handleSendMessage = async () => {
         if (newMessage.trim() !== '') {
             try {
-                const chatResponse = await axios.get(`http://localhost:8000/api/chat-message/chat-message-according-chat/?uuid=${selectedUser.uuid}`, { headers: authHeader() });
-                const chatData = chatResponse.data.data[0]; // Get the first message data
+                const chatResponse = await axios.get(
+                    `http://localhost:8000/api/chat-message/chat-message-according-chat/?uuid=${selectedUser.uuid}`,
+                    { headers: authHeader() }
+                );
+    
+                if (chatResponse.data && chatResponse.data.data && chatResponse.data.data[0]) {
+                    const chatData = chatResponse.data.data[0];
+    
+                    const payload = {
+                        chatid: chatData.id,
+                        sender: loggedInUserId,
+                        message: newMessage,
+                    };
+    
+                    await axios.post("http://localhost:8000/api/chat-message/", payload, { headers: authHeader() });
+                    setNewMessage('');
+                } else {
+                    const createChatResponse = await axios.post(
+                        'http://localhost:8000/api/chat/',
+                        { user_1: loggedInUserId, user_2: selectedUser.id }, // Create chat between the two users
+                        { headers: authHeader() }
+                    );
 
-                // Ensure chatid is correctly obtained
-                const payload = {
-                    chatid: chatData.chatid, // Make sure this matches the database
-                    sender: loggedInUserId,
-                    message: newMessage
-                };
-
-                await axios.post("http://localhost:8000/api/chat-message/", payload, { headers: authHeader() });
-                setNewMessage('');
+                    if (createChatResponse.data && createChatResponse.data.data && createChatResponse.data.data.id) {
+                        const newChatId = createChatResponse.data.data.id;
+                        const payload = {
+                            chatid: newChatId, // Use the newly created chat's chatid
+                            sender: loggedInUserId,
+                            message: newMessage,
+                        };
+                        await axios.post("http://localhost:8000/api/chat-message/", payload, { headers: authHeader() });
+                        setNewMessage('');
+                    } else {
+                        console.error("Failed to create a new chat.");
+                    }
+                }
             } catch (error) {
-                console.error("Error sending message:", error.response.data);
+                console.error("Error sending message:", error.response ? error.response.data : error);
             }
         }
     };
-
 
     return (
         <div className="chat-message-container">
@@ -387,31 +426,27 @@ const StudentChat = () => {
                                 <div className="chat-message-avatar">
                                     <User size={24} color="#6b7280" />
                                 </div>
-                                {/* <div className={`status-indicator ${user.status === 'online' ? 'status-online' : 'status-offline'}`} /> */}
                             </div>
                             <div className="chat-message-user-info">
                                 <div className="chat-message-user-name">{user.name}</div>
                                 <div className="chat-message-last-message">{user.lastMessage}</div>
                             </div>
-                            <span className="chat-message-timestamp">12:34 PM</span>
+                            <span className="chat-message-timestamp">{user.lastTime}</span>
                         </div>
                     ))}
                 </div>
+
             </div>
             <div className="chat-message-chat-area">
                 {selectedUser ? (
                     <>
-                        <div className="chat-message-chat-header">
+                        <div className=".chat-message-chat-header">
                             <div className="chat-message-chat-header-content">
                                 <div className="chat-message-avatar">
                                     <User size={24} color="#6b7280" />
                                 </div>
                                 <div className="chat-message-user-info">
-                                    <div className="chat-message-user-name">{selectedUser.name}</div>
-                                    {/* <div className="last-message">
-                                         <span className={`status-indicator ${selectedUser.status === 'online' ? 'status-online' : 'status-offline'}`} />
-                                         {selectedUser.status === 'online' ? 'Online' : 'Offline'}
-                                    // </div> */}
+                                    <div className="chat-message-chatSide-user-name">{selectedUser.name}</div>
                                 </div>
                             </div>
                         </div>
