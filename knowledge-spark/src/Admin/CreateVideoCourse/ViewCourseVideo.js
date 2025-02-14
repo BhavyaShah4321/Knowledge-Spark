@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { EditOutlined, UploadOutlined } from "@ant-design/icons";
+import { Button, Col, Form, Input, message, Modal, Upload } from "antd";
 import axios from "axios";
-import { Link, useParams } from "react-router-dom";
-import { Button, Drawer, Form, Input, Upload, Breadcrumb, Col, Row,message,Modal } from "antd";
-import { UploadOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import "../../Styles/Main.css";
 
 const ViewCourseVideo = () => {
@@ -17,6 +17,7 @@ const ViewCourseVideo = () => {
   const [courseVideoDrawerOpen, setCourseVideoDrawerOpen] = useState(false);
   const [editingCourseVideo, setEditingCourseVideo] = useState(null);
   const [courseVideoForm] = Form.useForm();
+  const navigate = useNavigate();
 
   const BASE_URL = "http://localhost:8000";
 
@@ -44,7 +45,7 @@ const ViewCourseVideo = () => {
             Authorization: `Bearer ${accessToken}`,
           },
         });
-
+  
         const courseData = response.data.data;
         setCourse(courseData);
         if (courseData?.videos?.length > 0) {
@@ -76,7 +77,7 @@ const ViewCourseVideo = () => {
     try {
       const accessToken = getAccessToken();
       const formData = new FormData();
-      
+
       const form_data = {
         course_video_title: values.course_video_title,
         course_video_description: values.course_video_description,
@@ -126,6 +127,11 @@ const ViewCourseVideo = () => {
     }
   };
 
+  const viewTeacherProfile = (id) => {
+    navigate(`/profile/${id}`);
+    console.log("Teacher",id)
+  };
+  
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -178,58 +184,64 @@ const ViewCourseVideo = () => {
     <>
       <div className="course-container">
 
-      <div className="course-wrapper">
-        <div className="main-content">
+        <div className="course-wrapper">
+          <div className="main-content">
 
-          <div className="video-section">
-            <div className="video-container">
-              {selectedVideo ? (
-                <video
-                  src={`${BASE_URL}${selectedVideo.course_video}`}
-                  className="video-player"
-                  controls
-                  playsInline
-                />
-              ) : (
-                <div className="video-player no-video">No video available</div>
-              )}
-            </div>
-            <div className="video-info">
-              <h3 className="video-title">{selectedVideo?.course_video_title}</h3>
-              <p className="video-description">{selectedVideo?.course_video_description}</p>
-            </div>
+            <div className="video-section">
+              <div className="video-container">
+                {selectedVideo ? (
+                  <video
+                    src={`${BASE_URL}${selectedVideo.course_video}`}
+                    className="video-player"
+                    controls
+                    playsInline
+                  />
+                ) : (
+                  <div className="video-player no-video">No video available</div>
+                )}
+              </div>
+              <div className="video-info">
+                <h3 className="video-title">{selectedVideo?.course_video_title}</h3>
+                <p className="video-description">{selectedVideo?.course_video_description}</p>
+              </div>
 
               {currentUser?.type === "Student" && (
-                <div className="feedback-complaint-section">
-                  {submitStatus.message && (
-                    <div className={`status-message ${submitStatus.type === "success" ? "status-success" : "status-error"}`}>
-                      {submitStatus.message}
-                    </div>
-                  )}
-                  <div className="form-container feedback-form">
-                    <h3 className="form-title">Course Feedback</h3>
-                    <form onSubmit={handleSubmitFeedback}>
-                      <textarea
-                        value={feedback}
-                        onChange={(e) => setFeedback(e.target.value)}
-                        className="form-textarea"
-                        placeholder="Share your thoughts about this course..."
-                        maxLength={500}
-                        required
-                      />
-                      <div className={`char-count ${feedback.length > 400 ? "limit-near" : ""} ${feedback.length === 500 ? "limit-reached" : ""}`}>
-                        {500 - feedback.length} characters remaining
+                <>
+                  <div className="feedback-complaint-section">
+                    {submitStatus.message && (
+                      <div className={`status-message ${submitStatus.type === "success" ? "status-success" : "status-error"}`}>
+                        {submitStatus.message}
                       </div>
-                      <button
-                        type="submit"
-                        className="feedback-submit-btn"
-                        disabled={!feedback.trim()}
-                      >
-                        Submit Feedback
-                      </button>
-                    </form>
+                    )}
+                    <div className="form-container feedback-form">
+                      <h3 className="form-title">Course Feedback</h3>
+                      <form onSubmit={handleSubmitFeedback}>
+                        <textarea
+                          value={feedback}
+                          onChange={(e) => setFeedback(e.target.value)}
+                          className="form-textarea"
+                          placeholder="Share your thoughts about this course..."
+                          maxLength={500}
+                          required
+                        />
+                        <div className={`char-count ${feedback.length > 400 ? "limit-near" : ""} ${feedback.length === 500 ? "limit-reached" : ""}`}>
+                          {500 - feedback.length} characters remaining
+                        </div>
+                        <button
+                          type="submit"
+                          className="feedback-submit-btn"
+                          disabled={!feedback.trim()}
+                        >
+                          Submit Feedback
+                        </button>
+                      </form>
+                    </div>
                   </div>
-                </div>
+                  <button type="submit" className="btn btn-login" onClick={() => viewTeacherProfile(teacherId)}>
+                    Profile
+                  </button>
+
+                </>
               )}
             </div>
 
@@ -263,26 +275,26 @@ const ViewCourseVideo = () => {
             </div>
 
           </div>
-      
+
         </div>
-        <div style={{display:'flex',justifyContent:'end',marginTop:'20px'}}>
-      {currentUser?.type === "Teacher" && (
-          <Col>
-            <Button
-              type="primary"
-              icon={<EditOutlined />}
-              onClick={() => handleEditVideo(selectedVideo)}
-              disabled={!selectedVideo}
-            >
-              Edit Course Video
-            </Button>
-          </Col>
-        )}
+        <div style={{ display: 'flex', justifyContent: 'end', marginTop: '20px' }}>
+          {currentUser?.type === "Teacher" && (
+            <Col>
+              <Button
+                type="primary"
+                icon={<EditOutlined />}
+                onClick={() => handleEditVideo(selectedVideo)}
+                disabled={!selectedVideo}
+              >
+                Edit Course Video
+              </Button>
+            </Col>
+          )}
         </div>
       </div>
-      
 
-     <Modal
+
+      <Modal
         title={`${editingCourseVideo?.videoId ? "Edit" : "Add"} Course Video`}
         open={modalVisible}
         onCancel={() => {
@@ -293,9 +305,9 @@ const ViewCourseVideo = () => {
         width={600}
         centered
       >
-        <Form 
-          layout="vertical" 
-          form={courseVideoForm} 
+        <Form
+          layout="vertical"
+          form={courseVideoForm}
           onFinish={handleCourseVideoSubmit}
           className="p-4"
         >
@@ -320,9 +332,9 @@ const ViewCourseVideo = () => {
               { required: true, message: "Please enter video description" },
             ]}
           >
-            <Input.TextArea 
+            <Input.TextArea
               placeholder="Enter video description"
-              rows={4} 
+              rows={4}
             />
           </Form.Item>
 
@@ -372,11 +384,11 @@ const ViewCourseVideo = () => {
             </Upload>
           </Form.Item>
 
-          <Form.Item className="text-right mb-0 " style={{display:'flex',justifyContent:'flex-end'}}>
+          <Form.Item className="text-right mb-0 " style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button className="mr-2 " type="primary" onClick={() => setModalVisible(false)}>
               Cancel
             </Button>
-            <Button type="primary" htmlType="submit"  style={{marginLeft:'10px'}}>
+            <Button type="primary" htmlType="submit" style={{ marginLeft: '10px' }}>
               {editingCourseVideo?.videoId ? "Edit" : "Add"} Video
             </Button>
           </Form.Item>
