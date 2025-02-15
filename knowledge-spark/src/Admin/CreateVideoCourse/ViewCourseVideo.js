@@ -127,10 +127,10 @@ const ViewCourseVideo = () => {
     }
   };
 
-  const viewTeacherProfile = (id) => {
-    navigate(`/profile/${id}`);
-    console.log("Teacher",id)
-  };
+  // const viewTeacherProfile = (id) => {
+  //   navigate(`/profile/${id}`);
+  //   console.log("Teacher",id)
+  // };
   
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -179,6 +179,9 @@ const ViewCourseVideo = () => {
   if (!course) {
     return <div className="loader">Course not found</div>;
   }
+  const viewTeacherProfile = (teacherId) => {
+    navigate(`/profile/${teacherId}`);
+  };
 
   return (
     <>
@@ -237,9 +240,13 @@ const ViewCourseVideo = () => {
                       </form>
                     </div>
                   </div>
-                  <button type="submit" className="btn btn-login" onClick={() => viewTeacherProfile(teacherId)}>
-                    Profile
-                  </button>
+                  <Button
+                    type="primary"
+                 
+                    onClick={() => viewTeacherProfile(course.course_teacher)}
+                  >
+                    View Teacher Profile
+                  </Button>
 
                 </>
               )}
