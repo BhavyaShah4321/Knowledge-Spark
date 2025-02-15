@@ -282,9 +282,9 @@ class CourseFeedbackViewSet(ModelViewSet):
     search_fields = [
         "feedback_student__username",
         "status",
-            "course__course_title",
-        
+        "course__course_title",
         "feedback_student__username",
+        
             "feedback_student__profile_picture",
             "feedback_student__email",
     ]
@@ -375,9 +375,9 @@ class CourseFeedbackViewSet(ModelViewSet):
             status=status.HTTP_200_OK,
         )
         
-    @action(detail=False,methods=["POST"],url_path="get-course-feedback-according-user")
+    @action(detail=False,methods=["POST"],url_path="get-course-feedback-according-student")
     def get_course_feedback_according_user(self,request,*args,**kwargs):
-        user_id = request.data.get("user_id")
+        user_id = request.data.get("student_id")
         
         if not user_id:
             return Response({"success": False, "message": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -394,11 +394,24 @@ class CourseFeedbackViewSet(ModelViewSet):
         if not course_id:
             return Response({"success": False, "message": "course_id is required"}, status=status.HTTP_400_BAD_REQUEST)
         
-        course_feedback = CourseVideo.objects.filter(course=course_id)
+        course_feedback = CourseFeedback.objects.filter(course=course_id)
         serializer = self.serializer_class(course_feedback, many=True)  
 
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
+
+    
+    @action(detail=False,methods=["POST"],url_path="get-course-feedback-according-course-teacher")
+    def get_course_feedback_according_course(self,request,*args,**kwargs):
+        teacher_id = request.data.get("teacher_id")
+        
+        if not teacher_id:
+            return Response({"success": False, "message": "teacher_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        course_feedback = CourseFeedback.objects.filter(course__course_teacher__id=teacher_id)
+        serializer = self.serializer_class(course_feedback, many=True)  
+
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
 
 

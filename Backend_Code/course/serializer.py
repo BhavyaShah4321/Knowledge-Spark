@@ -184,6 +184,7 @@ class CourseFeedbackSerializer(serializers.ModelSerializer):
             "feedback_student_email",
             "course",
             "course_title",
+            "teacher_response",
             "feedback_message",
             "status",
             "created_at",
@@ -192,18 +193,20 @@ class CourseFeedbackSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         feedback_message = data.get("feedback_message", "").strip()
-        if not feedback_message:
-            raise serializers.ValidationError("Feedback message is required.")
-        if len(feedback_message) < 10:
-            raise serializers.ValidationError("Feedback message must be at least 10 characters long.")
+        if not self.instance:
+            
+            if not feedback_message:
+                raise serializers.ValidationError("Feedback message is required.")
+            if len(feedback_message) < 10:
+                raise serializers.ValidationError("Feedback message must be at least 10 characters long.")
 
-        feedback_student = data.get("feedback_student")
-        course = data.get("course")
-        
-        if not feedback_student:
-            raise serializers.ValidationError("Student id is required.")
-
-        if not course:
-            raise serializers.ValidationError("Course is required.")
+            feedback_student = data.get("feedback_student")
+            course = data.get("course")
+            
+            if not feedback_student:
+                raise serializers.ValidationError("Student id is required.")
+    
+            if not course:
+                raise serializers.ValidationError("Course is required.")
         
         return data

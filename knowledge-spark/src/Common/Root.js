@@ -29,6 +29,7 @@ import Login from './Authentication/Login';
 import OTPVerification from './Authentication/OTPVerification';
 import ResetPassword from './Authentication/ResetPassword';
 import TeacherProfile from '../components/Teacher/ManageCourses/TeacherProfile';
+import TeacherFeedBackList from '../components/Teacher/TeacherFeedBackList';
 
 
 const Root = () => {
@@ -67,6 +68,7 @@ const Root = () => {
         <Route path="/complaint-list" element={<ComplaintList />} />
         <Route path="/create-complaint" element={<ComplaintModal />} />
         <Route path="/profile/:id" element={<TeacherProfile />} />
+        <Route path="/teacher-feedback" element={<TeacherFeedBackList />} />
 
       </Route>
 
