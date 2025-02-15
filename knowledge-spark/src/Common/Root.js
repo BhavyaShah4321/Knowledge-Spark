@@ -28,6 +28,7 @@ import ForgetPassword from './Authentication/ForgetPassword';
 import Login from './Authentication/Login';
 import OTPVerification from './Authentication/OTPVerification';
 import ResetPassword from './Authentication/ResetPassword';
+import TeacherProfile from '../components/Teacher/ManageCourses/TeacherProfile';
 
 
 const Root = () => {
@@ -65,7 +66,7 @@ const Root = () => {
         <Route path="/edit-video-call" element={<EditVideoCall />} />
         <Route path="/complaint-list" element={<ComplaintList />} />
         <Route path="/create-complaint" element={<ComplaintModal />} />
-
+        <Route path="/profile/:id" element={<TeacherProfile />} />
 
       </Route>
 
