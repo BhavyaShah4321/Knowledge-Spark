@@ -229,8 +229,9 @@
 
 // export default StudentChat
 
+import { message } from 'antd';
 import axios from 'axios';
-import { Search, Send, User } from "lucide-react";
+import { Search, Send, Trash2, User, Video } from "lucide-react";
 import React, { useEffect, useRef, useState } from 'react';
 
 // AUTH HEADER FUNCTION
@@ -355,50 +356,172 @@ const StudentChat = () => {
     const filteredUsers = users.filter((user) =>
         user.name.toLowerCase().includes(userSearch.toLowerCase())
     );
+    // const handleSendMessage = async () => {
+    //     if (newMessage.trim() !== '') {
+    //         try {
+    //             const chatResponse = await axios.get(
+    //                 `http://localhost:8000/api/chat-message/chat-message-according-chat/?uuid=${selectedUser.uuid}`,
+    //                 { headers: authHeader() }
+    //             );
+
+    //             if (chatResponse.data && chatResponse.data.data && chatResponse.data.data[0]) {
+    //                 const chatData = chatResponse.data.data[0];
+
+    //                 const payload = {
+    //                     chatid: chatData.id,
+    //                     sender: loggedInUserId,
+    //                     message: newMessage,
+    //                 };
+
+    //                 await axios.post("http://localhost:8000/api/chat-message/", payload, { headers: authHeader() });
+    //                 setNewMessage('');
+    //             } else {
+    //                 const createChatResponse = await axios.post(
+    //                     'http://localhost:8000/api/chat/',
+    //                     { user_1: loggedInUserId, user_2: selectedUser.id }, // Create chat between the two users
+    //                     { headers: authHeader() }
+    //                 );
+
+    //                 if (createChatResponse.data && createChatResponse.data.data && createChatResponse.data.data.id) {
+    //                     const newChatId = createChatResponse.data.data.id;
+    //                     const payload = {
+    //                         chatid: newChatId, // Use the newly created chat's chatid
+    //                         sender: loggedInUserId,
+    //                         message: newMessage,
+    //                     };
+    //                     await axios.post("http://localhost:8000/api/chat-message/", payload, { headers: authHeader() });
+    //                     setNewMessage('');
+    //                 } else {
+    //                     console.error("Failed to create a new chat.");
+    //                 }
+    //             }
+    //         } catch (error) {
+    //             console.error("Error sending message:", error.response ? error.response.data : error);
+    //         }
+    //     }
+    // };
+
+
     const handleSendMessage = async () => {
-        if (newMessage.trim() !== '') {
+        if (newMessage.trim() === '') return;
+
+        try {
+            // First check if a chat already exists using the selectedUser's uuid
+            const existingChatResponse = await axios.post(
+                "http://localhost:8000/api/chat/chatid-according-user/",
+                { user_id: selectedUser.id },
+                { headers: authHeader() }
+            );
+
+            let chatUUID;
+            let chatId;
+
+            // Check if we found an existing chat
+            if (existingChatResponse.data.data && existingChatResponse.data.data.length > 0) {
+                // Find the chat that matches the current conversation
+                const existingChat = existingChatResponse.data.data.find(
+                    chat => chat.uuid === selectedUser.uuid
+                );
+
+                if (existingChat) {
+                    chatUUID = existingChat.uuid;
+                    chatId = existingChat.id;
+                }
+            }
+
+            // If we don't have a chat ID yet, create a new chat
+            if (!chatId) {
+                const createChatResponse = await axios.post(
+                    'http://localhost:8000/api/chat/',
+                    {
+                        user_1: loggedInUserId,
+                        user_2: selectedUser.id
+                    },
+                    { headers: authHeader() }
+                );
+
+                if (createChatResponse.data?.data?.id) {
+                    chatId = createChatResponse.data.data.id;
+                    chatUUID = createChatResponse.data.data.uuid;
+                } else {
+                    throw new Error("Failed to create a new chat");
+                }
+            }
+
+            // Send the message with the correct chat ID
+            const messagePayload = {
+                chatid: chatId,
+                sender: loggedInUserId,
+                message: newMessage,
+            };
+
+            await axios.post(
+                "http://localhost:8000/api/chat-message/",
+                messagePayload,
+                { headers: authHeader() }
+            );
+
+            // Clear the message input
+            setNewMessage('');
+
+            // Optionally, refresh the messages
+            const messagesData = await getMessagesByChatUUID(chatUUID);
+            const formattedMessages = messagesData.data.map((msg) => ({
+                sender: msg.sender_username,
+                text: msg.message,
+                isOwnMessage: msg.sender === loggedInUserId,
+                timestamp: new Date(msg.created_at).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+            }));
+            setMessages(formattedMessages);
+
+        } catch (error) {
+            console.error("Error sending message:", error);
+            // You might want to show an error message to the user here
+        }
+    };
+
+
+    const handleDeleteChat = async () => {
+        if (selectedUser && selectedUser.uuid) {
             try {
+                // Get chat messages using the UUID
                 const chatResponse = await axios.get(
                     `http://localhost:8000/api/chat-message/chat-message-according-chat/?uuid=${selectedUser.uuid}`,
                     { headers: authHeader() }
                 );
-    
-                if (chatResponse.data && chatResponse.data.data && chatResponse.data.data[0]) {
-                    const chatData = chatResponse.data.data[0];
-    
-                    const payload = {
-                        chatid: chatData.id,
-                        sender: loggedInUserId,
-                        message: newMessage,
-                    };
-    
-                    await axios.post("http://localhost:8000/api/chat-message/", payload, { headers: authHeader() });
-                    setNewMessage('');
-                } else {
-                    const createChatResponse = await axios.post(
-                        'http://localhost:8000/api/chat/',
-                        { user_1: loggedInUserId, user_2: selectedUser.id }, // Create chat between the two users
-                        { headers: authHeader() }
-                    );
 
-                    if (createChatResponse.data && createChatResponse.data.data && createChatResponse.data.data.id) {
-                        const newChatId = createChatResponse.data.data.id;
-                        const payload = {
-                            chatid: newChatId, // Use the newly created chat's chatid
-                            sender: loggedInUserId,
-                            message: newMessage,
-                        };
-                        await axios.post("http://localhost:8000/api/chat-message/", payload, { headers: authHeader() });
-                        setNewMessage('');
+                if (chatResponse.data && chatResponse.data.data) {
+                    // Get the chat ID from the first message
+                    const chatId = chatResponse.data.data[0]?.chatid;
+
+                    if (chatId) {
+                        // Make DELETE request to clear the chat
+                        await axios.delete(
+                            `http://localhost:8000/api/chat-message/${chatId}/`,
+                            { headers: authHeader() }
+                        );
+
+                        // Clear the messages state
+                        setMessages([]);
+                        message.success("Chat cleared successfully.")
                     } else {
-                        console.error("Failed to create a new chat.");
+                        message.error("No chat messages found.");
                     }
+                } else {
+                    message.error("No chat messages to clear.");
                 }
             } catch (error) {
-                console.error("Error sending message:", error.response ? error.response.data : error);
+                console.error("Error clearing chat:", error.response ? error.response.data : error);
+                message.error("Failed to clear chat. Please try again.");
             }
+        } else {
+            message.error("No chat selected.");
         }
     };
+
 
     return (
         <div className="chat-message-container">
@@ -431,7 +554,15 @@ const StudentChat = () => {
                                 <div className="chat-message-user-name">{user.name}</div>
                                 <div className="chat-message-last-message">{user.lastMessage}</div>
                             </div>
-                            <span className="chat-message-timestamp">{user.lastTime}</span>
+                            <div className="chat-message-user-actions">
+                                <span className="chat-message-timestamp">{user.lastTime}</span>
+                                <button
+                                    className="chat-message-delete-button"
+                                    onClick={(e) => handleDeleteChat(user, e)}
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -440,14 +571,40 @@ const StudentChat = () => {
             <div className="chat-message-chat-area">
                 {selectedUser ? (
                     <>
-                        <div className=".chat-message-chat-header">
+                        {/* <div className="chat-message-chat-header">
+                                <div className="chat-message-chat-header-content">
+                                    <div className="chat-message-avatar">
+                                        <User size={24} color="#6b7280" />
+                                    </div>
+                                    <div className="chat-message-user-info">
+                                        <div className="chat-message-chatSide-user-name">
+                                            {selectedUser.name}
+                                        </div>
+                                    </div>
+                                    <Video
+                                        className="chat-message-video-icon"
+                                        size={24}
+                                        style={{ cursor: "pointer", marginLeft: "auto" }}
+                                        onClick={() => alert("Video call feature coming soon!")}
+                                    />
+                                </div>
+                            </div> */}
+                        <div className="chat-message-chat-header">
                             <div className="chat-message-chat-header-content">
                                 <div className="chat-message-avatar">
                                     <User size={24} color="#6b7280" />
                                 </div>
                                 <div className="chat-message-user-info">
-                                    <div className="chat-message-chatSide-user-name">{selectedUser.name}</div>
+                                    <div className="chat-message-chatSide-user-name">
+                                        {selectedUser.name}
+                                    </div>
                                 </div>
+                                <Video
+                                    className="chat-message-video-icon"
+                                    size={24}
+                                    style={{ cursor: "pointer", marginLeft: "auto" }}
+                                    onClick={() => alert("Video call feature coming soon!")}
+                                />
                             </div>
                         </div>
                         <div className="chat-message-message-container">
