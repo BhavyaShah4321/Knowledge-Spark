@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import axios from "axios";
-import { Avatar, Typography, Row, Col, Card, Spin, Divider, Button } from "antd";
 import {
-  UserOutlined,
-  MailOutlined,
   BookOutlined,
-  IdcardOutlined,
   CalendarOutlined,
   CheckCircleOutlined,
+  IdcardOutlined,
   MessageOutlined,
+  UserOutlined
 } from "@ant-design/icons";
+import { Avatar, Button, Card, Col, Divider, Row, Spin, Typography } from "antd";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import "../../../Styles/Main.css";
 
 const { Title, Text, Paragraph } = Typography;
 
 const TeacherProfile = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [teacher, setTeacher] = useState(null);
   const [loading, setLoading] = useState(true);
   const BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:8000";
@@ -60,6 +60,35 @@ const TeacherProfile = () => {
     return <div className="loader-container">Teacher not found</div>;
   }
 
+  const handleTeacherContact = async () => {
+    try {
+      const accessToken = getAccessToken();
+      const userData = JSON.parse(localStorage.getItem("auth_token"));
+      const user1 = userData.user.id; // ID from localStorage
+      const user2 = id; // Teacher ID from useParams()
+
+      const payload = {
+        user_1: user1,
+        user_2: user2,
+      };
+
+      const response = await axios.post(`${BASE_URL}/api/chat/`, payload, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      // Get the uuid from the response data
+      const uuid = response.data.data.uuid;
+
+      // Navigate to the chat page and pass the uuid as state
+      navigate("/student-chat", { state: { uuid } });
+    } catch (error) {
+      console.error("Error creating chat:", error);
+    }
+  };
+
   return (
     <div className="teacher-profile-container">
       {/* Profile Header */}
@@ -84,9 +113,9 @@ const TeacherProfile = () => {
             <Title level={2} className="profile-name" style={{ color: "#fff" }}>
               {teacher.username}
             </Title>
-            <Text className="profile-email" style={{ color: "#fff" }}>
+            {/* <Text className="profile-email" style={{ color: "#fff" }}>
               <MailOutlined /> {teacher.email}
-            </Text>
+            </Text> */}
             <Divider style={{ borderColor: "rgba(255, 255, 255, 0.3)" }} />
             <Text className="profile-meta" style={{ color: "#fff" }}>
               <IdcardOutlined /> {teacher.type} &nbsp;&nbsp;
@@ -107,6 +136,7 @@ const TeacherProfile = () => {
                 type="primary"
                 icon={<MessageOutlined />}
                 style={{ marginTop: 16 }}
+                onClick={handleTeacherContact}
               >
                 Contact Teacher
               </Button>
