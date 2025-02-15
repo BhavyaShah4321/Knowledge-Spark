@@ -233,6 +233,7 @@ import { message } from 'antd';
 import axios from 'axios';
 import { Search, Send, Trash2, User, Video } from "lucide-react";
 import React, { useEffect, useRef, useState } from 'react';
+import { useLocation } from "react-router-dom";
 
 // AUTH HEADER FUNCTION
 const authHeader = () => {
@@ -311,6 +312,8 @@ const StudentChat = () => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [newMessage, setNewMessage] = useState('');
     const [messages, setMessages] = useState([]);
+    const location = useLocation();
+    const uuidFromState = location.state?.uuid; 
     const [userSearch, setUserSearch] = useState('');
     const messagesEndRef = useRef(null);
 
@@ -318,11 +321,19 @@ const StudentChat = () => {
         const fetchUsers = async () => {
             const data = await getUsers();
             setUsers(data);
+
+            // If uuidFromState is present, auto-select the user
+            if (uuidFromState) {
+                const userToSelect = data.find(user => user.uuid === uuidFromState);
+                if (userToSelect) {
+                    setSelectedUser(userToSelect);
+                }
+            }
         };
         fetchUsers();
-    }, [messages]);
+    }, [uuidFromState]); // Dependency on uuidFromState
 
-
+    // Fetch Messages
     useEffect(() => {
         const fetchMessages = async () => {
             if (selectedUser && selectedUser.uuid) {
@@ -341,7 +352,7 @@ const StudentChat = () => {
         };
         fetchMessages();
     }, [selectedUser]);
-
+    
     useEffect(() => {
         if (selectedUser) {
             ws = new WebSocket(`ws://localhost:8000/ws/chat/${selectedUser.uuid}/`);
