@@ -10,7 +10,7 @@ from rest_framework.decorators import action
 from django.db.models import Q
 
 class ChatIDViewSet(ModelViewSet):
-    queryset = ChatID.objects.all()
+    queryset = ChatID.objects.filter(deleted=0)
     serializer_class = ChatIDSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
@@ -83,7 +83,8 @@ class ChatIDViewSet(ModelViewSet):
     # DESTROY
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.deleted=0
+        instance.deleted=1
+        instance.save()
         return Response(
             {"success": True, "message": "ChatID deleted successfully."},
             status=status.HTTP_204_NO_CONTENT,
@@ -114,7 +115,7 @@ class ChatIDViewSet(ModelViewSet):
     
     
 class ChatMessageViewSet(ModelViewSet):
-    queryset = ChatMessage.objects.all()
+    queryset = ChatMessage.objects.filter(deleted=0)
     serializer_class = ChatMessageSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
@@ -195,7 +196,9 @@ class ChatMessageViewSet(ModelViewSet):
     # DESTROY
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.deleted=0
+        instance.deleted=1
+        instance.save()
+        
         return Response(
             {"success": True, "message": "ChatID deleted successfully."},
             status=status.HTTP_204_NO_CONTENT,

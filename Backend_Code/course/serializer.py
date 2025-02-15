@@ -184,6 +184,7 @@ class CourseFeedbackSerializer(serializers.ModelSerializer):
             "feedback_student_email",
             "course",
             "course_title",
+            "teacher_response",
             "feedback_message",
             "status",
             "created_at",
