@@ -408,7 +408,7 @@ class CourseFeedbackViewSet(ModelViewSet):
         if not teacher_id:
             return Response({"success": False, "message": "teacher_id is required"}, status=status.HTTP_400_BAD_REQUEST)
         
-        course_feedback = CourseVideo.objects.filter(course__course_teacher=teacher_id)
+        course_feedback = CourseFeedback.objects.filter(course__course_teacher__id=teacher_id)
         serializer = self.serializer_class(course_feedback, many=True)  
 
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
