@@ -7,7 +7,7 @@ class ChatIDSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChatID
-        fields = ["id", "uuid", "user_1", "user_1_username", "user_2", "user_2_username"]
+        fields = ["id", "uuid", "user_1", "user_1_username", "user_2", "user_2_username","deleted"]
         read_only_fields = ["id", "uuid"]
 
     def validate(self, data):
