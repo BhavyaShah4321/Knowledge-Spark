@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { List, Card } from "antd";
 import "../../Styles/Main.css";
+import dayjs from "dayjs";
 
 const ViewCourseVideo = () => {
   const { TextArea } = Input;
@@ -299,7 +300,7 @@ const ViewCourseVideo = () => {
                                 {feedback.feedback_message}
                               </p>
                               <small style={{ color: "rgba(0, 0, 0, 0.45)" }}>
-                                {new Date(feedback.created_at).toLocaleString()}
+                                {dayjs(feedback.created_at).format('DD-MM-YYYY:hh:mm')}
                               </small>
                             </div>
                           </div>
@@ -310,7 +311,7 @@ const ViewCourseVideo = () => {
                               style={{
                                 marginTop: 10,
                                 marginLeft: 62, // Indent to align under student feedback
-                                padding: "8px 12px",
+                                padding: "8px 8px",
                                 background: "#f6f6f6",
                                 borderLeft: "4px solid #1890ff",
                                 borderRadius: 4,
