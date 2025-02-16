@@ -26,7 +26,7 @@ class Complaint(models.Model):
     message = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="complaint_user")
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(blank=True,null=True)
     status = models.CharField(choices=STATUS_CHOICES, max_length=50, default="Pending")
     admin_response = models.TextField(blank=True, null=True)
 
