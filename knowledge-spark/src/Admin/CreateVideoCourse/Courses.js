@@ -1,8 +1,4 @@
-import {
-  DownOutlined,
-  EditOutlined,
-  SearchOutlined
-} from "@ant-design/icons";
+import { DownOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
 import {
   Breadcrumb,
   Button,
@@ -18,7 +14,7 @@ import {
   Table,
   Tooltip,
   message,
-  Modal
+  Modal,
 } from "antd";
 import { Option } from "antd/es/mentions";
 import axios from "axios";
@@ -40,29 +36,31 @@ export default function Courses() {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-
-
-
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const authData = JSON.parse(localStorage.getItem("auth_token"));
         if (!authData || !authData.access_token) {
-          console.error("Authentication tokens are missing. Please log in again.");
+          console.error(
+            "Authentication tokens are missing. Please log in again."
+          );
           return;
         }
         const accessToken = authData.access_token;
-        const response = await axios.get("http://localhost:8000/api/course-category/", {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
+        const response = await axios.get(
+          "http://localhost:8000/api/course-category/",
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
           }
-        });
+        );
         const categories = response.data.results.data;
-        console.log(categories);  // Check the output here
+        console.log(categories); // Check the output here
         setCategories(categories); // Update the state with the fetched categories
       } catch (error) {
-        console.error("Error fetching categories:", error);  // Make sure to log errors as well
+        console.error("Error fetching categories:", error); // Make sure to log errors as well
         message.error("Failed to fetch categories.");
       } finally {
         setLoading(false);
@@ -72,13 +70,12 @@ export default function Courses() {
     fetchCategories();
   }, []);
 
-
-
-
   const getAccessToken = () => {
     const authData = JSON.parse(localStorage.getItem("auth_token"));
     if (!authData?.access_token) {
-      throw new Error("Authentication tokens are missing. Please log in again.");
+      throw new Error(
+        "Authentication tokens are missing. Please log in again."
+      );
     }
     return authData.access_token;
   };
@@ -177,19 +174,19 @@ export default function Courses() {
       </Menu.Item>
     </Menu>
   );
-  
+
   // Update the status update function
   const updateCourseStatus = async (id, status) => {
     try {
       setLoading(true);
       const accessToken = getAccessToken();
-  
+
       const response = await axios.patch(
         `http://localhost:8000/api/course/${id}/`,
         {
           form_data: JSON.stringify({
-            course_status: status
-          })
+            course_status: status,
+          }),
         },
         {
           headers: {
@@ -198,7 +195,7 @@ export default function Courses() {
           },
         }
       );
-  
+
       if (response.status === 200) {
         message.success(`Course status updated to ${status} successfully`);
         fetchCourseDetails(currentPage);
@@ -210,8 +207,6 @@ export default function Courses() {
       setLoading(false);
     }
   };
-  
-
 
   const columns = [
     {
@@ -256,7 +251,7 @@ export default function Courses() {
       key: "course_category",
       render: (categoryId) => {
         // Find the category name based on the ID
-        const category = categories.find(cat => cat.id === categoryId);
+        const category = categories.find((cat) => cat.id === categoryId);
         return category ? category.name : "N/A"; // Return category name if found, else "N/A"
       },
     },
@@ -268,7 +263,9 @@ export default function Courses() {
           <Tooltip title="Change Status">
             <Dropdown overlay={menu(record)} trigger={["click"]}>
               <Button>
-                {record.course_status?.charAt(0).toUpperCase() + record.course_status?.slice(1)} <DownOutlined />
+                {record.course_status?.charAt(0).toUpperCase() +
+                  record.course_status?.slice(1)}{" "}
+                <DownOutlined />
               </Button>
             </Dropdown>
           </Tooltip>
@@ -282,10 +279,10 @@ export default function Courses() {
       render: (text, record) => (
         <Space>
           <Tooltip title="Edit">
-            <Button 
-              icon={<EditOutlined />} 
-              style={{ cursor: "pointer" }} 
-              onClick={() => openEditModal(record)} 
+            <Button
+              icon={<EditOutlined />}
+              style={{ cursor: "pointer" }}
+              onClick={() => openEditModal(record)}
             />
           </Tooltip>
         </Space>
@@ -320,8 +317,10 @@ export default function Courses() {
               style={{ width: "100%" }}
             />
             <Tooltip placement="top" title="Reset Filter">
-              <Button type="primary" className="iconlink"
-              //  onClick={resetFilter}
+              <Button
+                type="primary"
+                className="iconlink"
+                //  onClick={resetFilter}
               >
                 <FilterIcon />
               </Button>
@@ -352,7 +351,6 @@ export default function Courses() {
         loading={loading}
       />
 
-
       {/* Edit Drawer */}
       <Modal
         title="Edit Course"
@@ -362,9 +360,9 @@ export default function Courses() {
         centered
         width={600}
       >
-        <Form 
-          form={form} 
-          layout="vertical" 
+        <Form
+          form={form}
+          layout="vertical"
           onFinish={handleEditSubmit}
           className="pt-4"
         >
@@ -379,7 +377,9 @@ export default function Courses() {
           <Form.Item
             label="Course Description"
             name="course_description"
-            rules={[{ required: true, message: "Please enter course description" }]}
+            rules={[
+              { required: true, message: "Please enter course description" },
+            ]}
           >
             <Input.TextArea />
           </Form.Item>
@@ -395,7 +395,9 @@ export default function Courses() {
           <Form.Item
             label="Course Category"
             name="course_category"
-            rules={[{ required: true, message: "Please select a course category" }]}
+            rules={[
+              { required: true, message: "Please select a course category" },
+            ]}
           >
             <Select
               loading={loading}
@@ -408,7 +410,11 @@ export default function Courses() {
               value={editingCourse?.course_category || undefined}
             >
               {categories.map((category) => (
-                <Option key={category.id} value={category.id}>
+                <Option
+                  key={category.id}
+                  value={category.id}
+                  disabled={category.status === "inactive"}
+                >
                   {category.name}
                 </Option>
               ))}
@@ -417,9 +423,7 @@ export default function Courses() {
 
           <Form.Item className="mb-0">
             <Space>
-              <Button onClick={handleModalCancel}>
-                Cancel
-              </Button>
+              <Button onClick={handleModalCancel}>Cancel</Button>
               <Button type="primary" htmlType="submit" loading={loading}>
                 Update Course
               </Button>

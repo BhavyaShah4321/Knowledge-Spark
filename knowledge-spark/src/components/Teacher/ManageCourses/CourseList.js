@@ -396,27 +396,43 @@ export default function CourseList() {
       title: "Course Title",
       dataIndex: "course_title",
       key: "course_title",
-      render: (text, record) => (
-        <Tooltip title="View Course Video">
-          <a
-            onClick={() => navigate(`/view-course/${record.id}`)}
-            style={{ color: "#1890ff", cursor: "pointer" }}
-          >
-            {text}
-          </a>
-        </Tooltip>
-      ),
+      render: (text, record) =>
+        record.course_status === "inactive" ? (
+          <Tooltip title="This course has been deactivated by the admin.">
+            <span style={{ color: "gray", cursor: "not-allowed" }}>{text}</span>
+          </Tooltip>
+        ) : (
+          <Tooltip title="View Course Video">
+            <a
+              onClick={() => navigate(`/view-course/${record.id}`)}
+              style={{ color: "#1890ff", cursor: "pointer" }}
+            >
+              {text}
+            </a>
+          </Tooltip>
+        ),
     },
     {
       title: "Course Description",
       dataIndex: "course_description",
       key: "course_description",
+      render: (text, record) =>
+        record.course_status === "inactive" ? (
+          <span style={{ color: "gray" }}>This course has been deactivated by the admin.</span>
+        ) : (
+          text
+        ),
     },
     {
       title: "Course Price",
       dataIndex: "course_price",
       key: "course_price",
-      render: (price) => `₹${price}`,
+      render: (price, record) =>
+        record.course_status === "inactive" ? (
+          <span style={{ color: "gray" }}>N/A</span>
+        ) : (
+          `₹${price}`
+        ),
     },
     {
       title: "Course Category Name",
@@ -424,43 +440,35 @@ export default function CourseList() {
       key: "course_category_name",
     },
     {
-      title: "Status",
-      key: "course_status",
-      render: (text, record) => (
-        <Space>
-          <Tooltip title="Change Status">
-            <Dropdown overlay={menu(record)} trigger={["click"]}>
-              <Button>
-                {record.course_status?.charAt(0).toUpperCase() +
-                  record.course_status?.slice(1)}{" "}
-                <DownOutlined />
-              </Button>
-            </Dropdown>
-          </Tooltip>
-        </Space>
-      ),
-    },
-    {
       title: "Action",
       key: "action",
-      render: (_, record) => (
-        <Space>
-          <Tooltip title="Edit Course">
-            <Button
-              icon={<EditOutlined />}
-              onClick={() => openCourseModal(record)}
-            />
+      render: (_, record) =>
+        record.course_status === "inactive" ? (
+          <Tooltip title="This course has been deactivated by the admin.">
+            <span style={{ color: "gray", cursor: "not-allowed" }}>Actions Disabled</span>
           </Tooltip>
-          <Tooltip title="Manage Course Videos">
-            <Button
-              icon={<VideoCameraOutlined />}
-              onClick={() => openCourseVideoModal(record)}
-            />
-          </Tooltip>
-        </Space>
-      ),
+        ) : (
+          <Space>
+            <Tooltip title="Edit Course">
+              <Button
+                icon={<EditOutlined />}
+                onClick={() => openCourseModal(record)}
+              />
+            </Tooltip>
+            <Tooltip title="Manage Course Videos">
+              <Button
+                icon={<VideoCameraOutlined />}
+                onClick={() => openCourseVideoModal(record)}
+              />
+            </Tooltip>
+          </Space>
+        ),
     },
   ];
+
+  const rowClassName = (record) =>
+    record.course_status === "inactive" ? "inactive-row" : "";
+  
 
   return (
     <div>
@@ -553,11 +561,15 @@ export default function CourseList() {
             ]}
           >
             <Select placeholder="Select Course Category">
-              {category.map((el) => (
-                <Option key={el.id} value={el.id}>
-                  {el.name}
-                </Option>
-              ))}
+             {category.map((category) => (
+                             <Option
+                               key={category.id}
+                               value={category.id}
+                               disabled={category.status === "inactive"}
+                             >
+                               {category.name}
+                             </Option>
+                           ))}
             </Select>
           </Form.Item>
 
@@ -725,6 +737,7 @@ export default function CourseList() {
         dataSource={Array.isArray(courseData) ? courseData : []}
         columns={columns}
         rowKey="id"
+        rowClassName={rowClassName}
         pagination={{
           current: currentPage,
           total: totalItems,

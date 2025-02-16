@@ -41,38 +41,41 @@ const StudentCourses = () => {
     <div className="container">
       <h1 className="text-center">Available Courses</h1>
       <div className="course-grid">
-        {courses.map((course) => (
-          <div key={course.id} className="course-card">
-            <div className="course-image">
-              <img
-                src={
-                  course.course_thumbnail
-                    ? `http://localhost:8000${course.course_thumbnail}`
-                    : course.videos && course.videos.length > 0
-                      ? `http://localhost:8000${course.videos[0].course_video_thumbnail}`
-                      : "https://via.placeholder.com/300x200?text=No+Image"
-                }
-                alt={course.course_title}
-                onClick={() => navigate(`/view-course/${course.id}`)}
-              />
-              <div className="course-badge">
-                <span className={`badge ${course.course_status}`}>
-                  {course.course_status === "active" ? "Available" : "Coming Soon"}
-                </span>
-              </div>
-            </div>
-            <div className="course-card-content" >
-              <h2 className="course-title" >{course.course_title}</h2>
-              <p className="course-teacher" >By {course.course_teacher_username}</p>
-              <p className="course-description">{course.course_description}</p>
-              <div className="course-footer">
-                <p className="course-price">₹{course.course_price || "Free"}</p>
-                <button className="course-button">Purchase Now</button>
-              </div>
-            </div>
+  {courses
+    .filter((course) => course.course_status === "active") // Exclude inactive courses
+    .map((course) => (
+      <div key={course.id} className="course-card">
+        <div className="course-image">
+          <img
+            src={
+              course.course_thumbnail
+                ? `http://localhost:8000${course.course_thumbnail}`
+                : course.videos && course.videos.length > 0
+                ? `http://localhost:8000${course.videos[0].course_video_thumbnail}`
+                : "https://via.placeholder.com/300x200?text=No+Image"
+            }
+            alt={course.course_title}
+            onClick={() => navigate(`/view-course/${course.id}`)}
+          />
+          <div className="course-badge">
+            <span className={`badge ${course.course_status}`}>
+              {course.course_status === "active" ? "Available" : "Coming Soon"}
+            </span>
           </div>
-        ))}
+        </div>
+        <div className="course-card-content">
+          <h2 className="course-title">{course.course_title}</h2>
+          <p className="course-teacher">By {course.course_teacher_username}</p>
+          <p className="course-description">{course.course_description}</p>
+          <div className="course-footer">
+            <p className="course-price">₹{course.course_price || "Free"}</p>
+            <button className="course-button">Purchase Now</button>
+          </div>
+        </div>
       </div>
+    ))}
+</div>
+
     </div>
   );
 };
