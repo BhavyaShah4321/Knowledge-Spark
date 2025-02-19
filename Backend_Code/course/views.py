@@ -79,7 +79,7 @@ class CourseViewSet(ModelViewSet):
 
         course_thumbnail = request.FILES.get('course_thumbnail')
         data["course_thumbnail"] = course_thumbnail
-
+        
         serializer = self.serializer_class(data=data, context={"request": request})
         if serializer.is_valid():
             with transaction.atomic():
@@ -375,45 +375,59 @@ class CourseFeedbackViewSet(ModelViewSet):
             status=status.HTTP_200_OK,
         )
         
-    @action(detail=False,methods=["POST"],url_path="get-course-feedback-according-student")
-    def get_course_feedback_according_user(self,request,*args,**kwargs):
+    @action(detail=False, methods=["POST"], url_path="get-course-feedback-according-student")
+    def get_course_feedback_according_user(self, request, *args, **kwargs):
         user_id = request.data.get("student_id")
-        
+
         if not user_id:
             return Response({"success": False, "message": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        course_feedback = CourseFeedback.objects.filter(feedback_student=user_id)
-        serializer = self.serializer_class(course_feedback, many=True)  
 
-        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
-    
-    @action(detail=False,methods=["POST"],url_path="get-course-feedback-according-course")
-    def get_course_feedback_according_course(self,request,*args,**kwargs):
-        course_id = request.data.get("course_id")
+        course_feedback = CourseFeedback.objects.filter(feedback_student=user_id)
         
+        # Apply pagination
+        page = self.paginate_queryset(course_feedback)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(course_feedback, many=True)
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["POST"], url_path="get-course-feedback-according-course")
+    def get_course_feedback_according_course(self, request, *args, **kwargs):
+        course_id = request.data.get("course_id")
+
         if not course_id:
             return Response({"success": False, "message": "course_id is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        course_feedback = CourseFeedback.objects.filter(course=course_id)
-        serializer = self.serializer_class(course_feedback, many=True)  
 
+        course_feedback = CourseFeedback.objects.filter(course=course_id)
+
+        # Apply pagination
+        page = self.paginate_queryset(course_feedback)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(course_feedback, many=True)
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
-
-    
-    @action(detail=False,methods=["POST"],url_path="get-course-feedback-according-course-teacher")
-    def get_course_feedback_according_course(self,request,*args,**kwargs):
+    @action(detail=False, methods=["POST"], url_path="get-course-feedback-according-course-teacher")
+    def get_course_feedback_according_teacher(self, request, *args, **kwargs):
         teacher_id = request.data.get("teacher_id")
-        
+
         if not teacher_id:
             return Response({"success": False, "message": "teacher_id is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         course_feedback = CourseFeedback.objects.filter(course__course_teacher__id=teacher_id)
-        serializer = self.serializer_class(course_feedback, many=True)  
 
+        # Apply pagination
+        page = self.paginate_queryset(course_feedback)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(course_feedback, many=True)
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
-
-
 
 
 class CourseCategoryViewSet(ModelViewSet):
