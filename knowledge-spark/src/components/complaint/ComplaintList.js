@@ -56,7 +56,7 @@ const ComplaintList = () => {
         }
       );
 
-      setComplaints(response.data.data || []);
+      setComplaints(response.data.results || []);
       setTotalItems(response.data.count || 0);
     } catch (error) {
       console.error("Error fetching complaints:", error);
@@ -162,6 +162,12 @@ const ComplaintList = () => {
       dataIndex: "created_at",
       key: "created_at",
       render: (date) => new Date(date).toLocaleString(),
+    },
+    {
+      title: "Updated At",
+      dataIndex: "updated_at",
+      key: "updated_at",
+      
     },
     {
       title: "Admin Response",

@@ -55,7 +55,7 @@ const CreateComplaint = () => {
           },
         }
       );
-      setComplaints(Array.isArray(response.data.data) ? response.data.data : [response.data]);
+      setComplaints(Array.isArray(response?.data.results) ? response.data.results : [response.data]);
     } catch (error) {
       message.error('Failed to fetch complaints');
     }
