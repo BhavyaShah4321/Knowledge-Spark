@@ -11,6 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model=User
         fields=[
+            "user_uuid",
             'id',
             "username",
             'email',
@@ -104,6 +105,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         model=User
         fields=[
             "id",
+            "user_uuid",
             'username',
             'email',
             "password",

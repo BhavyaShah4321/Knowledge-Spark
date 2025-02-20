@@ -21,10 +21,11 @@ import final_year_project.routers
 
 from django.conf import settings
 from django.conf.urls.static import static
-
+from final_year_project.views import video_call
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/",include(final_year_project.routers.router.urls)),
+    path("video-call/<str:id>/",video_call,name="video-call")
     
 ]
 
