@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 import uuid
 from django.contrib.auth.models import Group,Permission
+import uuid
+
 class UserManager(BaseUserManager):
     """Define a model manager for User model with no username field."""
 
@@ -53,6 +55,7 @@ class User(AbstractUser):
         ("other","other"),
         
     ]
+    user_uuid=models.CharField(null=True,blank=True)
     username = models.CharField(max_length=60)
     email = models.EmailField(unique=True)
     profile_picture = models.ImageField(default='', upload_to='profile_picture/')

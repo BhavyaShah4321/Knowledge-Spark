@@ -4,7 +4,7 @@ from user.views import UserViewSet,RegisterViewSet,ResendOtpViewSet,LoginViewSet
 from course.views import CourseVideoViewSet,CourseViewSet,CourseFeedbackViewSet,CourseCategoryViewSet
 
 from chat.views import ChatIDViewSet,ChatMessageViewSet
-from videocall.views import VideoRoomViewSet
+from videocall.views import VideoRoomViewSet,VideoChatRoomViewSet,VideoChatMessageViewSet
 from complaint.views import ComplaintViewSet
 
 router=DefaultRouter()
@@ -38,6 +38,10 @@ router.register("course-category",CourseCategoryViewSet,basename="course-categor
 
 router.register("chat",ChatIDViewSet,basename="chat")
 router.register("chat-message",ChatMessageViewSet,basename="chat_message")
+
+
+router.register("video-chat-message",VideoChatMessageViewSet,basename="video-chat-message")
+router.register("video-chat",VideoChatRoomViewSet,basename="video-chat")
 
 
 
