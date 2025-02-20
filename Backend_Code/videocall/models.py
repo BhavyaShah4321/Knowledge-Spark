@@ -28,7 +28,7 @@ class VideoRoom(models.Model):
         ("Completed", "Completed"),
     ]
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Ongoing")
-
+    
     
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
