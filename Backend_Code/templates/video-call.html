@@ -278,7 +278,15 @@
   let user_image = ""
   var ws;
 
-  authenticated = localStorage.getItem("auth_token")
+  const urlParams = new URLSearchParams(window.location.search);
+const token = urlParams.get("token");
+
+if (token) {
+    localStorage.setItem("auth_token", token);
+}
+
+const authenticated = localStorage.getItem("auth_token");
+console.log("Authenticated Token:", authenticated);
   if (authenticated) {
     get_user_details()
     check_link_valid()
