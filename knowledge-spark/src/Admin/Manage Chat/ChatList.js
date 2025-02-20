@@ -168,11 +168,7 @@ const ChatList = () => {
                     headers: { Authorization: `Bearer ${accessToken}` },
                 });
 
-                if (response.data.success) {
-                    setChats(response.data.data);
-                } else {
-                    message.error("Failed to fetch chats.");
-                }
+                setChats(response.data.results);
             } catch (error) {
                 console.error("Error fetching chats:", error);
                 message.error("Error fetching chat list.");
