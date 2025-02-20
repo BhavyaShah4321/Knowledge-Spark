@@ -8,19 +8,31 @@ import "../../Styles/Main.css";
 import dayjs from "dayjs";
 
 const ViewCourseVideo = () => {
-  const { TextArea } = Input;
+  // const { TextArea } = Input;
 
+  // const { id } = useParams();
+  // const [course, setCourse] = useState(null);
+  // const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  // const [selectedVideo, setSelectedVideo] = useState(null);
+  // const [feedback, setFeedback] = useState("");
+  // const [submitStatus, setSubmitStatus] = useState({ type: "", message: "" });
+  // const [currentUser, setCurrentUser] = useState(null);
+  const [courseVideoDrawerOpen, setCourseVideoDrawerOpen] = useState(false);
+  const [editingCourseVideo, setEditingCourseVideo] = useState(null);
+  const [courseVideoForm] = Form.useForm();
+  // const navigate = useNavigate();
+  const { TextArea } = Input;
   const { id } = useParams();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [modalVisible, setModalVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [feedback, setFeedback] = useState("");
   const [submitStatus, setSubmitStatus] = useState({ type: "", message: "" });
   const [currentUser, setCurrentUser] = useState(null);
-  const [courseVideoDrawerOpen, setCourseVideoDrawerOpen] = useState(false);
-  const [editingCourseVideo, setEditingCourseVideo] = useState(null);
-  const [courseVideoForm] = Form.useForm();
+  const [isResponseModalVisible, setIsResponseModalVisible] = useState(false);
+  const [selectedFeedback, setSelectedFeedback] = useState(null);
+  const [responseForm] = Form.useForm();
   const navigate = useNavigate();
 
   const BASE_URL = "http://localhost:8000";
@@ -202,7 +214,7 @@ const ViewCourseVideo = () => {
 
       fetchFeedBackData();
 
-      setFeedback(""); // Clear the feedback input
+      setFeedback(""); 
 
     } catch (error) {
       setSubmitStatus({
@@ -222,6 +234,35 @@ const ViewCourseVideo = () => {
 
   const viewTeacherProfile = (teacherId) => {
     navigate(`/profile/${teacherId}`);
+  };
+
+  const handleAddResponse = async (values) => {
+    try {
+      const accessToken = getAccessToken();
+      await axios.patch(
+        `${BASE_URL}/api/course-feedback/${selectedFeedback.id}/`,
+        { teacher_response: values.response },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+      message.success("Response added successfully");
+      fetchFeedBackData();
+      setIsResponseModalVisible(false);
+      responseForm.resetFields();
+      
+    } catch (error) {
+      console.error("Error adding response:", error);
+      message.error("Failed to add response");
+    }
+  };
+
+  const showResponseModal = (feedback) => {
+    setSelectedFeedback(feedback);
+    setIsResponseModalVisible(true);
+
+    responseForm.setFieldsValue({ response: feedback.teacher_response || "" });
+    fetchFeedBackData();
   };
 
   return (
@@ -297,7 +338,18 @@ const ViewCourseVideo = () => {
                                 {dayjs(feedback.created_at).format('DD-MM-YYYY:hh:mm')}
                               </small>
                             </div>
+                            {currentUser?.type === "Teacher" && (
+                            <Button
+                              type="primary"
+                              onClick={() => showResponseModal(feedback)}
+                            >
+                              {feedback.teacher_response
+                                ? "Edit Response"
+                                : "Add Response"}
+                            </Button>
+                          )}
                           </div>
+                         
 
                           {/* Teacher Reply Section */}
                           {feedback.teacher_response && (
@@ -322,6 +374,7 @@ const ViewCourseVideo = () => {
                     />
                   </div>
                 </Card>
+               
 
                 {/* Feedback Form */}
                 {currentUser?.type === "Student" && (
@@ -373,6 +426,7 @@ const ViewCourseVideo = () => {
                   </Card>
                 )}
                 <Col>
+                {currentUser.type==="Student" &&
                   <Button
                     type="primary"
                     icon={<EditOutlined />}
@@ -386,6 +440,7 @@ const ViewCourseVideo = () => {
                   >
                     View Profile
                   </Button>
+}
                 </Col>
               </div>
             </div>
@@ -551,6 +606,30 @@ const ViewCourseVideo = () => {
               style={{ marginLeft: "10px" }}
             >
               {editingCourseVideo?.videoId ? "Edit" : "Add"} Video
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+     <Modal
+        title="Teacher Response"
+        open={isResponseModalVisible}
+        onCancel={() => {
+          setIsResponseModalVisible(false);
+          responseForm.resetFields();
+        }}
+        footer={null}
+      >
+        <Form form={responseForm} onFinish={handleAddResponse} layout="vertical">
+          <Form.Item
+            name="response"
+            label="Response"
+            rules={[{ required: true, message: "Please enter your response" }]}
+          >
+            <TextArea rows={4} placeholder="Enter your response to the feedback" />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Submit Response
             </Button>
           </Form.Item>
         </Form>
