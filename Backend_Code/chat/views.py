@@ -8,10 +8,15 @@ from chat.models import ChatID,ChatMessage
 from chat.serilaizer import ChatIDSerializer,ChatMessageSerializer
 from rest_framework.decorators import action
 from django.db.models import Q
+from utils.pagination import mypagination
+from django.db.models import Max
+from django.db.models import Q
 
 class ChatIDViewSet(ModelViewSet):
     queryset = ChatID.objects.filter(deleted=0)
     serializer_class = ChatIDSerializer
+    pagination_class=mypagination
+    
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
@@ -90,6 +95,7 @@ class ChatIDViewSet(ModelViewSet):
             status=status.HTTP_204_NO_CONTENT,
         )
         
+   
     @action(detail=False, methods=["POST"], url_path="chatid-according-user")
     def chatid_according_user(self, request, *args, **kwargs):
         user_id = request.data.get("user_id")
@@ -108,15 +114,23 @@ class ChatIDViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        chatid_instance = ChatID.objects.filter(Q(user_1__id=user_id) | Q(user_2__id=user_id))
+        chatid_instance = ChatID.objects.filter(Q(user_1__id=user_id) | Q(user_2__id=user_id))\
+            .annotate(latest_message=Max("messages__created_at"))\
+            .order_by("-latest_message")
 
-        serializer = self.get_serializer(chatid_instance, many=True) 
+        page = self.paginate_queryset(chatid_instance)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(chatid_instance, many=True)
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
-    
     
 class ChatMessageViewSet(ModelViewSet):
     queryset = ChatMessage.objects.filter(deleted=0)
     serializer_class = ChatMessageSerializer
+    pagination_class=mypagination
+    
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]

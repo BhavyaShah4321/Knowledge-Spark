@@ -65,23 +65,23 @@ const TeacherProfile = () => {
       const accessToken = getAccessToken();
       const userData = JSON.parse(localStorage.getItem("auth_token"));
       const user1 = userData.user.id; // ID from localStorage
-      const user2 = id; // Teacher ID from useParams()
-
+      const user2 = parseInt(id); // Convert Teacher ID from useParams() to a number
+  
       const payload = {
         user_1: user1,
         user_2: user2,
       };
-
+  
       const response = await axios.post(`${BASE_URL}/api/chat/`, payload, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       });
-
+  
       // Get the uuid from the response data
       const uuid = response.data.data.uuid;
-
+  
       // Navigate to the chat page and pass the uuid as state
       navigate("/student-chat", { state: { uuid } });
     } catch (error) {

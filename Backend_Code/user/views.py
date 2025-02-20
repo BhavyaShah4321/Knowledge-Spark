@@ -160,7 +160,7 @@ class UserViewSet(ModelViewSet):
                     user = User.objects.filter(id=user_id).first()
 
                     if user:
-                        user.is_active = False
+                        # user.is_active = False
                         user.save()
 
                         return Response(
@@ -189,6 +189,7 @@ class UserViewSet(ModelViewSet):
                     )
             else:
                 return Response(
+                    
                     {"success": False, "message": "Token not provided."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -567,6 +568,11 @@ class LoginViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
             
+        if user.is_active==False:
+             return Response(
+                {"success": False, "message": "Your account has been deactivated by admin"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if check_password(password, user.password) and user.email_verified:
             user.is_active = True
@@ -586,6 +592,7 @@ class LoginViewSet(ModelViewSet):
                         "id": user.id,
                         "email": user.email,
                         "type":user.type,
+                        "is_active": user.is_active,
                         "username": user.username,
                         "is_superuser":user.is_superuser,
                         "profile_picture":f'/media/{str(user.profile_picture)}'

@@ -9,10 +9,12 @@ from videocall.models import VideoRoom
 from videocall.serilaizer import VideoRoomSerializer
 import uuid
 from django.utils import timezone  
+from utils.pagination import mypagination
 
 class VideoRoomViewSet(ModelViewSet):
-    queryset = VideoRoom.objects.all()
+    queryset = VideoRoom.objects.all().order_by("-id")
     serializer_class = VideoRoomSerializer
+    pagination_class=mypagination
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
@@ -21,8 +23,22 @@ class VideoRoomViewSet(ModelViewSet):
     ordering_fields = ["uuid", "created_at", "updated_at","teacher_username","student_username","start","end","duration"]
 
     def list(self, request, *args, **kwargs):
-        """Get a list of all video rooms"""
+        """List all feedback with optional pagination."""
         queryset = self.filter_queryset(self.get_queryset())
+        no_pagination = request.query_params.get("no_pagination", "false").lower() == "true"
+
+        if no_pagination:
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(
+                {"success": True, "data": serializer.data}, 
+                status=status.HTTP_200_OK
+            )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(
             {"success": True, "data": serializer.data}, 

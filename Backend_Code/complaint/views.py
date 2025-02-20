@@ -7,10 +7,13 @@ from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter, OrderingFilter
 from complaint.models import Complaint
 from complaint.serilaizer import ComplaintSerializer
+from utils.pagination import mypagination
+from datetime import datetime
 
 class ComplaintViewSet(ModelViewSet):
     queryset = Complaint.objects.all().order_by("-created_at")
     serializer_class = ComplaintSerializer
+    pagination_class=mypagination
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
@@ -64,6 +67,7 @@ class ComplaintViewSet(ModelViewSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         data = request.data
+        data["updated_at"]=datetime.now()
         serializer = self.serializer_class(instance, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -87,6 +91,7 @@ class ComplaintViewSet(ModelViewSet):
         )
 
     # FILTER COMPLAINTS BY STATUS
+    # FILTER COMPLAINTS BY STATUS
     @action(detail=False, methods=["GET"], url_path="filter-by-status")
     def filter_by_status(self, request, *args, **kwargs):
         status_filter = request.query_params.get("status")
@@ -95,8 +100,13 @@ class ComplaintViewSet(ModelViewSet):
             return Response({"success": False, "message": "Status is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         complaints = Complaint.objects.filter(status=status_filter)
-        serializer = self.get_serializer(complaints, many=True)
+        page = self.paginate_queryset(complaints)
 
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(complaints, many=True)
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
 
@@ -108,8 +118,11 @@ class ComplaintViewSet(ModelViewSet):
             return Response({"success": False, "message": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         complaints = Complaint.objects.filter(user__id=user_id)
+        page = self.paginate_queryset(complaints)
+
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = self.serializer_class(complaints, many=True)
-
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
-
-
