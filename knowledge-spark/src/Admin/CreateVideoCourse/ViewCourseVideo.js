@@ -89,9 +89,8 @@ const ViewCourseVideo = () => {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    
 
+  useEffect(() => {
     fetchFeedBackData();
   }, [id]);
 
@@ -158,8 +157,7 @@ const ViewCourseVideo = () => {
 
       if (response.status === 200 || response.status === 201) {
         message.success(
-          `Video ${
-            editingCourseVideo?.videoId ? "updated" : "added"
+          `Video ${editingCourseVideo?.videoId ? "updated" : "added"
           } successfully`
         );
         setModalVisible(false);
@@ -174,11 +172,6 @@ const ViewCourseVideo = () => {
     }
   };
 
-  // const viewTeacherProfile = (id) => {
-  //   navigate(`/profile/${id}`);
-  //   console.log("Teacher",id)
-  // };
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -192,7 +185,7 @@ const ViewCourseVideo = () => {
       feedback_student: currentUser.id,
       feedback_message: values.feedback, // Use the value from the form
       course: parseInt(id),
-      
+
     };
 
     try {
@@ -210,7 +203,7 @@ const ViewCourseVideo = () => {
       fetchFeedBackData();
 
       setFeedback(""); // Clear the feedback input
-     
+
     } catch (error) {
       setSubmitStatus({
         type: "error",
@@ -226,6 +219,7 @@ const ViewCourseVideo = () => {
   if (!course) {
     return <div className="loader">Course not found</div>;
   }
+
   const viewTeacherProfile = (teacherId) => {
     navigate(`/profile/${teacherId}`);
   };
@@ -283,10 +277,10 @@ const ViewCourseVideo = () => {
                           >
                             {/* Student Avatar */}
                             <Avatar
-                              src={feedback.feedback_student_profile_picture 
-                                ? `http://localhost:8000/media/${feedback.feedback_student_profile_picture}/` 
+                              src={feedback.feedback_student_profile_picture
+                                ? `http://localhost:8000/media/${feedback.feedback_student_profile_picture}/`
                                 : "https://via.placeholder.com/50"}
-                         
+
                               alt={feedback.feedback_student_username}
                               size={50}
                               style={{ marginRight: 12 }}
@@ -378,6 +372,21 @@ const ViewCourseVideo = () => {
                     </Form>
                   </Card>
                 )}
+                <Col>
+                  <Button
+                    type="primary"
+                    icon={<EditOutlined />}
+                    onClick={() => {
+                      if (course && course.course_teacher) {
+                        viewTeacherProfile(course.course_teacher);
+                      } else {
+                        message.error("Teacher information is not available.");
+                      }
+                    }}
+                  >
+                    View Profile
+                  </Button>
+                </Col>
               </div>
             </div>
 
@@ -392,9 +401,8 @@ const ViewCourseVideo = () => {
                 {course.videos.map((video, index) => (
                   <div
                     key={video.id}
-                    className={`video-item ${
-                      selectedVideo?.id === video.id ? "active" : ""
-                    }`}
+                    className={`video-item ${selectedVideo?.id === video.id ? "active" : ""
+                      }`}
                   >
                     <button onClick={() => setSelectedVideo(video)}>
                       <div style={{ display: "flex", alignItems: "center" }}>
