@@ -278,7 +278,7 @@
   let user_image = ""
   var ws;
 
-  authenticated = localStorage.getItem("kartik_website_access_token")
+  authenticated = localStorage.getItem("auth_token")
   if (authenticated) {
     get_user_details()
     check_link_valid()
