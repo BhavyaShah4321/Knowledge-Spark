@@ -74,7 +74,7 @@ import TextArea from "antd/es/input/TextArea";
             }
           );
   
-        const FeedBackDetails = response.data.data;
+        const FeedBackDetails = response.data.results;
         console.log("FeedBackDetails",FeedBackDetails);
         
         setFeedbackData(FeedBackDetails || []);
