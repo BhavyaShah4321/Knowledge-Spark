@@ -50,8 +50,8 @@ function ManageVideochat() {
         headers: { Authorization: `Bearer ${accesstoken}` }
       });
       const videoCallList = response.data;
-      setData(videoCallList.data || []);
-      setTotalItems(videoCallList.count || 0);
+      setData(videoCallList.results || []);
+      setTotalItems(response.count || 0);
     } catch (error) {
       message.error("Failed to fetch video call data.");
     } finally {
@@ -118,7 +118,7 @@ function ManageVideochat() {
       }
     });
   };
-  
+
 
 
   const columns = [
@@ -207,7 +207,7 @@ function ManageVideochat() {
           )}
         </Space>
       ),
-    }    
+    }
 
   ];
 

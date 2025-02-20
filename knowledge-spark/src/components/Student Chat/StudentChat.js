@@ -2,6 +2,7 @@ import { message } from 'antd';
 import axios from 'axios';
 import { Search, Send, Trash2, User, Video } from "lucide-react";
 import React, { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const authHeader = () => {
     const userData = JSON.parse(localStorage.getItem("auth_token"));
@@ -17,6 +18,64 @@ let loggedInUserId;
 let ws;
 
 
+// const getUsers = async () => {
+//     try {
+//         const userData = JSON.parse(localStorage.getItem("auth_token"));
+//         loggedInUserId = userData.user.id;
+
+//         const response = await axios.post(
+//             "http://localhost:8000/api/chat/chatid-according-user/",
+//             { user_id: loggedInUserId },
+//             { headers: authHeader() }
+//         );
+
+//         console.log("Chat API Response:", response.data); // Log full response
+
+//         const chats = response.data.results; // Use `results` instead of `data`
+//         if (!chats || chats.length === 0) {
+//             console.log("No chat data found.");
+//             return [];
+//         }
+
+//         const usersWithLastMessage = await Promise.all(chats.map(async (chat) => {
+//             console.log("Processing chat:", chat);
+
+//             const lastMessageResponse = await axios.get(
+//                 `http://localhost:8000/api/chat-message/chat-message-according-chat/?uuid=${chat.uuid}`,
+//                 { headers: authHeader() }
+//             );
+
+//             console.log("Last Message Response:", lastMessageResponse.data);
+
+//             const messages = lastMessageResponse.data.data;
+//             const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+
+//             // Extract the opposite user based on logged-in user ID
+//             const oppositeUserId = loggedInUserId === chat.user_1 ? chat.user_2 : chat.user_1;
+//             const oppositeUsername = loggedInUserId === chat.user_1 ? chat.user_2_username : chat.user_1_username;
+
+//             return {
+//                 id: oppositeUserId,
+//                 name: oppositeUsername,
+//                 uuid: chat.uuid,
+//                 chatId: chat.id,
+//                 status: 'online',
+//                 lastMessage: lastMessage ? lastMessage.message : 'No messages yet',
+//                 lastTime: lastMessage ? new Date(lastMessage.created_at).toLocaleTimeString([], {
+//                     hour: '2-digit',
+//                     minute: '2-digit'
+//                 }) : ''
+//             };
+//         }));
+
+//         console.log("Processed Users List:", usersWithLastMessage);
+//         return usersWithLastMessage;
+//     } catch (error) {
+//         console.error("Error fetching users:", error);
+//         return [];
+//     }
+// };
+
 const getUsers = async () => {
     try {
         const userData = JSON.parse(localStorage.getItem("auth_token"));
@@ -28,28 +87,21 @@ const getUsers = async () => {
             { headers: authHeader() }
         );
 
-        console.log("Chat API Response:", response.data); // Log full response
-
-        const chats = response.data.results; // Use `results` instead of `data`
+        const chats = response.data.results;
         if (!chats || chats.length === 0) {
             console.log("No chat data found.");
             return [];
         }
 
         const usersWithLastMessage = await Promise.all(chats.map(async (chat) => {
-            console.log("Processing chat:", chat);
-
             const lastMessageResponse = await axios.get(
                 `http://localhost:8000/api/chat-message/chat-message-according-chat/?uuid=${chat.uuid}`,
                 { headers: authHeader() }
             );
 
-            console.log("Last Message Response:", lastMessageResponse.data);
-
             const messages = lastMessageResponse.data.data;
             const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
 
-            // Extract the opposite user based on logged-in user ID
             const oppositeUserId = loggedInUserId === chat.user_1 ? chat.user_2 : chat.user_1;
             const oppositeUsername = loggedInUserId === chat.user_1 ? chat.user_2_username : chat.user_1_username;
 
@@ -67,7 +119,6 @@ const getUsers = async () => {
             };
         }));
 
-        console.log("Processed Users List:", usersWithLastMessage);
         return usersWithLastMessage;
     } catch (error) {
         console.error("Error fetching users:", error);
@@ -90,13 +141,15 @@ const getMessagesByChatUUID = async (uuid) => {
     }
 };
 
-const StudentChat = () => {
+const StudentChat = ({ uuid }) => {
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [newMessage, setNewMessage] = useState('');
     const [messages, setMessages] = useState([]);
     const [userSearch, setUserSearch] = useState('');
     const messagesEndRef = useRef(null);
+    const messageRefs = useRef({});
+    const location = useLocation();
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -104,13 +157,14 @@ const StudentChat = () => {
             setUsers(data);
         };
         fetchUsers();
-    }, [messages]);
+    }, []);
 
     useEffect(() => {
         const fetchMessages = async () => {
             if (selectedUser && selectedUser.uuid) {
                 const messagesData = await getMessagesByChatUUID(selectedUser.uuid);
                 const formattedMessages = messagesData.data.map((msg) => ({
+                    uuid: msg.uuid,
                     sender: msg.sender_username,
                     text: msg.message,
                     isOwnMessage: msg.sender === loggedInUserId,
@@ -120,10 +174,20 @@ const StudentChat = () => {
                     })
                 }));
                 setMessages(formattedMessages);
+
+                // Scroll to the message with the given uuid
+                setTimeout(() => {
+                    if (uuid && messageRefs.current[uuid]) {
+                        messageRefs.current[uuid].scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
+                        });
+                    }
+                }, 100);
             }
         };
         fetchMessages();
-    }, [selectedUser]);
+    }, [selectedUser, uuid]);
 
     useEffect(() => {
         if (selectedUser) {
@@ -240,6 +304,22 @@ const StudentChat = () => {
         user.name.toLowerCase().includes(userSearch.toLowerCase())
     );
 
+    useEffect(() => {
+        const fetchUsersAndSelectChat = async () => {
+            const data = await getUsers();
+            setUsers(data);
+
+            // If there's a UUID in the navigation state, find and select that chat
+            if (location.state?.uuid) {
+                const chatToOpen = data.find(user => user.uuid === location.state.uuid);
+                if (chatToOpen) {
+                    setSelectedUser(chatToOpen);
+                }
+            }
+        };
+        fetchUsersAndSelectChat();
+    }, [location.state]);
+
     return (
         <div className="chat-message-container">
             <div className="chat-message-sidebar">
@@ -273,7 +353,7 @@ const StudentChat = () => {
                             </div>
                             <div className="chat-message-user-actions">
                                 <span className="chat-message-timestamp">{user.lastTime}</span>
-                                <button 
+                                <button
                                     className="chat-message-delete-button"
                                     onClick={(e) => handleDeleteChat(user, e)}
                                 >
@@ -307,9 +387,10 @@ const StudentChat = () => {
                         </div>
 
                         <div className="chat-message-message-container">
-                            {messages.map((msg, index) => (
+                            {messages.map((msg) => (
                                 <div
-                                    key={index}
+                                    key={msg.uuid}
+                                    ref={(el) => (messageRefs.current[msg.uuid] = el)}
                                     className={`chat-message-message-item ${msg.isOwnMessage ? 'chat-message-right' : 'chat-message-left'}`}
                                 >
                                     <div className="chat-message-message-bubble">{msg.text}</div>
