@@ -11,6 +11,7 @@ from django.db.models import Q
 from utils.pagination import mypagination
 from django.db.models import Max
 from django.db.models import Q
+from videocall.models import VideoRoom
 
 class ChatIDViewSet(ModelViewSet):
     queryset = ChatID.objects.filter(deleted=0)
@@ -126,6 +127,30 @@ class ChatIDViewSet(ModelViewSet):
         serializer = self.get_serializer(chatid_instance, many=True)
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
     
+    @action(detail=False, methods=["POST"], url_path="get-chat-by-videocall-id")
+    def get_chat_videocall_id(self, request, *args, **kwargs):
+        video_call_uuid = request.data.get("uuid")
+        
+        if not video_call_uuid:
+            return Response({"success": False, "message": "Video call UUID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            video_call_instance = VideoRoom.objects.get(uuid=video_call_uuid)
+        except VideoRoom.DoesNotExist:
+            return Response({"success": False, "message": "Video call with this UUID does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get the chat ID based on teacher and student
+        chat_id_instance = ChatID.objects.filter(
+            Q(user_1=video_call_instance.teacher, user_2=video_call_instance.student) | 
+            Q(user_2=video_call_instance.teacher, user_1=video_call_instance.student)
+        ).first()  # Use `.first()` instead of `.get()` to avoid multiple object errors
+
+        if not chat_id_instance:
+            return Response({"success": False, "message": "Chat ID with these users does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = ChatIDSerializer(chat_id_instance)
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+
 class ChatMessageViewSet(ModelViewSet):
     queryset = ChatMessage.objects.filter(deleted=0)
     serializer_class = ChatMessageSerializer

@@ -33,7 +33,7 @@ from django.contrib.auth.hashers import check_password
 import json
 faker = Faker()
 
-
+from uuid import uuid4
 class UserViewSet(ModelViewSet):
     queryset = User.objects.filter(deleted=0,email_verified=True).order_by("-id")
     serializer_class = UserSerializer
@@ -78,6 +78,7 @@ class UserViewSet(ModelViewSet):
         data["user_degree_certificate"]=user_degree_certificate
         data["user_12th_marsheet_image"]=user_12th_marsheet_image
         
+        data["user_uuid"]=str(uuid4())
         serializer = self.serializer_class(data=data, partial=True)
 
         if serializer.is_valid():
@@ -357,7 +358,10 @@ class RegisterViewSet(ModelViewSet):
     permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
-        serializer = RegisterSerializer(data=request.data)
+        data=request.data
+        data["user_uuid"]=str(uuid4())
+        print(data)
+        serializer = RegisterSerializer(data=data)
         if serializer.is_valid():
             with transaction.atomic():
                 email = serializer.validated_data["email"]

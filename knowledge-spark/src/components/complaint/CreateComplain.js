@@ -67,7 +67,7 @@ const CreateComplaint = () => {
     try {
       const accessToken = getAccessToken();
       const complaintData = {
-        type_of_issue: "Other",
+        type_of_issue: values.type_of_issue,
         message: values.message,
         user: currentUser.id,
        
@@ -143,9 +143,16 @@ const CreateComplaint = () => {
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
             <Form.Item name="type_of_issue" label="Type Of Issue" rules={[{ required: true, message: 'Please select type of issue' }]}> 
               <Select>
-                <Option value="Course Releted">Course Releted</Option>
-                <Option value="Technicle Problem">Technicle Releted</Option>
-                <Option value="Payment Releted">Payment Releted</Option>
+                <Option value="Payment">Payment</Option>
+                <Option value="Website Design">Website Design</Option>
+                <Option value="User Interface Issue">User Interface Issue</Option>
+                <Option value="Slow Performance">Slow Performance</Option>
+                <Option value="Broken Links">Broken Links</Option>
+                <Option value="Login/Registration Issue">Login/Registration Issue</Option>
+                <Option value="Bug/Error">Bug/Error</Option>
+                <Option value="Feature Request">Feature Request</Option>
+                <Option value="Security Concern">Security Concern</Option>
+                <Option value="Other">Other</Option>
               </Select>
             </Form.Item>
             <Form.Item name="message" label="Message" rules={[{ required: true, message: 'Please enter your message' }]}> 
