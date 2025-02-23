@@ -292,7 +292,8 @@ function getCookie(name) {
 }
 
 const authenticated = getCookie("token");
-
+console.log("token",getCookie("token"))
+console.log('authenticated',authenticated)
 
   if (authenticated) {
     get_user_details()
