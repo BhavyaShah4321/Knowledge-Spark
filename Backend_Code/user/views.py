@@ -453,10 +453,12 @@ class VerifyEmailViewset(ModelViewSet):
         user.is_active = True
         user.save()
 
+        serializer=UserSerializer(user)
         return Response(
             {
                 "success": True,
                 "message": "Email successfully verified",
+                "data":serializer.data,
                 "token": {
                     "access_token": access_token,
                     "refresh_token": str(refresh_token),

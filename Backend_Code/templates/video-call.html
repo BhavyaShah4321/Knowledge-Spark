@@ -286,12 +286,12 @@
 //console.log("Authenticated Token:", authenticated);
 
 function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  console.log("value",value)
-  const parts = value.split(`; ${name}=`);
-  console.log("parts",parts)
-
-  if (parts.length === 2) return parts.pop().split(';').shift();
+  const cookies = document.cookie.split("; ");
+  for (let i = 0; i < cookies.length; i++) {
+      const [key, value] = cookies[i].split("=");
+      if (key === name) return value;
+  }
+  return null;
 }
 
 const authenticated = getCookie("token");
