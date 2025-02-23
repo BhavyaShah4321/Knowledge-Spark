@@ -278,15 +278,23 @@
   let user_image = ""
   var ws;
 
-  const urlParams = new URLSearchParams(window.location.search);
-const token = urlParams.get("token");
+//  const urlParams = new URLSearchParams(window.location.search);
+//const token = urlParams.get("token");
+//
+//
+//const authenticated = token
+//console.log("Authenticated Token:", authenticated);
 
-if (token) {
-    localStorage.setItem("auth_token", token);
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
 }
 
-const authenticated = localStorage.getItem("auth_token");
-console.log("Authenticated Token:", authenticated);
+const authenticated = getCookie("token");
+
+console.log("Authenticated Token:", token);
+
   if (authenticated) {
     get_user_details()
     check_link_valid()
@@ -301,8 +309,8 @@ console.log("Authenticated Token:", authenticated);
     main_message.style.display = "flex";
 
     setTimeout(() => {
-      window.location.href = `/login/?redirect_to=${uuid}`
-    }, 3000);
+      window.location.href = `http://localhost:3000/`
+    }, 2000);
   }
   message_close.onclick = function () {
     main_message.style.display = "None"
@@ -792,6 +800,7 @@ return
 
           if (rtcpeerconnection[data['user_uuid']]) {
             endcall(data['user_uuid']);
+            
           }
           else {
             window.location.href = "/"
@@ -881,6 +890,7 @@ return
             if (check){
               if (rtcpeerconnection[data['user_uuid_by']]) {
                 endcall(data['user_uuid_by']);
+                
               } else {
                 window.location.href = "/"
 
@@ -1320,11 +1330,19 @@ function audiotoggle(rtcpeerconnection) {
         updateMainFrame(myuuid)
       }
 
+      fetch(`${window.location.origin}/api/video-call/endvideocall/`,{
+        method:"POST",
+        headers: {
+          "content-type": "application/json",
+          "Authorization": `Bearer ${authenticated}`
+        },
+        body: JSON.stringify({"uuid":uuid})
+      }).then((response)=>{
+        window.location.href="http://localhost:3000/"
+        return response.json()
+      })
+  
 
-      setTimeout(() => {
-
-        window.location.href = "/"
-      }, 1500)
     } else {
       console.log("No active RTC connection for the user's UUID");
     }
