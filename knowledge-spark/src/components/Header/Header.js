@@ -285,6 +285,7 @@ export default function AppHeader() {
       } else {
         message.error('Failed to log out. Please try again.');
       }
+      document.cookie = "token=; path=/; max-age=0; SameSite=Lax";
     } catch (error) {
       console.error('Logout error:', error);
       if (error.response && error.response.status === 401) {
@@ -337,7 +338,7 @@ export default function AppHeader() {
                   border: '2px solid #ddd',
                 }}
               />
-              
+
             ) : (
               <Avatar style={{ backgroundColor: backgroundColor, color: '#fff' }}>
                 {getInitials(userEmail)}
