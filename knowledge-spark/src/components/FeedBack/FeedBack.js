@@ -1,16 +1,12 @@
 import {
-  DownOutlined,
   SearchOutlined,
   EditOutlined,
 } from "@ant-design/icons";
 import {
-  Avatar,
   Breadcrumb,
   Button,
   Col,
-  Dropdown,
   Input,
-  Menu,
   Row,
   Space,
   Table,
@@ -25,9 +21,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { ReactComponent as FilterIcon } from "../../Image/FilterIcon.svg";
 
 export default function FeedBack() {
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
   const [courseData, setCourseData] = useState([]);
@@ -44,17 +39,50 @@ export default function FeedBack() {
     return authData.access_token;
   };
 
+  const handleSearch = async () => {
+    try {
+      setLoading(true);
+      setCurrentPage(1); // Reset to first page when searching
+      const accessToken = getAccessToken();
+
+      const response = await axios.get(
+        `http://localhost:8000/api/course-feedback/`, // Base URL
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          params: {
+            search: searchQuery, // ✅ Correctly passing search parameter
+          },
+        }
+      );
+
+      const FeedBackDetails = response.data;
+      setCourseData(FeedBackDetails.results.data || []); // ✅ Ensure data exists
+      setTotalItems(FeedBackDetails.count || 0);
+    } catch (error) {
+      console.error("Error searching feedback:", error);
+      message.error("Failed to fetch search results");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   const fetchCourseDetails = async (page = 1) => {
     try {
       setLoading(true);
       const accessToken = getAccessToken();
-
+  
       const response = await axios.get(`http://localhost:8000/api/course-feedback/`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+        params: {
+          page: page, // ✅ Ensure pagination works
+        },
       });
-
+  
       const FeedBackDetails = response.data;
       setCourseData(FeedBackDetails.results.data || []);
       setTotalItems(FeedBackDetails.count || 0);
@@ -65,6 +93,7 @@ export default function FeedBack() {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchCourseDetails(currentPage);
@@ -118,6 +147,11 @@ export default function FeedBack() {
     }
   };
 
+  const resetSearch = () => {
+    setSearchQuery("");
+    setCurrentPage(1);
+    fetchCourseDetails(1);
+  };
   const columns = [
     {
       title: "Sr. No.",
@@ -162,6 +196,24 @@ export default function FeedBack() {
             <Breadcrumb items={[{ title: <Link to="/dashboard">Home</Link> }, { title: "Feedback" }]} />
           </div>
         </Col>
+        <Col>
+          <Space size="small">
+            <Input
+              placeholder="Search Feedback..."
+              prefix={<SearchOutlined />}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                handleSearch();
+              }}
+            />
+            <Tooltip placement="top" title="Reset Filter">
+              <Button type="primary" className="iconlink" onClick={resetSearch}>
+                <FilterIcon />
+              </Button>
+            </Tooltip>
+          </Space>
+        </Col>
       </Row>
       <Table
         dataSource={Array.isArray(courseData) ? courseData : []}
@@ -176,7 +228,6 @@ export default function FeedBack() {
         loading={loading}
         scroll={{ x: 1500 }}
       />
-
       <Modal
         title="Edit Feedback"
         open={editModalOpen}
@@ -185,7 +236,7 @@ export default function FeedBack() {
         centered
       >
         <Form form={form} layout="vertical" onFinish={handleEditSubmit}>
-          <Form.Item label="Feedback" name="feedback_message" rules={[{ required: true, message: "Enter feedback" }]}> 
+          <Form.Item label="Feedback" name="feedback_message" rules={[{ required: true, message: "Enter feedback" }]}>
             <Input.TextArea />
           </Form.Item>
           <Form.Item>
