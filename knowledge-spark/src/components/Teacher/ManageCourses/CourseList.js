@@ -43,7 +43,7 @@ export default function CourseList() {
   // Drawer states
   const [courseDrawerOpen, setCourseDrawerOpen] = useState(false);
   const [courseVideoDrawerOpen, setCourseVideoDrawerOpen] = useState(false);
-
+  const [filteredCourses, setFilteredCourses] = useState([]);
   const [courseModalOpen, setCourseModalOpen] = useState(false);
   const [courseVideoModalOpen, setCourseVideoModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
@@ -91,6 +91,33 @@ export default function CourseList() {
     return authData.access_token;
   };
 
+
+  useEffect(() => {
+    setFilteredCourses(courseData);
+  }, [courseData]);
+
+  const handleSearch = (value) => {
+    setSearchText(value);
+    const searchTerm = value.trim().toLowerCase();
+
+    if (!searchTerm) {
+      setFilteredCourses(courseData); // Reset search when empty
+      return;
+    }
+
+    const filtered = courseData.filter((course) =>
+      course.course_title?.toLowerCase().includes(searchTerm) ||
+      course.course_teacher_username?.toLowerCase().includes(searchTerm)
+    );
+
+    setFilteredCourses(filtered);
+  };
+
+  const handleReset = () => {
+    setSearchText(""); // Clear input field
+    setFilteredCourses(courseData); // Reset data to original
+  };
+
   const openCourseModal = (course = null) => {
     setEditingCourse(course);
     if (course) {
@@ -98,13 +125,13 @@ export default function CourseList() {
         ...course,
         course_thumbnail: course.course_thumbnail
           ? [
-              {
-                uid: "-1",
-                name: "current-thumbnail.jpg",
-                status: "done",
-                url: course.course_thumbnail,
-              },
-            ]
+            {
+              uid: "-1",
+              name: "current-thumbnail.jpg",
+              status: "done",
+              url: course.course_thumbnail,
+            },
+          ]
           : undefined,
       };
       courseForm.setFieldsValue(formData);
@@ -126,23 +153,23 @@ export default function CourseList() {
         course_video_description: video.course_video_description,
         course_video_thumbnail: video.course_video_thumbnail
           ? [
-              {
-                uid: "-1",
-                name: "current-thumbnail.jpg",
-                status: "done",
-                url: video.course_video_thumbnail,
-              },
-            ]
+            {
+              uid: "-1",
+              name: "current-thumbnail.jpg",
+              status: "done",
+              url: video.course_video_thumbnail,
+            },
+          ]
           : undefined,
         course_video: video.course_video
           ? [
-              {
-                uid: "-1",
-                name: "current-video.mp4",
-                status: "done",
-                url: video.course_video,
-              },
-            ]
+            {
+              uid: "-1",
+              name: "current-video.mp4",
+              status: "done",
+              url: video.course_video,
+            },
+          ]
           : undefined,
       });
     } else {
@@ -272,11 +299,10 @@ export default function CourseList() {
 
       if (response.status === 200 || response.status === 201) {
         message.success(
-          `Course video ${
-            editingCourseVideo?.videoId ? "updated" : "added"
+          `Course video ${editingCourseVideo?.videoId ? "updated" : "added"
           } successfully`
         );
-         setCourseVideoModalOpen(false);
+        setCourseVideoModalOpen(false);
         courseVideoForm.resetFields();
         fetchCourseDetails(currentPage); // Refresh the course list
       }
@@ -468,7 +494,7 @@ export default function CourseList() {
 
   const rowClassName = (record) =>
     record.course_status === "inactive" ? "inactive-row" : "";
-  
+
 
   return (
     <div>
@@ -490,13 +516,17 @@ export default function CourseList() {
         <Col>
           <Space size="small">
             <Input
-              placeholder="Search"
-              prefix={<SearchOutlined />}
+              placeholder="Search courses..."
               value={searchText}
-              style={{ width: "100%" }}
+              onChange={(e) => handleSearch(e.target.value)}
+              prefix={<SearchOutlined />}
             />
             <Tooltip placement="top" title="Reset Filter">
-              <Button type="primary" className="iconlink">
+              <Button
+                type="primary"
+                className="iconlink"
+                onClick={handleReset}
+                disabled={!searchText.trim()} >
                 <FilterIcon />
               </Button>
             </Tooltip>
@@ -561,15 +591,15 @@ export default function CourseList() {
             ]}
           >
             <Select placeholder="Select Course Category">
-             {category.map((category) => (
-                             <Option
-                               key={category.id}
-                               value={category.id}
-                               disabled={category.status === "inactive"}
-                             >
-                               {category.name}
-                             </Option>
-                           ))}
+              {category.map((category) => (
+                <Option
+                  key={category.id}
+                  value={category.id}
+                  disabled={category.status === "inactive"}
+                >
+                  {category.name}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
 
@@ -734,7 +764,7 @@ export default function CourseList() {
       </Modal>
 
       <Table
-        dataSource={Array.isArray(courseData) ? courseData : []}
+        dataSource={searchText ? filteredCourses : courseData} // Use filteredCourses when searching
         columns={columns}
         rowKey="id"
         rowClassName={rowClassName}
@@ -746,6 +776,7 @@ export default function CourseList() {
         }}
         loading={loading}
       />
+
     </div>
   );
 }
