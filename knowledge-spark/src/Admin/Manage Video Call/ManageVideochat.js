@@ -46,18 +46,25 @@ function ManageVideochat() {
       }
       const accesstoken = auth_token.access_token;
 
-      const response = await axios.get("http://localhost:8000/api/video-call/", {
+      // Include searchText in API request
+      const response = await axios.get(`http://localhost:8000/api/video-call/?search=${searchText}`, {
         headers: { Authorization: `Bearer ${accesstoken}` }
       });
-      const videoCallList = response.data;
-      setData(videoCallList.results || []);
-      setTotalItems(response.count || 0);
+
+      setData(response.data.results || []);
+      setTotalItems(response.data.count || 0);
     } catch (error) {
       message.error("Failed to fetch video call data.");
     } finally {
       setLoading(false);
     }
   };
+
+  // Call fetchVideoCallData when search text changes
+  useEffect(() => {
+    fetchVideoCallData();
+  }, [searchText]); // Refetch data when searchText changes
+
 
   useEffect(() => {
     fetchVideoCallData();
@@ -119,6 +126,25 @@ function ManageVideochat() {
     });
   };
 
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchText(value);
+
+    if (!value) {
+      fetchVideoCallData(); // Reset data when search is cleared
+      return;
+    }
+
+    const filteredData = data.filter((item) =>
+      Object.values(item).some(
+        (val) =>
+          val &&
+          val.toString().toLowerCase().includes(value.toLowerCase())
+      )
+    );
+
+    setData(filteredData);
+  };
 
 
   const columns = [
@@ -236,7 +262,7 @@ function ManageVideochat() {
                 placeholder="Search"
                 prefix={<SearchOutlined />}
                 value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
+                onChange={handleSearch} // Call filtering function
               />
               <Tooltip placement="top" title="Reset Filter">
                 <Button type="primary" className="iconlink" onClick={resetFilter}>

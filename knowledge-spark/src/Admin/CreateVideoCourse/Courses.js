@@ -89,6 +89,10 @@ export default function Courses() {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+        params: {
+          search: searchText, // Include search text in API request
+          page: page, // Maintain pagination
+        },
       });
 
       const CourseDetails = response.data;
@@ -101,6 +105,7 @@ export default function Courses() {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchCourseDetails(currentPage);
@@ -175,6 +180,10 @@ export default function Courses() {
     </Menu>
   );
 
+  const onSearchChange = (e) => {
+    setSearchText(e.target.value);
+  };
+
   // Update the status update function
   const updateCourseStatus = async (id, status) => {
     try {
@@ -207,6 +216,16 @@ export default function Courses() {
       setLoading(false);
     }
   };
+
+  const filteredCourses = courseData.filter((course) =>
+    course.course_title.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  const resetFilter = () => {
+    setSearchText(""); // Clear the search text
+    fetchCourseDetails(1); // Reload course data
+  };
+
 
   const columns = [
     {
@@ -313,14 +332,14 @@ export default function Courses() {
               placeholder="Search"
               prefix={<SearchOutlined />}
               value={searchText}
-              // onChange={onSearchChange}
+              onChange={onSearchChange}
               style={{ width: "100%" }}
             />
             <Tooltip placement="top" title="Reset Filter">
               <Button
                 type="primary"
                 className="iconlink"
-                //  onClick={resetFilter}
+                onClick={resetFilter}
               >
                 <FilterIcon />
               </Button>
@@ -339,7 +358,7 @@ export default function Courses() {
       </Row>
 
       <Table
-        dataSource={Array.isArray(courseData) ? courseData : []}
+        dataSource={filteredCourses}
         columns={columns}
         rowKey="id"
         pagination={{
