@@ -104,13 +104,13 @@ class VideoRoomViewSet(ModelViewSet):
 
     @action(detail=False, methods=["POST"], url_path="endvideocall")
     def endvideocall(self, request, *args, **kwargs):
-        id = request.data.get("id")  # Use `.get()` instead of `()`
+        uuid = request.data.get("uuid")  # Use `.get()` instead of `()`
 
         try:
-            video_instance = VideoRoom.objects.get(id=id)
+            video_instance = VideoRoom.objects.get(uuid=uuid)
         except VideoRoom.DoesNotExist:
             return Response(
-                {"success": False, "message": f"No VideoRoom with id {id} found."},
+                {"success": False, "message": f"No VideoRoom with uuid {id} found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
 

@@ -17,20 +17,22 @@ function Login() {
     const { email, password } = values;
     const normalUserApi = "http://localhost:8000/api/login/";
     const adminApi = "http://localhost:8000/api/login/admin-login/";
-  
+
     try {
       // First attempt normal user login
       const normalResponse = await axios.post(normalUserApi, { email, password });
-  
+
       if (normalResponse.status === 200 && normalResponse.data.success) {
         const { token, data } = normalResponse.data;
-  
+
         // Check user status if they are a teacher or student
         if ((data.type === 'teacher' || data.type === 'student') && data.status === 'inactive') {
           message.error("Your account is currently inactive. Please contact the administrator.");
           return;
         }
-  
+
+
+        document.cookie = `token=${token.access_token}; path=/;SameSite=Lax`;
         // Store the token and additional data in localStorage
         localStorage.setItem(
           "auth_token",
@@ -49,7 +51,7 @@ function Login() {
             user_type: "Member",
           })
         );
-  
+
         message.success("Login successful!");
         navigate("/dashboard");
         return;
@@ -60,20 +62,20 @@ function Login() {
         message.error(error.response.data.message);
         return;
       }
-  
+
       // If normal login fails, proceed to admin login
       try {
         const adminResponse = await axios.post(adminApi, { email, password });
-  
+
         if (adminResponse.status === 200 && adminResponse.data.success) {
           const { token, data } = adminResponse.data;
-  
+
           // Check admin status
           if (data.status === 'inactive') {
             message.error("Your account is currently inactive. Please contact the administrator.");
             return;
           }
-  
+
           // Store the token and additional data in localStorage
           localStorage.setItem(
             "auth_token",
@@ -92,7 +94,7 @@ function Login() {
               user_type: "Admin",
             })
           );
-  
+
           message.success("Admin login successful!");
           navigate("/dashboard");
           return;

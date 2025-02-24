@@ -69,7 +69,6 @@ class UserViewSet(ModelViewSet):
         
     def create(self,request,*args,**kwargs):
         data = json.loads(request.data.get("form_data"))
-
         profile_picture = request.FILES.get('profile_picture')
         user_12th_marsheet_image = request.FILES.get('user_12th_marsheet_image')
         user_degree_certificate = request.FILES.get('user_degree_certificate')
@@ -454,10 +453,12 @@ class VerifyEmailViewset(ModelViewSet):
         user.is_active = True
         user.save()
 
+        serializer=UserSerializer(user)
         return Response(
             {
                 "success": True,
                 "message": "Email successfully verified",
+                "data":serializer.data,
                 "token": {
                     "access_token": access_token,
                     "refresh_token": str(refresh_token),

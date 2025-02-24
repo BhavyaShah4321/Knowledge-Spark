@@ -7,6 +7,7 @@ from user.models import User
 
 from asgiref.sync import sync_to_async
 from videocall.models import VideoChatRoom
+from django.utils import timezone  
 
 class VideoCallConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
@@ -90,6 +91,8 @@ class VideoCallConsumer(AsyncJsonWebsocketConsumer):
                 })  
             
             
+    async def disconnect(self, code):
+        await self.channel_layer.group_discard(self.video_room_name, self.channel_name)
             
     async def video_call_join(self,text_data):
         await self.send(json.dumps({
