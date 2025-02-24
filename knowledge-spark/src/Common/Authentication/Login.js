@@ -19,21 +19,19 @@ function Login() {
     const adminApi = "http://localhost:8000/api/login/admin-login/";
 
     try {
-      // First attempt normal user login
+      // Attempt normal user login first
       const normalResponse = await axios.post(normalUserApi, { email, password });
 
       if (normalResponse.status === 200 && normalResponse.data.success) {
         const { token, data } = normalResponse.data;
 
-        // Check user status if they are a teacher or student
+        // Check if the account is inactive
         if ((data.type === 'teacher' || data.type === 'student') && data.status === 'inactive') {
           message.error("Your account is currently inactive. Please contact the administrator.");
           return;
         }
 
-
         document.cookie = `token=${token.access_token}; path=/;SameSite=Lax`;
-        // Store the token and additional data in localStorage
         localStorage.setItem(
           "auth_token",
           JSON.stringify({
@@ -57,26 +55,22 @@ function Login() {
         return;
       }
     } catch (error) {
-      // Check for error message from normal user login
-      if (error.response?.data?.message) {
-        message.error(error.response.data.message);
-        return;
-      }
+      console.warn("Normal user login failed, trying admin login...");
 
-      // If normal login fails, proceed to admin login
+      // If normal user login fails, attempt admin login
       try {
         const adminResponse = await axios.post(adminApi, { email, password });
 
         if (adminResponse.status === 200 && adminResponse.data.success) {
           const { token, data } = adminResponse.data;
 
-          // Check admin status
+          // Check if the admin account is inactive
           if (data.status === 'inactive') {
             message.error("Your account is currently inactive. Please contact the administrator.");
             return;
           }
 
-          // Store the token and additional data in localStorage
+          document.cookie = `token=${token.access_token}; path=/;SameSite=Lax`;
           localStorage.setItem(
             "auth_token",
             JSON.stringify({
@@ -100,13 +94,8 @@ function Login() {
           return;
         }
       } catch (adminError) {
-        // Display error message from admin login attempt
-        if (adminError.response?.data?.message) {
-          message.error(adminError.response.data.message);
-        } else {
-          // Fallback error message if no specific message is provided
-          message.error("Login failed. Please check your credentials and try again.");
-        }
+        console.error("Admin login failed:", adminError);
+        message.error("Login failed. Please check your credentials and try again.");
       }
     }
   };
