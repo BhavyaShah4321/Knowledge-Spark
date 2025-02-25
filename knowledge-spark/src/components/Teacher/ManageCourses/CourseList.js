@@ -771,8 +771,11 @@ export default function CourseList() {
         pagination={{
           current: currentPage,
           total: totalItems,
-          pageSize: 10,
-          showSizeChanger: false,
+          pageSize: 10, // Adjust page size based on API response
+          showTotal: (total) => `Total ${total} items`,
+        }}
+        onChange={(pagination) => {
+          setCurrentPage(pagination.current);
         }}
         loading={loading}
       />

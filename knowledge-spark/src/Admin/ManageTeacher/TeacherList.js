@@ -58,6 +58,8 @@ function TeacherList() {
       );
 
       const teacherDetails = response.data;
+      console.log('teacherDetails',teacherDetails.count);
+      
       setData(teacherDetails.results?.data || []);
       setTotalItems(teacherDetails.count || 0);
     } catch (error) {
@@ -267,13 +269,17 @@ function TeacherList() {
         </Row>
       </Row>
       <Table
-        // rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
-        columns={columns}
-        dataSource={data}
-        loading={loading}
-        pagination={{ current: currentPage, total: totalItems }}
-        onChange={(pagination) => setCurrentPage(pagination.current)}
-      />
+  columns={columns}
+  dataSource={data}
+  loading={loading}
+  pagination={{
+    current: currentPage,
+    total: totalItems,
+    showTotal: (total) => `Total ${total} items`, // This will display the total records
+  }}
+  onChange={(pagination) => setCurrentPage(pagination.current)}
+/>
+
        <EditTeacherModal
         visible={isModalVisible}
         teacherId={selectedTeacherId}

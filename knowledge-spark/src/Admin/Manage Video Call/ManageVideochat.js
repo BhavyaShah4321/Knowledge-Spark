@@ -191,49 +191,49 @@ function ManageVideochat() {
       dataIndex: "created_by_username",
       key: "created_by_username",
     },
-    {
-      title: "Created At",
-      dataIndex: "created_at",
-      key: "created_at",
-    },
-    {
-      title: "Updated At",
-      dataIndex: "updated_at",
-      key: "updated_at",
-    },
-    {
-      title: "Action",
-      key: "action",
-      render: (text, record) => (
-        <Space>
-          <Tooltip title="Edit">
-            <Button
-              icon={<EditOutlined />}
-              style={{ cursor: "pointer" }}
-              onClick={() => openEditModal(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button
-              icon={<DeleteOutlined />}
-              style={{ cursor: "pointer", color: "red" }}
-              onClick={() => handleDelete(record.id)}
-            />
-          </Tooltip>
-          {record.end === null && (
-            <Tooltip title="End Call">
-              <Button
-                type="primary"
-                style={{ cursor: "pointer", backgroundColor: "#28a745", borderColor: "#28a745" }}
-                onClick={() => handleEndVideoCall(record.id)}
-              >
-                End Call
-              </Button>
-            </Tooltip>
-          )}
-        </Space>
-      ),
-    }
+    // {
+    //   title: "Created At",
+    //   dataIndex: "created_at",
+    //   key: "created_at",
+    // },
+    // {
+    //   title: "Updated At",
+    //   dataIndex: "updated_at",
+    //   key: "updated_at",
+    // },
+    // {
+    //   title: "Action",
+    //   key: "action",
+    //   render: (text, record) => (
+    //     <Space>
+    //       <Tooltip title="Edit">
+    //         <Button
+    //           icon={<EditOutlined />}
+    //           style={{ cursor: "pointer" }}
+    //           onClick={() => openEditModal(record)}
+    //         />
+    //       </Tooltip>
+    //       <Tooltip title="Delete">
+    //         <Button
+    //           icon={<DeleteOutlined />}
+    //           style={{ cursor: "pointer", color: "red" }}
+    //           onClick={() => handleDelete(record.id)}
+    //         />
+    //       </Tooltip>
+    //       {record.end === null && (
+    //         <Tooltip title="End Call">
+    //           <Button
+    //             type="primary"
+    //             style={{ cursor: "pointer", backgroundColor: "#28a745", borderColor: "#28a745" }}
+    //             onClick={() => handleEndVideoCall(record.id)}
+    //           >
+    //             End Call
+    //           </Button>
+    //         </Tooltip>
+    //       )}
+    //     </Space>
+    //   ),
+    // }
 
   ];
 
@@ -271,20 +271,24 @@ function ManageVideochat() {
               </Tooltip>
             </Space>
           </Col>
-          <Col>
+          {/* <Col>
             <Tooltip title="Create Video Call">
               <Button type="primary" icon={<PlusOutlined />} onClick={openModal}>
                 Create Video Call
               </Button>
             </Tooltip>
-          </Col>
+          </Col> */}
         </Row>
       </Row>
       <Table
         columns={columns}
         dataSource={data}
         loading={loading}
-        pagination={{ current: currentPage, total: totalItems }}
+        pagination={{
+          current: currentPage,
+          total: totalItems,
+          showTotal: (total) => `Total ${total} items`, // This will display the total records
+        }}
         onChange={(pagination) => setCurrentPage(pagination.current)}
       />
       <Modal
