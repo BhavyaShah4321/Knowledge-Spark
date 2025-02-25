@@ -28,6 +28,7 @@ export default function FeedBack() {
   const [courseData, setCourseData] = useState([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingFeedback, setEditingFeedback] = useState(null);
+  const [nextPage, setNextPage] = useState(null);
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
@@ -39,14 +40,14 @@ export default function FeedBack() {
     return authData.access_token;
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (page = 1) => {
     try {
       setLoading(true);
       setCurrentPage(1); // Reset to first page when searching
       const accessToken = getAccessToken();
 
       const response = await axios.get(
-        `http://localhost:8000/api/course-feedback/`, // Base URL
+        `http://localhost:8000/api/course-feedback/?page=${page}`, // Base URL
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -60,6 +61,7 @@ export default function FeedBack() {
       const FeedBackDetails = response.data;
       setCourseData(FeedBackDetails.results.data || []); // ✅ Ensure data exists
       setTotalItems(FeedBackDetails.count || 0);
+      setNextPage(FeedBackDetails.next);
     } catch (error) {
       console.error("Error searching feedback:", error);
       message.error("Failed to fetch search results");
@@ -222,8 +224,11 @@ export default function FeedBack() {
         pagination={{
           current: currentPage,
           total: totalItems,
-          pageSize: 10,
-          showSizeChanger: false,
+          pageSize: 10, // Adjust page size based on API response
+          showTotal: (total) => `Total ${total} items`,
+        }}
+        onChange={(pagination) => {
+          setCurrentPage(pagination.current);
         }}
         loading={loading}
         scroll={{ x: 1500 }}

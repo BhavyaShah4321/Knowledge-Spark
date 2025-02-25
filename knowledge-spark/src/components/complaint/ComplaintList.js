@@ -17,6 +17,8 @@ import {
   Typography
 } from "antd";
 import { Link } from "react-router-dom";
+import dayjs from "dayjs";
+import { ReactComponent as FilterIcon } from "../../Image/FilterIcon.svg";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -161,13 +163,13 @@ const ComplaintList = () => {
       title: "Created At",
       dataIndex: "created_at",
       key: "created_at",
-      render: (date) => new Date(date).toLocaleString(),
+      render: (date) => dayjs(date).format('DD-MM-YYYY:hh:mm'),
     },
     {
       title: "Updated At",
       dataIndex: "updated_at",
       key: "updated_at",
-      
+      render: (date) => dayjs(date).format('DD-MM-YYYY:hh:mm'),
     },
     {
       title: "Admin Response",
@@ -219,7 +221,7 @@ const ComplaintList = () => {
                 className="iconlink" 
                 onClick={() => setSearchText("")}
               >
-                <FilterOutlined />
+                <FilterIcon />
               </Button>
             </Tooltip>
           </Space>
@@ -233,9 +235,9 @@ const ComplaintList = () => {
         loading={loading}
         pagination={{
           current: currentPage,
-          pageSize: 5,
           total: totalItems,
-          onChange: (page) => setCurrentPage(page),
+          pageSize: 10, // Adjust page size based on API response
+          showTotal: (total) => `Total ${total} items`,
         }}
       />
 

@@ -414,8 +414,7 @@ export default function Category() {
         pagination={{
           current: currentPage,
           total: totalItems,
-          pageSize: 10,
-          showSizeChanger: false,
+          showTotal: (total) => `Total ${total} items`, // This will display the total records
         }}
         loading={loading}
         onChange={(pagination) => setCurrentPage(pagination.current)}

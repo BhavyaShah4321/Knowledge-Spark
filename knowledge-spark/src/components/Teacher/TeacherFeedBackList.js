@@ -26,6 +26,8 @@ export default function TeacherFeedBackList() {
   const [searchText, setSearchText] = useState("");
   const [filterCourse, setFilterCourse] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+ 
+    const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
   const [feedbackData, setFeedbackData] = useState([]);
   const [teacherId, setTeacherId] = useState(null);
@@ -182,8 +184,12 @@ export default function TeacherFeedBackList() {
         rowKey="id"
         pagination={{
           current: currentPage,
-          pageSize: 15,
-          showSizeChanger: false,
+          total: totalItems,
+          pageSize: 10, // Adjust page size based on API response
+          showTotal: (total) => `Total ${total} items`,
+        }}
+        onChange={(pagination) => {
+          setCurrentPage(pagination.current);
         }}
         loading={loading}
         scroll={{ x: 1500 }}
