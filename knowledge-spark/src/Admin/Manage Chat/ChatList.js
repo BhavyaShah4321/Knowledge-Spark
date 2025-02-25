@@ -153,6 +153,8 @@ const ChatList = () => {
     const [search, setSearch] = useState("");
     const [selectedChat, setSelectedChat] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+     const [currentPage, setCurrentPage] = useState(1);
+      const [totalItems, setTotalItems] = useState(0);
 
     useEffect(() => {
         const fetchChats = async () => {
@@ -247,7 +249,11 @@ const ChatList = () => {
                     dataSource={filteredChats}
                     columns={columns}
                     rowKey={(record) => record.id}
-                    pagination={{ pageSize: 10 }}
+                    pagination={{
+                        current: currentPage,
+                        total: totalItems,
+                        showTotal: (total) => `Total ${total} items`, // This will display the total records
+                      }}
                     bordered
                     onRow={(record) => ({
                         onClick: () => openChatModal(record),
