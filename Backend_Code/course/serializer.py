@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from course.models import Course, CourseVideo, CourseFeedback,Category
 from user.models import User
+from course.models import CoursePurchase
 
 class CourseCategorySerializer(serializers.ModelSerializer):
     class  Meta:
@@ -208,5 +209,48 @@ class CourseFeedbackSerializer(serializers.ModelSerializer):
     
             if not course:
                 raise serializers.ValidationError("Course is required.")
+        
+        return data
+    
+    
+    
+
+class CoursePurchaseSerializer(serializers.ModelSerializer):
+    user_username = serializers.CharField(source="user.username", read_only=True)
+    course_title = serializers.CharField(source="course.course_title", read_only=True)
+    # amount = serializers.CharField(source="course.course_price", read_only=True)
+    
+    class Meta:
+        model = CoursePurchase
+        fields = [
+            "id",
+            "user",
+            "user_username",
+            "course",
+            "course_title",
+            "razorpay_order_id",
+            "razorpay_payment_id",
+            "razorpay_signature",
+            "amount",
+            "status",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["status", "created_at", "updated_at"]
+    
+    def validate(self, data):
+        user = data.get("user")
+        course = data.get("course")
+        amount = data.get("amount")
+        
+        if not user:
+            raise serializers.ValidationError("User is required.")
+        if not course:
+            raise serializers.ValidationError("Course is required.")
+        
+        if not amount:
+            raise serializers.ValidationError("amount is required.")
+        if amount is None or amount <= 0:
+            raise serializers.ValidationError("Amount must be greater than zero.")
         
         return data
