@@ -5,17 +5,22 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db import transaction
-from course.models import Course, CourseVideo, CourseFeedback, Category
+from course.models import Course, CourseVideo, CourseFeedback, Category,CoursePurchase
 from course.serializer import (
     CourseSerializer,
     CourseVideoSerializer,
     CourseFeedbackSerializer,
     CourseCategorySerializer,
+    CoursePurchaseSerializer
+    
 )
+from datetime import datetime
+from final_year_project import settings
 from utils.pagination import mypagination
 import json
 from user.models import User
 from rest_framework.decorators import action
+import razorpay
 
 class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all().order_by("-id")
@@ -520,3 +525,179 @@ class CourseCategoryViewSet(ModelViewSet):
             {"success": True, "message": "Category deleted successfully."},
             status=status.HTTP_200_OK,
         )
+
+class CoursePurchaseViewSet(ModelViewSet):
+    queryset = CoursePurchase.objects.all().order_by("-created_at")
+    serializer_class = CoursePurchaseSerializer
+    pagination_class = mypagination
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ["user__username", "course__course_title", "status"]
+    ordering_fields = ["created_at", "updated_at", "amount"]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        no_pagination = request.query_params.get("no_pagination")
+
+        if no_pagination:
+            serializer = self.serializer_class(queryset, many=True)
+            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(queryset, many=True)
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        serializer = self.serializer_class(data=data, context={"request": request})
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(
+                {"success": True, "data": serializer.data},
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.serializer_class(instance)
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        data = request.data
+        data["updated_at"] = datetime.now()
+        serializer = self.serializer_class(instance, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"success": True, "data": serializer.data},
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response(
+            {"success": True, "message": "Course purchase deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
+    @action(detail=False, methods=["GET"], url_path="filter-by-status")
+    def filter_by_status(self, request, *args, **kwargs):
+        status_filter = request.query_params.get("status")
+        if not status_filter:
+            return Response({"success": False, "message": "Status is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        purchases = CoursePurchase.objects.filter(status=status_filter)
+        page = self.paginate_queryset(purchases)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(purchases, many=True)
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["POST"], url_path="purchases-by-user")
+    def purchases_by_user(self, request, *args, **kwargs):
+        user_id = request.data.get("user_id")
+        if not user_id:
+            return Response({"success": False, "message": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        purchases = CoursePurchase.objects.filter(user__id=user_id)
+        page = self.paginate_queryset(purchases)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(purchases, many=True)
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=["POST"], url_path="purchase-course")
+    def purchase_course(self, request, *args, **kwargs):
+        """Initiates a purchase by creating a Razorpay order."""
+        user = request.user
+        course_id = request.data.get("course_id")
+        amount = request.data.get("amount")
+
+        if not course_id or not amount:
+            return Response({"success": False, "message": "Course ID and amount are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        amount_in_paise = int(float(amount) * 100)  # Convert to paise for Razorpay
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+        try:
+            order_data = {
+                "amount": amount_in_paise,
+                "currency": "INR",
+                "payment_capture": 1,
+            }
+            razorpay_order = client.order.create(order_data)
+
+            purchase = CoursePurchase.objects.create(
+                user=user,
+                course_id=course_id,
+                amount=amount,
+                razorpay_order_id=razorpay_order["id"],
+                status="PENDING",
+            )
+
+            return Response(
+                {
+                    "success": True,
+                    "data": {
+                        "order_id": razorpay_order["id"],
+                        "amount": amount,
+                        "currency": "INR",
+                    },
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            return Response({"success": False, "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=["POST"], url_path="verify-payment")
+    def verify_payment(self, request, *args, **kwargs):
+        """Verifies the payment using Razorpay's signature verification."""
+        razorpay_order_id = request.data.get("razorpay_order_id")
+        razorpay_payment_id = request.data.get("razorpay_payment_id")
+        razorpay_signature = request.data.get("razorpay_signature")
+
+        if not all([razorpay_order_id, razorpay_payment_id, razorpay_signature]):
+            return Response({"success": False, "message": "All payment details are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+        try:
+            client.utility.verify_payment_signature({
+                "razorpay_order_id": razorpay_order_id,
+                "razorpay_payment_id": razorpay_payment_id,
+                "razorpay_signature": razorpay_signature,
+            })
+
+            purchase = CoursePurchase.objects.get(razorpay_order_id=razorpay_order_id)
+            purchase.razorpay_payment_id = razorpay_payment_id
+            purchase.razorpay_signature = razorpay_signature
+            purchase.status = "COMPLETED"
+            purchase.updated_at = datetime.now()
+            purchase.save()
+
+            return Response({"success": True, "message": "Payment verified successfully."}, status=status.HTTP_200_OK)
+
+        except razorpay.errors.SignatureVerificationError:
+            return Response({"success": False, "message": "Invalid payment signature."}, status=status.HTTP_400_BAD_REQUEST)
+
+        except CoursePurchase.DoesNotExist:
+            return Response({"success": False, "message": "Order not found."}, status=status.HTTP_404_NOT_FOUND)
