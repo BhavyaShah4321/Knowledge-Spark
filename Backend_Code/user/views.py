@@ -16,7 +16,7 @@ from utils.send_mail import send_email_with_template
 from django.db import transaction
 from utils.generate_otp import generate_otp, generate_token, decode_token
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from course.models import Course
 from faker import Faker
 
 # from rest_framework_simplejwt.tokens import OutstandingToken, BlacklistedToken
@@ -26,14 +26,14 @@ from rest_framework_simplejwt.token_blacklist.models import (
     BlacklistedToken,
 )
 
-
+from datetime import datetime
 from rest_framework import status
 from decouple import config
 from django.contrib.auth.hashers import check_password
 import json
 faker = Faker()
 
-
+from uuid import uuid4
 class UserViewSet(ModelViewSet):
     queryset = User.objects.filter(deleted=0,email_verified=True).order_by("-id")
     serializer_class = UserSerializer
@@ -42,8 +42,8 @@ class UserViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-    search_fields = ["username", "email","type"]
-    ordering_fields = ["username", "email","type"]
+    search_fields = ["username", "email","type","gender","dob","bio"]
+    ordering_fields = ["username", "email","type","gender","dob","bio"]
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -66,17 +66,64 @@ class UserViewSet(ModelViewSet):
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
+        
+    def create(self,request,*args,**kwargs):
+        data = json.loads(request.data.get("form_data"))
+        profile_picture = request.FILES.get('profile_picture')
+        user_12th_marsheet_image = request.FILES.get('user_12th_marsheet_image')
+        user_degree_certificate = request.FILES.get('user_degree_certificate')
+        
+        data["profile_picture"] = profile_picture
+        data["user_degree_certificate"]=user_degree_certificate
+        data["user_12th_marsheet_image"]=user_12th_marsheet_image
+        
+        data["user_uuid"]=str(uuid4())
+        serializer = self.serializer_class(data=data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "success": True,
+                    "message": "Successfully Created",
+                    "data": serializer.data,
+                },
+                status=status.HTTP_200_OK,
+            )
+        else:
+            errors_message = " ".join(
+                [", ".join(value) for value in serializer.errors.values()]
+            )
+            return Response(
+                {"success": False, "message": errors_message},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        data = json.loads(request.data.get("form_data"))
-        profile_picture = request.FILES.get('profile_picture')
-        data["profile_picture"]=profile_picture
 
+        data = json.loads(request.data.get("form_data"))
+
+        profile_picture = request.FILES.get('profile_picture')
+        user_12th_marsheet_image = request.FILES.get('user_12th_marsheet_image')
+        user_degree_certificate = request.FILES.get('user_degree_certificate')
+        
+        if user_12th_marsheet_image:
+            data["user_12th_marsheet_image"]=user_12th_marsheet_image
+            
+        if user_degree_certificate:
+            data["user_degree_certificate"]=user_degree_certificate
+            
+        if profile_picture:
+            data["profile_picture"] = profile_picture
+            
+        
+        data["updated_at"]=datetime.now()
         serializer = self.serializer_class(instance=instance, data=data, partial=True)
 
         if serializer.is_valid():
             serializer.save()
+            
             return Response(
                 {
                     "success": True,
@@ -85,9 +132,8 @@ class UserViewSet(ModelViewSet):
                 },
                 status=status.HTTP_200_OK,
             )
-
         else:
-            
+            print(serializer.errors)
             errors_message = " ".join(
                 [", ".join(value) for value in serializer.errors.values()]
             )
@@ -95,6 +141,8 @@ class UserViewSet(ModelViewSet):
                 {"success": False, "message": errors_message},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
         
 
     @action(detail=False, methods=["post"])
@@ -112,7 +160,7 @@ class UserViewSet(ModelViewSet):
                     user = User.objects.filter(id=user_id).first()
 
                     if user:
-                        user.is_active = False
+                        # user.is_active = False
                         user.save()
 
                         return Response(
@@ -141,6 +189,7 @@ class UserViewSet(ModelViewSet):
                     )
             else:
                 return Response(
+                    
                     {"success": False, "message": "Token not provided."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -188,10 +237,119 @@ class UserViewSet(ModelViewSet):
         else:
             return Response(
                 {"success": False, "message": "You are not admin"},
-                status=status.HTTP_200_OK,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+            
+    @action(detail=False,methods=["GET"],url_path="dashboared-api")
+    def dashboared_api(self,request,*args,**kwargs):
+        user=request.user
+        print(request.user.is_superuser)
+        if not user.is_superuser:
+            return Response({"success":False,"message":"Only Admin can access this api"},status=status.HTTP_400_BAD_REQUEST)
+        
+        teachers=User.objects.filter(type="Teacher").count()
+        students=User.objects.filter(type="Student").count()
+        courses=Course.objects.all().count()
+        
+        data={
+            "total_teacher":teachers,
+            "total_student":students,
+            "total_courses":courses
+        }
+        
+        return Response({"success":True,"data":data},status=status.HTTP_200_OK)
+        
+
+
+class UserArchiveViewset(ModelViewSet):
+    queryset = User.objects.filter(deleted=1,email_verified=True).order_by("-id")
+    serializer_class = UserSerializer
+    pagination_class = mypagination
+    filter_backends = [SearchFilter, OrderingFilter]
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    search_fields = ["username", "email","type"]
+    ordering_fields = ["username", "email","type"]    
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        no_pagination = request.query_params.get("no_pagination")
+
+        if no_pagination:
+            serializer = self.serializer_class(queryset, many=True)
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
             )
 
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
 
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+        
+    def create(self, request, *args, **kwargs):
+        id=request.data.get("id")
+        if not id:
+           return Response(
+            {"success": True, "message":"id is required"}, status=status.HTTP_400_BAD_REQUEST
+        )
+            
+        try:
+            user_instance=User.objects.get(id=id)
+        except User.DoesNotExist:
+           return Response(
+            {"success": True, "message":"No user with this id"}, status=status.HTTP_400_BAD_REQUEST
+        )
+           
+        user_instance.deleted=1
+        user_instance.save()
+        
+        return Response(
+                {"success": True, "message": "User Successfully Archived"}, status=status.HTTP_200_OK
+            )
+           
+
+class UserRestoreViewset(ModelViewSet):
+    queryset = User.objects.filter(deleted=1,email_verified=True).order_by("-id")
+    serializer_class = UserSerializer
+    pagination_class = mypagination
+    filter_backends = [SearchFilter, OrderingFilter]
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    search_fields = ["username", "email","type"]
+    ordering_fields = ["username", "email","type"]    
+
+    
+    
+    def create(self, request, *args, **kwargs):
+        id=request.data.get("id")
+        if not id:
+           return Response(
+            {"success": True, "message":"id is required"}, status=status.HTTP_400_BAD_REQUEST
+        )
+            
+        try:
+            user_instance=User.objects.get(id=id)
+        except User.DoesNotExist:
+           return Response(
+            {"success": True, "message":"No user with this id"}, status=status.HTTP_400_BAD_REQUEST
+        )
+           
+        user_instance.deleted=0
+        user_instance.save()
+        
+        return Response(
+                {"success": True, "message": "User Successfully Restored"}, status=status.HTTP_200_OK
+            )
+           
 class RegisterViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
@@ -199,7 +357,10 @@ class RegisterViewSet(ModelViewSet):
     permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
-        serializer = RegisterSerializer(data=request.data)
+        data=request.data
+        data["user_uuid"]=str(uuid4())
+        print(data)
+        serializer = RegisterSerializer(data=data)
         if serializer.is_valid():
             with transaction.atomic():
                 email = serializer.validated_data["email"]
@@ -292,10 +453,12 @@ class VerifyEmailViewset(ModelViewSet):
         user.is_active = True
         user.save()
 
+        serializer=UserSerializer(user)
         return Response(
             {
                 "success": True,
                 "message": "Email successfully verified",
+                "data":serializer.data,
                 "token": {
                     "access_token": access_token,
                     "refresh_token": str(refresh_token),
@@ -410,6 +573,11 @@ class LoginViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
             
+        if user.is_active==False:
+             return Response(
+                {"success": False, "message": "Your account has been deactivated by admin"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if check_password(password, user.password) and user.email_verified:
             user.is_active = True
@@ -429,8 +597,10 @@ class LoginViewSet(ModelViewSet):
                         "id": user.id,
                         "email": user.email,
                         "type":user.type,
+                        "is_active": user.is_active,
                         "username": user.username,
-                        "is_superuser":user.is_superuser
+                        "is_superuser":user.is_superuser,
+                        "profile_picture":f'/media/{str(user.profile_picture)}'
                     },
                 },
                 status=status.HTTP_200_OK,
@@ -477,6 +647,7 @@ class LoginViewSet(ModelViewSet):
 
         user_instance.is_active=True
         user_instance.email_verified=True
+        user_instance.type="Admin"
         user_instance.save()
 
         serializer = UserSerializer(user_instance)
@@ -485,7 +656,7 @@ class LoginViewSet(ModelViewSet):
         serializer_data_updated=serializer.data
         
         serializer_data_updated["is_superuser"]=True
-        serializer_data_updated["type"]="Admin"
+        # serializer_data_updated["type"]="Admin"
         
         return Response(
             {
@@ -733,3 +904,10 @@ class LoginWithGoogleViewSet(ModelViewSet):
                 {"success": False, "message": "Something went wrong ! Try again"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+
+    
+    
+    
+    

@@ -1,0 +1,641 @@
+import { EditOutlined, UploadOutlined } from "@ant-design/icons";
+import { Avatar, Button, Col, Form, Input, message, Modal, Upload } from "antd";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { List, Card } from "antd";
+import "../../Styles/Main.css";
+import dayjs from "dayjs";
+
+const ViewCourseVideo = () => {
+  // const { TextArea } = Input;
+
+  // const { id } = useParams();
+  // const [course, setCourse] = useState(null);
+  // const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  // const [selectedVideo, setSelectedVideo] = useState(null);
+  // const [feedback, setFeedback] = useState("");
+  // const [submitStatus, setSubmitStatus] = useState({ type: "", message: "" });
+  // const [currentUser, setCurrentUser] = useState(null);
+  const [courseVideoDrawerOpen, setCourseVideoDrawerOpen] = useState(false);
+  const [editingCourseVideo, setEditingCourseVideo] = useState(null);
+  const [courseVideoForm] = Form.useForm();
+  // const navigate = useNavigate();
+  const { TextArea } = Input;
+  const { id } = useParams();
+  const [course, setCourse] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [feedback, setFeedback] = useState("");
+  const [submitStatus, setSubmitStatus] = useState({ type: "", message: "" });
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isResponseModalVisible, setIsResponseModalVisible] = useState(false);
+  const [selectedFeedback, setSelectedFeedback] = useState(null);
+  const [responseForm] = Form.useForm();
+  const navigate = useNavigate();
+
+  const BASE_URL = "http://localhost:8000";
+
+  const getAccessToken = () => {
+    const authData = JSON.parse(localStorage.getItem("auth_token"));
+    if (!authData?.access_token) {
+      throw new Error(
+        "Authentication tokens are missing. Please log in again."
+      );
+    }
+    return authData.access_token;
+  };
+
+  useEffect(() => {
+    const authData = JSON.parse(localStorage.getItem("auth_token"));
+    if (authData?.user.type) {
+      setCurrentUser(authData.user);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchCourseData = async () => {
+      try {
+        const accessToken = getAccessToken();
+        const response = await axios.get(`${BASE_URL}/api/course/${id}`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        const courseData = response.data.data;
+        setCourse(courseData);
+        if (courseData?.videos?.length > 0) {
+          setSelectedVideo(courseData.videos[0]);
+        }
+      } catch (error) {
+        console.error("Error fetching course data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourseData();
+  }, [id]);
+
+  const fetchFeedBackData = async () => {
+    try {
+      const accessToken = getAccessToken();
+      const response = await axios.get(
+        `${BASE_URL}/api/course-feedback/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      const FeddbackData = response.data.data;
+      console.log("FeddbackData", FeddbackData);
+
+      setFeedback(FeddbackData);
+    } catch (error) {
+      console.error("Error fetching course data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFeedBackData();
+  }, [id]);
+
+  const handleEditVideo = (video) => {
+    setEditingCourseVideo({
+      videoId: video.id,
+      ...video,
+    });
+    courseVideoForm.setFieldsValue({
+      course_video_title: video.course_video_title,
+      course_video_description: video.course_video_description,
+    });
+    setModalVisible(true);
+  };
+
+  const handleCourseVideoSubmit = async (values) => {
+    try {
+      const accessToken = getAccessToken();
+      const formData = new FormData();
+
+      const form_data = {
+        course_video_title: values.course_video_title,
+        course_video_description: values.course_video_description,
+        course: id,
+      };
+
+      // Handle video file
+      if (values.course_video?.[0]?.originFileObj) {
+        formData.append("course_video", values.course_video[0].originFileObj);
+      } else if (editingCourseVideo && editingCourseVideo.course_video) {
+        form_data.course_video = editingCourseVideo.course_video;
+      }
+
+      // Handle thumbnail
+      if (values.course_video_thumbnail?.[0]?.originFileObj) {
+        formData.append(
+          "course_video_thumbnail",
+          values.course_video_thumbnail[0].originFileObj
+        );
+      } else if (
+        editingCourseVideo &&
+        editingCourseVideo.course_video_thumbnail
+      ) {
+        form_data.course_video_thumbnail =
+          editingCourseVideo.course_video_thumbnail;
+      }
+
+      formData.append("form_data", JSON.stringify(form_data));
+
+      const endpoint = editingCourseVideo?.videoId
+        ? `${BASE_URL}/api/course-video/${editingCourseVideo.videoId}/`
+        : `${BASE_URL}/api/course-video/`;
+
+      const method = editingCourseVideo?.videoId ? "patch" : "post";
+
+      const response = await axios({
+        method,
+        url: endpoint,
+        data: formData,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        message.success(
+          `Video ${editingCourseVideo?.videoId ? "updated" : "added"
+          } successfully`
+        );
+        setModalVisible(false);
+        courseVideoForm.resetFields();
+        // fetchCourseData();
+      }
+    } catch (error) {
+      console.error("Error submitting course video:", error);
+      message.error(
+        error.response?.data?.message || "Failed to save video details"
+      );
+    }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const handleSubmitFeedback = async (values) => {
+    const form_data = {
+      feedback_student: currentUser.id,
+      feedback_message: values.feedback, // Use the value from the form
+      course: parseInt(id),
+
+    };
+
+    try {
+      const accessToken = getAccessToken();
+      await axios.post(`${BASE_URL}/api/course-feedback/`, form_data, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      setSubmitStatus({
+        type: "success",
+        message: "Feedback submitted successfully!",
+      });
+
+      fetchFeedBackData();
+
+      setFeedback(""); 
+
+    } catch (error) {
+      setSubmitStatus({
+        type: "error",
+        message: "Failed to submit feedback. Please try again.",
+      });
+    }
+  };
+
+  if (loading) {
+    return <div className="loader">Loading...</div>;
+  }
+
+  if (!course) {
+    return <div className="loader">Course not found</div>;
+  }
+
+  const viewTeacherProfile = (teacherId) => {
+    navigate(`/profile/${teacherId}`);
+  };
+
+  const handleAddResponse = async (values) => {
+    try {
+      const accessToken = getAccessToken();
+      await axios.patch(
+        `${BASE_URL}/api/course-feedback/${selectedFeedback.id}/`,
+        { teacher_response: values.response },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+      message.success("Response added successfully");
+      fetchFeedBackData();
+      setIsResponseModalVisible(false);
+      responseForm.resetFields();
+      
+    } catch (error) {
+      console.error("Error adding response:", error);
+      message.error("Failed to add response");
+    }
+  };
+
+  const showResponseModal = (feedback) => {
+    setSelectedFeedback(feedback);
+    setIsResponseModalVisible(true);
+
+    responseForm.setFieldsValue({ response: feedback.teacher_response || "" });
+    fetchFeedBackData();
+  };
+
+  return (
+    <>
+      <div className="course-container">
+        <div className="course-wrapper">
+          <div className="main-content">
+            <div className="video-section">
+              <div className="video-container">
+                {selectedVideo ? (
+                  <video
+                    src={`${BASE_URL}${selectedVideo.course_video}`}
+                    className="video-player"
+                    controls
+                    playsInline
+                  />
+                ) : (
+                  <div className="video-player no-video">
+                    No video available
+                  </div>
+                )}
+              </div>
+              <div className="video-info">
+                <h3 className="video-title">
+                  {selectedVideo?.course_video_title}
+                </h3>
+                <p className="video-description">
+                  {selectedVideo?.course_video_description}
+                </p>
+              </div>
+              <div className="feedback-complaint-section">
+                {/* Feedback List with Scrollbar */}
+                <Card title="Students Feedback" style={{ marginBottom: 24 }}>
+                  <div
+                    style={{
+                      maxHeight: "300px",
+                      overflowY: "auto",
+                      paddingRight: "8px",
+                    }}
+                  >
+                    <List
+                      dataSource={course.feedbacks}
+                      renderItem={(feedback) => (
+                        <List.Item
+                          style={{ display: "flex", flexDirection: "column" }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              width: "100%",
+                            }}
+                          >
+                            {/* Student Avatar */}
+                            <Avatar
+                              src={feedback.feedback_student_profile_picture
+                                ? `http://localhost:8000/media/${feedback.feedback_student_profile_picture}/`
+                                : "https://via.placeholder.com/50"}
+
+                              alt={feedback.feedback_student_username}
+                              size={50}
+                              style={{ marginRight: 12 }}
+                            />
+                            {/* Student Feedback */}
+                            <div style={{ flex: 1 }}>
+                              <strong >
+                                {feedback.feedback_student_username}
+                              </strong>
+                              <p style={{ margin: 0 }}>
+                                {feedback.feedback_message}
+                              </p>
+                              <small style={{ color: "rgba(0, 0, 0, 0.45)" }}>
+                                {dayjs(feedback.created_at).format('DD-MM-YYYY:hh:mm')}
+                              </small>
+                            </div>
+                            {currentUser?.type === "Teacher" && (
+                            <Button
+                              type="primary"
+                              onClick={() => showResponseModal(feedback)}
+                            >
+                              {feedback.teacher_response
+                                ? "Edit Response"
+                                : "Add Response"}
+                            </Button>
+                          )}
+                          </div>
+                         
+
+                          {/* Teacher Reply Section */}
+                          {feedback.teacher_response && (
+                            <div
+                              style={{
+                                marginTop: 10,
+                                marginLeft: 62, // Indent to align under student feedback
+                                padding: "8px 8px",
+                                background: "#f6f6f6",
+                                borderLeft: "4px solid #1890ff",
+                                borderRadius: 4,
+                              }}
+                            >
+                              <strong>Teacher's Reply:</strong>
+                              <p style={{ margin: "4px 0 0" }}>
+                                {feedback.teacher_response}
+                              </p>
+                            </div>
+                          )}
+                        </List.Item>
+                      )}
+                    />
+                  </div>
+                </Card>
+               
+
+                {/* Feedback Form */}
+                {currentUser?.type === "Student" && (
+                  <Card title="Submit Your Feedback">
+                    {submitStatus.message && (
+                      <div
+                        style={{
+                          marginBottom: 16,
+                          color:
+                            submitStatus.type === "success"
+                              ? "#52c41a"
+                              : "#ff4d4f",
+                        }}
+                      >
+                        {submitStatus.message}
+                      </div>
+                    )}
+                    <Form onFinish={handleSubmitFeedback}>
+                      <Form.Item
+                        name="feedback"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please enter your feedback",
+                          },
+                          {
+                            max: 500,
+                            message: "Feedback cannot exceed 500 characters",
+                          },
+                        ]}
+                      >
+                        <TextArea
+                          rows={4}
+                          placeholder="Share your thoughts about this course..."
+                          maxLength={500}
+                          value={feedback}
+                          onChange={(e) => setFeedback(e.target.value)}
+                        />
+                      </Form.Item>
+                      <div style={{ textAlign: "right", marginBottom: 16 }}>
+                        {500 - feedback.length} characters remaining
+                      </div>
+                      <Form.Item>
+                        <Button type="primary" htmlType="submit">
+                          Submit Feedback
+                        </Button>
+                      </Form.Item>
+                    </Form>
+                  </Card>
+                )}
+                <Col>
+                {currentUser.type==="Student" &&
+                  <Button
+                    type="primary"
+                    icon={<EditOutlined />}
+                    onClick={() => {
+                      if (course && course.course_teacher) {
+                        viewTeacherProfile(course.course_teacher);
+                      } else {
+                        message.error("Teacher information is not available.");
+                      }
+                    }}
+                  >
+                    View Profile
+                  </Button>
+}
+                </Col>
+              </div>
+            </div>
+
+            <div className="sidebar">
+              <div className="sidebar-header">
+                <h2 className="sidebar-title">Course Content</h2>
+                <p className="video-count">
+                  {course.videos.length} video lessons
+                </p>
+              </div>
+              <div className="video-list">
+                {course.videos.map((video, index) => (
+                  <div
+                    key={video.id}
+                    className={`video-item ${selectedVideo?.id === video.id ? "active" : ""
+                      }`}
+                  >
+                    <button onClick={() => setSelectedVideo(video)}>
+                      <div style={{ display: "flex", alignItems: "center" }}>
+                        <div className="lesson-number">{index + 1}</div>
+                        <div className="lesson-info">
+                          <div className="lesson-title">
+                            {video.course_video_title}
+                          </div>
+                          <div className="lesson-date">
+                            {formatDate(video.created_at)}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          style={{ display: "flex", justifyContent: "end", marginTop: "20px" }}
+        >
+          {currentUser?.type === "Teacher" && (
+            <Col>
+              <Button
+                type="primary"
+                icon={<EditOutlined />}
+                onClick={() => handleEditVideo(selectedVideo)}
+                disabled={!selectedVideo}
+              >
+                Edit Course Video
+              </Button>
+            </Col>
+          )}
+        </div>
+      </div>
+
+      <Modal
+        title={`${editingCourseVideo?.videoId ? "Edit" : "Add"} Course Video`}
+        open={modalVisible}
+        onCancel={() => {
+          setModalVisible(false);
+          courseVideoForm.resetFields();
+        }}
+        footer={null}
+        width={600}
+        centered
+      >
+        <Form
+          layout="vertical"
+          form={courseVideoForm}
+          onFinish={handleCourseVideoSubmit}
+          className="p-4"
+        >
+          <Form.Item
+            name="course_video_title"
+            label="Video Title"
+            rules={[
+              { required: true, message: "Please enter video title" },
+              {
+                pattern: /^[a-zA-Z\s]+$/,
+                message: "Video title can only include letters and spaces",
+              },
+            ]}
+          >
+            <Input placeholder="Enter video title" />
+          </Form.Item>
+
+          <Form.Item
+            name="course_video_description"
+            label="Video Description"
+            rules={[
+              { required: true, message: "Please enter video description" },
+            ]}
+          >
+            <Input.TextArea placeholder="Enter video description" rows={4} />
+          </Form.Item>
+
+          <Form.Item
+            name="course_video_thumbnail"
+            label="Video Thumbnail"
+            rules={[
+              {
+                required: !editingCourseVideo?.videoId,
+                message: "Please upload video thumbnail",
+              },
+            ]}
+            valuePropName="fileList"
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) return e;
+              return e?.fileList;
+            }}
+          >
+            <Upload
+              name="course_video_thumbnail"
+              listType="picture"
+              beforeUpload={() => false}
+              accept="image/*"
+              maxCount={1}
+            >
+              <Button icon={<UploadOutlined />}>Upload Thumbnail</Button>
+            </Upload>
+          </Form.Item>
+
+          <Form.Item
+            name="course_video"
+            label="Video File"
+            rules={[
+              {
+                required: !editingCourseVideo?.videoId,
+                message: "Please upload video file",
+              },
+            ]}
+            valuePropName="fileList"
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) return e;
+              return e?.fileList;
+            }}
+          >
+            <Upload
+              name="course_video"
+              listType="text"
+              beforeUpload={() => false}
+              accept="video/*"
+              maxCount={1}
+            >
+              <Button icon={<UploadOutlined />}>Upload Video</Button>
+            </Upload>
+          </Form.Item>
+
+          <Form.Item
+            className="text-right mb-0 "
+            style={{ display: "flex", justifyContent: "flex-end" }}
+          >
+            <Button
+              className="mr-2 "
+              type="primary"
+              onClick={() => setModalVisible(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              style={{ marginLeft: "10px" }}
+            >
+              {editingCourseVideo?.videoId ? "Edit" : "Add"} Video
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+     <Modal
+        title="Teacher Response"
+        open={isResponseModalVisible}
+        onCancel={() => {
+          setIsResponseModalVisible(false);
+          responseForm.resetFields();
+        }}
+        footer={null}
+      >
+        <Form form={responseForm} onFinish={handleAddResponse} layout="vertical">
+          <Form.Item
+            name="response"
+            label="Response"
+            rules={[{ required: true, message: "Please enter your response" }]}
+          >
+            <TextArea rows={4} placeholder="Enter your response to the feedback" />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Submit Response
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
+  );
+};
+
+export default ViewCourseVideo;

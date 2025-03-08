@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 import uuid
 from django.contrib.auth.models import Group,Permission
+import uuid
+
 class UserManager(BaseUserManager):
     """Define a model manager for User model with no username field."""
 
@@ -42,21 +44,38 @@ class User(AbstractUser):
     type_choices=[
         ("Student","Student"),
         ("Teacher","Teacher"),
+        ("Admin","Admin"),
+        
+
         
     ]
+    gender_fields=[
+        ("male","male"),
+        ("female","female"),
+        ("other","other"),
+        
+    ]
+    user_uuid=models.CharField(null=True,blank=True)
     username = models.CharField(max_length=60)
     email = models.EmailField(unique=True)
     profile_picture = models.ImageField(default='', upload_to='profile_picture/')
     otp = models.IntegerField(null=True)
     type=models.CharField(max_length=7,choices=type_choices,null=True)
     is_active = models.BooleanField(default=False)
+    user_12th_marsheet_image=models.FileField(upload_to="user_12th_marsheet_image",default="",null=True,blank=True)
+    user_degree_certificate=models.FileField(upload_to="user_degree_certificate",default="",null=True,blank=True)
+    
     email_verified = models.BooleanField(default=False)
+    gender=models.CharField(choices=gender_fields,default="",null=True,blank=True)
+
     deleted=models.IntegerField(default=0)
     objects=UserManager()
     dob=models.DateField(null=True,blank=True)
     bio=models.TextField(null=True)
     
     created_at=models.DateTimeField(auto_now_add=True,null=True)
+    updated_at=models.DateTimeField(auto_now_add=True,null=True)
+    
         
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

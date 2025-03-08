@@ -5,10 +5,22 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db import transaction
-from course.models import Course, CourseVideo, CourseFeedback
-from course.serializer import CourseSerializer, CourseVideoSerializer, CourseFeedbackSerializer
+from course.models import Course, CourseVideo, CourseFeedback, Category,CoursePurchase
+from course.serializer import (
+    CourseSerializer,
+    CourseVideoSerializer,
+    CourseFeedbackSerializer,
+    CourseCategorySerializer,
+    CoursePurchaseSerializer
+    
+)
+from datetime import datetime
+from final_year_project import settings
 from utils.pagination import mypagination
 import json
+from user.models import User
+from rest_framework.decorators import action
+import razorpay
 
 class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all().order_by("-id")
@@ -17,8 +29,31 @@ class CourseViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ['course_title', 'course_teacher','created_at', 'updated_at',"course_status"]
-    ordering_fields = ['course_title', 'course_teacher','created_at', 'updated_at',"course_status"]
+    search_fields = [
+        "course_title",
+            "course_teacher_username",
+            "course_teacher_email",
+            "course_description",
+            "course_thumbnail",
+            "course_price",
+            "course_status",
+            "course_category_name",
+            "created_at",
+            "updated_at",
+    ]
+    ordering_fields = [
+        "course_title",
+            "course_teacher_username",
+            "course_teacher_email",
+            "course_description",
+            "course_category_name",
+            "course_thumbnail",
+            
+            "course_price",
+            "course_status",
+            "created_at",
+            "updated_at",
+    ]
 
     def list(self, request, *args, **kwargs):
         """List all courses."""
@@ -27,52 +62,73 @@ class CourseViewSet(ModelViewSet):
 
         if no_pagination:
             serializer = self.serializer_class(queryset, many=True)
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
 
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
 
         serializer = self.serializer_class(queryset, many=True)
-        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
 
     def create(self, request, *args, **kwargs):
         """Create a new course."""
-        data = request.data
+        data = json.loads(request.data.get("form_data"))
+
+        course_thumbnail = request.FILES.get('course_thumbnail')
+        data["course_thumbnail"] = course_thumbnail
+        
         serializer = self.serializer_class(data=data, context={"request": request})
         if serializer.is_valid():
             with transaction.atomic():
                 instance = serializer.save()
-                return Response({"success": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
+                return Response(
+                    {"success": True, "data": serializer.data},
+                    status=status.HTTP_201_CREATED,
+                )
         else:
-            
+
             errors_message = " ".join(
-                    [", ".join(value) for value in serializer.errors.values()]
+                [", ".join(value) for value in serializer.errors.values()]
             )
             return Response(
                 {"success": False, "message": errors_message},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
     def retrieve(self, request, *args, **kwargs):
         """Retrieve a specific course."""
         instance = self.get_object()
         serializer = self.serializer_class(instance)
-        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
 
     def update(self, request, *args, **kwargs):
         """Update an existing course."""
         instance = self.get_object()
-        data = request.data
+        data = json.loads(request.data.get("form_data"))
+
+        course_thumbnail = request.FILES.get('course_thumbnail')
+        data["course_thumbnail"] = course_thumbnail
         serializer = self.serializer_class(instance, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
-        
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
+
         else:
-            
+
             errors_message = " ".join(
-                    [", ".join(value) for value in serializer.errors.values()]
+                [", ".join(value) for value in serializer.errors.values()]
             )
             return Response(
                 {"success": False, "message": errors_message},
@@ -83,7 +139,22 @@ class CourseViewSet(ModelViewSet):
         """Delete a course."""
         instance = self.get_object()
         instance.delete()
-        return Response({"success": True, "message": "Course deleted successfully."}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "message": "Course deleted successfully."},
+            status=status.HTTP_200_OK,
+        )
+        
+        
+    @action(detail=False, methods=["POST"], url_path="get-course-according-teacher")
+    def get_course_according_to_teacher(self, request, *args, **kwargs):
+        user_id = request.data.get("user_id")
+        user_instance = User.objects.filter(id=user_id).first()
+        if not user_instance or user_instance.type != "Teacher":
+            return Response({"success": False, "message": "Oops! You are not a Teacher"}, status=status.HTTP_400_BAD_REQUEST)
+        course_instances = Course.objects.filter(course_teacher=user_instance.id)
+        serializer = CourseSerializer(course_instances, many=True)  # `many=True` to handle queryset properly
+
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
 
 class CourseVideoViewSet(ModelViewSet):
@@ -93,8 +164,8 @@ class CourseVideoViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ['course_video_title','created_at', 'updated_at']
-    ordering_fields = ['course_video_title','created_at', 'updated_at']
+    search_fields = ["course_video_title", "created_at", "updated_at","status","course_video_thumbnail"]
+    ordering_fields = ["course_video_title", "created_at", "updated_at","status""course_video_thumbnail"]
 
     def list(self, request, *args, **kwargs):
         """List all course videos."""
@@ -103,66 +174,107 @@ class CourseVideoViewSet(ModelViewSet):
 
         if no_pagination:
             serializer = self.serializer_class(queryset, many=True)
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
 
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
 
         serializer = self.serializer_class(queryset, many=True)
-        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
 
     def create(self, request, *args, **kwargs):
         """Create a new course video."""
         data = json.loads(request.data.get("form_data"))
+
+        course_video_thumbnail = request.FILES.get('course_video_thumbnail')
         course_video = request.FILES.get('course_video')
-        data["course_video"]=course_video
         
+        data["course_video_thumbnail"] = course_video_thumbnail
+        data["course_video"] = course_video
+
+
         serializer = self.serializer_class(data=data, context={"request": request})
         if serializer.is_valid():
             with transaction.atomic():
                 instance = serializer.save()
-                return Response({"success": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
+                return Response(
+                    {"success": True, "data": serializer.data},
+                    status=status.HTTP_201_CREATED,
+                )
         else:
-            
+
             errors_message = " ".join(
-                    [", ".join(value) for value in serializer.errors.values()]
+                [", ".join(value) for value in serializer.errors.values()]
             )
             return Response(
                 {"success": False, "message": errors_message},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
     def retrieve(self, request, *args, **kwargs):
         """Retrieve a specific course video."""
         instance = self.get_object()
         serializer = self.serializer_class(instance)
-        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
 
     def update(self, request, *args, **kwargs):
         """Update an existing course video."""
         instance = self.get_object()
         data = json.loads(request.data.get("form_data"))
+
+        course_video_thumbnail = request.FILES.get('course_video_thumbnail')
         course_video = request.FILES.get('course_video')
-        data["course_video"]=course_video
+        
+        data["course_video_thumbnail"] = course_video_thumbnail
+        data["course_video"] = course_video
+
         serializer = self.serializer_class(instance, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
         else:
-            
+
             errors_message = " ".join(
-                    [", ".join(value) for value in serializer.errors.values()]
+                [", ".join(value) for value in serializer.errors.values()]
             )
             return Response(
                 {"success": False, "message": errors_message},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
     def destroy(self, request, *args, **kwargs):
         """Delete a course video."""
         instance = self.get_object()
         instance.delete()
-        return Response({"success": True, "message": "Course video deleted successfully."}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "message": "Course video deleted successfully."},
+            status=status.HTTP_200_OK,
+        )
+        
+    @action(detail=False, methods=["POST"], url_path="get-course-video-according-course")
+    def get_course_video_according_course(self, request, *args, **kwargs):
+        course_id = request.data.get("course_id")
+        
+        if not course_id:
+            return Response({"success": False, "message": "Course_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+        course_instances = CourseVideo.objects.filter(course=course_id)
+        serializer = self.serializer_class(course_instances, many=True)  
+
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
 
 class CourseFeedbackViewSet(ModelViewSet):
@@ -172,11 +284,259 @@ class CourseFeedbackViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ['feedback_message', 'feedback_student__username', 'course__course_title']
-    ordering_fields = ['created_at', 'updated_at']
+    search_fields = [
+        "feedback_student__username",
+        "status",
+        "course__course_title",
+        "feedback_student__username",
+        
+            "feedback_student__profile_picture",
+            "feedback_student__email",
+    ]
+    ordering_fields = ["created_at", "updated_at","status", "feedback_student__username",
+            "feedback_student_profile__picture",
+            "course__course_title",
+            "feedback_student__email",]
 
     def list(self, request, *args, **kwargs):
         """List all feedback."""
+        queryset = self.filter_queryset(self.get_queryset())
+        no_pagination = request.query_params.get("no_pagination")
+
+        if no_pagination:
+            serializer = self.serializer_class(queryset, many=True)
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+    def create(self, request, *args, **kwargs):
+        """Create new feedback."""
+        data = request.data
+        serializer = self.serializer_class(data=data, context={"request": request})
+        if serializer.is_valid():
+            with transaction.atomic():
+                instance = serializer.save()
+
+                return Response(
+                    {"success": True, "data": serializer.data},
+                    status=status.HTTP_201_CREATED,
+                )
+        else:
+
+            errors_message = " ".join(
+                [", ".join(value) for value in serializer.errors.values()]
+            )
+            return Response(
+                {"success": False, "message": errors_message},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve a specific feedback."""
+        instance = self.get_object()
+        serializer = self.serializer_class(instance)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+    def update(self, request, *args, **kwargs):
+        """Update an existing feedback."""
+        instance = self.get_object()
+        data = request.data
+        serializer = self.serializer_class(instance, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
+        else:
+
+            errors_message = " ".join(
+                [", ".join(value) for value in serializer.errors.values()]
+            )
+            return Response(
+                {"success": False, "message": errors_message},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete a feedback."""
+        instance = self.get_object()
+        instance.delete()
+        return Response(
+            {"success": True, "message": "Feedback deleted successfully."},
+            status=status.HTTP_200_OK,
+        )
+        
+    @action(detail=False, methods=["POST"], url_path="get-course-feedback-according-student")
+    def get_course_feedback_according_user(self, request, *args, **kwargs):
+        user_id = request.data.get("student_id")
+
+        if not user_id:
+            return Response({"success": False, "message": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        course_feedback = CourseFeedback.objects.filter(feedback_student=user_id)
+        
+        # Apply pagination
+        page = self.paginate_queryset(course_feedback)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(course_feedback, many=True)
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["POST"], url_path="get-course-feedback-according-course")
+    def get_course_feedback_according_course(self, request, *args, **kwargs):
+        course_id = request.data.get("course_id")
+
+        if not course_id:
+            return Response({"success": False, "message": "course_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        course_feedback = CourseFeedback.objects.filter(course=course_id)
+
+        # Apply pagination
+        page = self.paginate_queryset(course_feedback)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(course_feedback, many=True)
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["POST"], url_path="get-course-feedback-according-course-teacher")
+    def get_course_feedback_according_teacher(self, request, *args, **kwargs):
+        teacher_id = request.data.get("teacher_id")
+
+        if not teacher_id:
+            return Response({"success": False, "message": "teacher_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        course_feedback = CourseFeedback.objects.filter(course__course_teacher__id=teacher_id)
+
+        # Apply pagination
+        page = self.paginate_queryset(course_feedback)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(course_feedback, many=True)
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+
+
+class CourseCategoryViewSet(ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CourseCategorySerializer
+    pagination_class = mypagination
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ["name","status"]
+    ordering_fields = ["id"]
+
+    def list(self, request, *args, **kwargs):
+        """List all categories."""
+        queryset = self.filter_queryset(self.get_queryset())
+        no_pagination = request.query_params.get("no_pagination")
+
+        if no_pagination:
+            serializer = self.serializer_class(queryset, many=True)
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+    def create(self, request, *args, **kwargs):
+        """Create a new category."""
+        data = request.data
+        serializer = self.serializer_class(data=data, context={"request": request})
+        if serializer.is_valid():
+            with transaction.atomic():
+                instance = serializer.save()
+                return Response(
+                    {"success": True,"message":"course category successfully created", "data": serializer.data},
+                    status=status.HTTP_201_CREATED,
+                )
+        else:
+
+            errors_message = " ".join(
+                [", ".join(value) for value in serializer.errors.values()]
+            )
+            return Response(
+                {"success": False, "message": errors_message},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve a specific category."""
+        instance = self.get_object()
+        serializer = self.serializer_class(instance)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+    def update(self, request, *args, **kwargs):
+        """Update an existing category."""
+        instance = self.get_object()
+        data = request.data
+        serializer = self.serializer_class(instance, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"success": True,"message":"course category successfully updated","data": serializer.data}, status=status.HTTP_200_OK
+            )
+        else:
+
+            errors_message = " ".join(
+                [", ".join(value) for value in serializer.errors.values()]
+            )
+            return Response(
+                {"success": False, "message": errors_message},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete a category."""
+        instance = self.get_object()
+        instance.delete()
+        return Response(
+            {"success": True, "message": "Category deleted successfully."},
+            status=status.HTTP_200_OK,
+        )
+
+class CoursePurchaseViewSet(ModelViewSet):
+    queryset = CoursePurchase.objects.all().order_by("-created_at")
+    serializer_class = CoursePurchaseSerializer
+    pagination_class = mypagination
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ["user__username", "course__course_title", "status"]
+    ordering_fields = ["created_at", "updated_at", "amount"]
+
+    def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         no_pagination = request.query_params.get("no_pagination")
 
@@ -187,39 +547,157 @@ class CourseFeedbackViewSet(ModelViewSet):
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(serializer.data)
 
         serializer = self.serializer_class(queryset, many=True)
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
-        """Create new feedback."""
         data = request.data
         serializer = self.serializer_class(data=data, context={"request": request})
         if serializer.is_valid():
-            with transaction.atomic():
-                instance = serializer.save()
-                return Response({"success": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
-        return Response({"success": False, "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            serializer.save(user=request.user)
+            return Response(
+                {"success": True, "data": serializer.data},
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def retrieve(self, request, *args, **kwargs):
-        """Retrieve a specific feedback."""
         instance = self.get_object()
         serializer = self.serializer_class(instance)
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
-        """Update an existing feedback."""
         instance = self.get_object()
         data = request.data
+        data["updated_at"] = datetime.now()
         serializer = self.serializer_class(instance, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
-        return Response({"success": False, "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": True, "data": serializer.data},
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def destroy(self, request, *args, **kwargs):
-        """Delete a feedback."""
         instance = self.get_object()
         instance.delete()
-        return Response({"success": True, "message": "Feedback deleted successfully."}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "message": "Course purchase deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
+    @action(detail=False, methods=["GET"], url_path="filter-by-status")
+    def filter_by_status(self, request, *args, **kwargs):
+        status_filter = request.query_params.get("status")
+        if not status_filter:
+            return Response({"success": False, "message": "Status is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        purchases = CoursePurchase.objects.filter(status=status_filter)
+        page = self.paginate_queryset(purchases)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(purchases, many=True)
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["POST"], url_path="purchases-by-user")
+    def purchases_by_user(self, request, *args, **kwargs):
+        user_id = request.data.get("user_id")
+        if not user_id:
+            return Response({"success": False, "message": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        purchases = CoursePurchase.objects.filter(user__id=user_id)
+        page = self.paginate_queryset(purchases)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(purchases, many=True)
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=["POST"], url_path="purchase-course")
+    def purchase_course(self, request, *args, **kwargs):
+        """Initiates a purchase by creating a Razorpay order."""
+        user = request.user
+        course_id = request.data.get("course_id")
+        amount = request.data.get("amount")
+
+        if not course_id or not amount:
+            return Response({"success": False, "message": "Course ID and amount are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        amount_in_paise = int(float(amount) * 100)  # Convert to paise for Razorpay
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+        try:
+            order_data = {
+                "amount": amount_in_paise,
+                "currency": "INR",
+                "payment_capture": 1,
+            }
+            razorpay_order = client.order.create(order_data)
+
+            purchase = CoursePurchase.objects.create(
+                user=user,
+                course_id=course_id,
+                amount=amount,
+                razorpay_order_id=razorpay_order["id"],
+                status="PENDING",
+            )
+
+            return Response(
+                {
+                    "success": True,
+                    "data": {
+                        "order_id": razorpay_order["id"],
+                        "amount": amount,
+                        "currency": "INR",
+                    },
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            return Response({"success": False, "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=["POST"], url_path="verify-payment")
+    def verify_payment(self, request, *args, **kwargs):
+        """Verifies the payment using Razorpay's signature verification."""
+        razorpay_order_id = request.data.get("razorpay_order_id")
+        razorpay_payment_id = request.data.get("razorpay_payment_id")
+        razorpay_signature = request.data.get("razorpay_signature")
+
+        if not all([razorpay_order_id, razorpay_payment_id, razorpay_signature]):
+            return Response({"success": False, "message": "All payment details are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+        try:
+            client.utility.verify_payment_signature({
+                "razorpay_order_id": razorpay_order_id,
+                "razorpay_payment_id": razorpay_payment_id,
+                "razorpay_signature": razorpay_signature,
+            })
+
+            purchase = CoursePurchase.objects.get(razorpay_order_id=razorpay_order_id)
+            purchase.razorpay_payment_id = razorpay_payment_id
+            purchase.razorpay_signature = razorpay_signature
+            purchase.status = "COMPLETED"
+            purchase.updated_at = datetime.now()
+            purchase.save()
+
+            return Response({"success": True, "message": "Payment verified successfully."}, status=status.HTTP_200_OK)
+
+        except razorpay.errors.SignatureVerificationError:
+            return Response({"success": False, "message": "Invalid payment signature."}, status=status.HTTP_400_BAD_REQUEST)
+
+        except CoursePurchase.DoesNotExist:
+            return Response({"success": False, "message": "Order not found."}, status=status.HTTP_404_NOT_FOUND)

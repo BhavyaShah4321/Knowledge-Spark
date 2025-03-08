@@ -15,40 +15,87 @@ function Login() {
 
   const handleSubmit = async (values) => {
     const { email, password } = values;
-
     const normalUserApi = "http://localhost:8000/api/login/";
     const adminApi = "http://localhost:8000/api/login/admin-login/";
 
     try {
-      // First attempt normal user login
+      // Attempt normal user login first
       const normalResponse = await axios.post(normalUserApi, { email, password });
 
       if (normalResponse.status === 200 && normalResponse.data.success) {
-        const { token } = normalResponse.data;
+        const { token, data } = normalResponse.data;
 
-        localStorage.setItem("auth_token", token);
-        message.success("User login successful!");
+        // Check if the account is inactive
+        if ((data.type === 'teacher' || data.type === 'student') && data.status === 'inactive') {
+          message.error("Your account is currently inactive. Please contact the administrator.");
+          return;
+        }
 
+        document.cookie = `token=${token.access_token}; path=/;SameSite=Lax`;
+        localStorage.setItem(
+          "auth_token",
+          JSON.stringify({
+            access_token: token.access_token,
+            refresh_token: token.refresh_token,
+            user: {
+              id: data.id,
+              username: data.username,
+              email: data.email,
+              type: data.type,
+              status: data.status,
+              profile_picture: data.profile_picture,
+              created_at: data.created_at,
+            },
+            user_type: "Member",
+          })
+        );
+
+        message.success("Login successful!");
         navigate("/dashboard");
         return;
       }
     } catch (error) {
-      // If normal login fails, proceed to admin login
+      console.warn("Normal user login failed, trying admin login...");
+
+      // If normal user login fails, attempt admin login
       try {
         const adminResponse = await axios.post(adminApi, { email, password });
 
         if (adminResponse.status === 200 && adminResponse.data.success) {
-          const { token } = adminResponse.data;
+          const { token, data } = adminResponse.data;
 
-          localStorage.setItem("auth_token", token);
+          // Check if the admin account is inactive
+          if (data.status === 'inactive') {
+            message.error("Your account is currently inactive. Please contact the administrator.");
+            return;
+          }
+
+          document.cookie = `token=${token.access_token}; path=/;SameSite=Lax`;
+          localStorage.setItem(
+            "auth_token",
+            JSON.stringify({
+              access_token: token.access_token,
+              refresh_token: token.refresh_token,
+              user: {
+                id: data.id,
+                username: data.username,
+                email: data.email,
+                type: data.type,
+                status: data.status,
+                profile_picture: data.profile_picture,
+                created_at: data.created_at,
+              },
+              user_type: "Admin",
+            })
+          );
+
           message.success("Admin login successful!");
-
           navigate("/dashboard");
           return;
         }
       } catch (adminError) {
-        // Both normal and admin login failed
-        message.error("Invalid email or password. Please try again.");
+        console.error("Admin login failed:", adminError);
+        message.error("Login failed. Please check your credentials and try again.");
       }
     }
   };
@@ -78,7 +125,6 @@ function Login() {
             onFinish={handleSubmit}
             autoComplete="off"
           >
-            {/* Email Field */}
             <Form.Item
               label="Email"
               name="email"
@@ -99,7 +145,6 @@ function Login() {
               />
             </Form.Item>
 
-            {/* Password Field */}
             <Form.Item
               label="Password"
               name="password"
@@ -138,18 +183,11 @@ function Login() {
               </label>
             </div>
 
-            {/* Submit Button */}
             <Form.Item>
               <button type="submit" className="btn btn-login">
-                Sign Up
+                Sign In
               </button>
             </Form.Item>
-
-            <div className="login-alternate">
-              <p>Or Log in with</p>
-              <button className="btn btn-google">Log In using Google</button>
-              <button className="btn btn-facebook">Log In using Facebook</button>
-            </div>
 
             <p className="new-user">
               New User? <Link to="/register">Create an Account</Link>

@@ -1,923 +1,779 @@
-/*
-Author       : Knowledge Spark
-Template Name: Bootstrap Template, ant Design
-*/
+/* Main.css */
 
-/*============================
- [Table of CSS] 
-
- 1. Scroll
- 2. Login 
- 3. Register
- 4. OTP Verification
- 5. Dashboard
- 6. Forget Password
- 7. Reset Password
- 
-========================================*/
-
-/*-----------------
-	1. Scroll
------------------------*/
-
-
-::-webkit-scrollbar {
-	width: 5px;
-	height: 5px;
+/* Layout */
+.course-container {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  padding: 24px;
 }
 
-/* Track */
-::-webkit-scrollbar-track {
-	background: #f1f1f1;
+.course-wrapper {
+  max-width: 1536px;
+  margin: 0 auto;
 }
 
-/* Handle */
-::-webkit-scrollbar-thumb {
-	background: #eba259;
+/* Course Header */
+.course-header {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  margin-bottom: 24px;
 }
 
-/* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
-	background: #eba259;
+.course-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.course-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.course-description {
+  color: #4b5563;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.course-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.875rem;
+}
+
+.course-price {
+  background-color: #dbeafe;
+  color: #1e40af;
+  padding: 4px 12px;
+  border-radius: 9999px;
+}
+
+.course-status {
+  padding: 4px 12px;
+  border-radius: 9999px;
+}
+
+.status-active {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-inactive {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.course-date {
+  color: #6b7280;
+}
+
+.instructor-info {
+  text-align: right;
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+/* Main Content Layout */
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 1024px) {
+  .main-content {
+    grid-template-columns: 3fr 1fr;
+  }
+}
+
+/* Video Player Section */
+.video-section {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.video-container {
+  position: relative;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  background-color: black;
+}
+
+.video-player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.video-info {
+  padding: 16px;
+}
+
+.video-title {
+  font-size: 1.65rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.video-description {
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+/* Sidebar */
+.sidebar {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sidebar-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.video-count {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.video-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.video-item {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.2s ease;
+}
+
+.video-item button {
+  width: 100%;
+  padding: 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.video-item:hover {
+  background-color: #f9fafb;
+}
+
+.video-item.active {
+  background-color: #eff6ff;
+}
+
+.lesson-number {
+  width: 32px;
+  height: 32px;
+  background-color: #dbeafe;
+  color: #1e40af;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-weight: 500;
+}
+
+.lesson-info {
+  flex-grow: 1;
+}
+
+.lesson-title {
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.lesson-date {
+  font-size: 0.895rem;
+  color: #6b7280;
+}
+
+/* Loader */
+.loader {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: #4b5563;
+}
+
+/* Video Controls */
+video::-webkit-media-controls-panel {
+  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.5)) !important;
+}
+
+/* Focus States */
+button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
+.course-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 
 
-/*-----------------
-	2. Login
------------------------*/
-
-
-body {
-	font-family: Arial, sans-serif;
-	margin: 0;
-	padding: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	min-height: 99h;
-	background-color: #f9f9f9;
-}
-
-.login-container {
-	display: flex;
-	min-width: 98vw;
-	height: 100vh;
-	width: 100vw;
-	background: #fff;
-	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-	border-radius: 8px;
-	overflow: hidden;
-}
-
-.login-left {
-	flex: 1;
-	background: linear-gradient(135deg, #fce4ec, #f8bbd0);
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: 40px;
-	text-align: center;
-	overflow: hidden;
-}
-
-.login-field{
-	height: 40px;
-}
-
-.back-to-home {
-	cursor: pointer;
-	font-size: 14px;
-	color: #777;
-}
-
-.back-to-home:hover {
-	color: #000;
+.course-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
 }
 
 
-.login-illustration {
-	max-width: 80%;
-	height: auto;
-	margin-bottom: 20px;
+/* FeedbackComplaint.css */
+
+.feedback-complaint-section {
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-top: 2rem;
 }
 
-.login-left h2 {
-	font-size: 24px;
-	color: #333;
-	margin-bottom: 10px;
+/* Common styles for both forms */
+.form-container {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
+  margin-bottom: 2rem;
 }
 
-.login-left p {
-	font-size: 14px;
-	color: #666;
-	width: 500px;
-	margin-bottom: 60px;
+.form-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
 }
 
-.login-right {
-	flex: 1;
-	padding: 40px;
-	overflow: auto;
+.form-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 1rem;
+  margin: 1rem 0;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
 }
 
-.login-form {
-	max-width: 400px;
-	width: 90%;
-	margin: auto;
-	margin-top: 30px;
+.form-textarea:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
 }
 
-.login-form h1 {
-	font-size: 26px;
-	text-align: center;
-	color: #333;
-	margin-bottom: 60px;
+/* Feedback specific styles */
+.feedback-form {
+  border-left: 4px solid #4299e1;
 }
 
-.input-field {
-	width: 100%;
-	padding: 10px;
-	margin: 10px 0;
-	border: 1px solid #ccc;
-	border-radius: 4px;
+.feedback-submit-btn {
+  background-color: #4299e1;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  border: none;
+  cursor: pointer;
 }
 
-.password-field {
-	position: relative;
-	width: 106%;
+.feedback-submit-btn:hover {
+  background-color: #3182ce;
 }
 
-.password-toggle {
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	cursor: pointer;
+/* Complaint specific styles */
+.complaint-form {
+  border-left: 4px solid #f56565;
 }
 
-.login-options {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: space-between;
-	align-items: center;
-	margin: 15px 0;
+.complaint-submit-btn {
+  background-color: #f56565;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  border: none;
+  cursor: pointer;
 }
 
-.forgot-password {
-	padding-bottom: 10px;
+.complaint-submit-btn:hover {
+  background-color: #e53e3e;
 }
 
-.btn {
-	width: 100%;
-	padding: 12px;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 16px;
-	font-weight: bold;
+/* Status message styles */
+.status-message {
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-weight: 500;
 }
 
-.btn-login {
-	background: #ff6f61;
-	color: #fff;
+.status-success {
+  background-color: #c6f6d5;
+  color: #2f855a;
+  border: 1px solid #9ae6b4;
 }
 
-.btn-login:hover {
-	background: #ff7f73;
+.status-error {
+  background-color: #fed7d7;
+  color: #c53030;
+  border: 1px solid #feb2b2;
 }
 
-.btn-google,
-.btn-facebook {
-	background: #eee;
-	color: #333;
-	margin: 5px 0;
-}
-
-.btn-google:hover {
-	background: #e2e1e1;
-	color: #000;
-	margin: 5px 0;
-}
-
-.btn-facebook:hover {
-	background: #e2e1e1;
-	color: #000;
-	margin: 5px 0;
-}
-
-.new-user {
-	text-align: center;
-	margin-top: 15px;
-}
-
-.new-user a {
-	color: #ff6f61;
-	text-decoration: none;
-}
-
-.new-user a:hover {
-	text-decoration: underline;
-}
-
-.password-field {
-	position: relative;
-	display: flex;
-	align-items: center;
-}
-
-.input-field {
-	width: 100%;
-	padding: 10px;
-	border: 1px solid #ccc;
-	border-radius: 5px;
-}
-
-.password-toggle {
-	position: absolute;
-	right: 10px;
-	cursor: pointer;
-	color: #888;
-}
-
-.password-toggle:hover {
-	color: #000;
-}
-
+/* Responsive styles */
 @media (max-width: 768px) {
+  .feedback-complaint-section {
+    padding: 1rem;
+  }
 
-	.login-left {
-		display: none;
-	}
+  .form-container {
+    padding: 1rem;
+  }
 
-}
-
-
-
-/*-----------------
-	3. Register
------------------------*/
-.register-container {
-	display: flex;
-	width: 100vw;
-	height: 100vh;
-	background: #fff;
-	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-	border-radius: 8px;
-	overflow: hidden;
-}
-
-.register-left {
-	flex: 1;
-	background: linear-gradient(135deg, #fce4ec, #f8bbd0);
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: 40px;
-	text-align: center;
-	overflow: hidden;
-}
-
-.register-illustration {
-	max-width: 80%;
-	height: auto;
-	margin-bottom: 20px;
-}
-
-.register-left h2 {
-	font-size: 24px;
-	color: #333;
-	margin-bottom: 10px;
-}
-
-.register-left p {
-	font-size: 14px;
-	color: #666;
-	width: 80%;
-	max-width: 500px;
-	margin-bottom: 30px;
-}
-
-.register-right {
-	flex: 1;
-	padding: 40px;
-	display: flex;
-	flex-direction: column;
-	justify-content: flex-start;
-	overflow: scroll;
-	overflow-x: hidden;
-}
-
-.register-form {
-	max-width: 400px;
-	width: 90%;
-	margin: auto;
-}
-
-.register-form h1 {
-	font-size: 26px;
-	text-align: center;
-	color: #333;
-	margin-bottom: 30px;
-}
-
-.register-form .ant-form-item {
-	margin-bottom: 20px;
-}
-
-.register-form label {
-	display: block;
-	margin-bottom: 5px;
-	font-size: 14px;
-	color: #333;
-	font-weight: 500;
-}
-
-.register-username-field,
-.register-email-field,
-.register-password-field,
-.type-select {
-	width: 100%;
-	height: 40px;
-	padding: 8px 12px;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-	box-sizing: border-box;
-	font-size: 14px;
-	color: #333;
-}
-
-.register-password-field {
-	position: relative;
-}
-
-.register-password-toggle {
-	position: absolute;
-	top: 50%;
-	right: 10px;
-	transform: translateY(-50%);
-	cursor: pointer;
-	color: #888;
-}
-
-.register-password-toggle:hover {
-	color: #333;
-}
-
-.password-strength {
-	margin-top: -10px;
-	margin-bottom: 10px;
-}
+  .form-textarea {
+    min-height: 120px;
+  }
 
-.register-options {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin: 15px 0;
+  .feedback-submit-btn,
+  .complaint-submit-btn {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
 }
 
-.btn {
-	width: 100%;
-	height: 40px;
-	padding: 8px;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 16px;
-	font-weight: bold;
+/* Animation for status messages */
+@keyframes slideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-.btn-signin {
-	background: #ff6f61;
-	color: #fff;
+.status-message {
+  animation: slideDown 0.3s ease-out;
 }
 
-.btn-signin:hover{
-	background: #ff8074;
-	color: #fff;
+/* Hover effects for form containers */
+.form-container:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
 }
 
-.btn-google,
-.btn-facebook {
-	background: #eee;
-	color: #333;
-	margin: 5px 0;
+/* Disabled state styles */
+.feedback-submit-btn:disabled,
+.complaint-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-.btn-google:hover,
-.btn-facebook:hover {
-	background: #e2e1e1;
-	color: #000;
+/* Character count styles */
+.char-count {
+  font-size: 0.875rem;
+  color: #718096;
+  text-align: right;
+  margin-top: 0.5rem;
 }
 
-.register-alternate {
-	text-align: center;
-	margin-top: 20px;
+.char-count.limit-near {
+  color: #d69e2e;
 }
 
-.register-alternate p {
-	margin-bottom: 10px;
+.char-count.limit-reached {
+  color: #c53030;
 }
 
-.new-user {
-	text-align: center;
-	margin-top: 15px;
-}
-
-.new-user a {
-	color: #ff6f61;
-	text-decoration: none;
-}
-
-.new-user a:hover {
-	text-decoration: underline;
-}
-
-.back-to-home-register {
-	margin-bottom: 20px;
-	font-size: 14px;
-	color: #777;
-	cursor: pointer;
-}
-
-.back-to-home-register i {
-	font-size: 16px;
-}
 
-.back-to-home-register:hover {
-	color: #333;
+/* New Video Course Changes */
+/* Layout and Container Styles */
+.course-container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 2rem;
 }
 
-.custom-select{
-	height: 40px;
+.course-wrapper {
+  max-width: 1280px;
+  margin: 0 auto;
 }
-
-@media (max-width: 768px) {
-	.register-container {
-		flex-direction: column;
-	}
-
-	.register-container {
-		overflow: auto;
-	}
-
-	.register-left {
-		display: none;
-	}
 
-	.register-right {
-		flex: none;
-		width: 100%;
-		padding: 20px;
-	}
-
-	.register-illustration {
-		width: 60%;
-	}
-
-	.register-form {
-		width: 90%;
-	}
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
 }
-
-@media (max-width: 500px) {
-
-	.register-username-field,
-	.register-email-field,
-	.register-password-input-field {
-		width: 90%;
-	}
-
-	.type-select {
-		width: 90%;
-	}
 
-	.register-password-field {
-		position: relative;
-	}
-
-	.register-password-toggle {
-		position: absolute;
-		top: 50%;
-		right: 50px;
-		transform: translateY(-50%);
-		cursor: pointer;
-		color: #888;
-	}
-
-	.register-password-toggle:hover {
-		color: #333;
-	}
-
-	.btn {
-		width: 90%;
-	}
+@media (min-width: 1024px) {
+  .main-content {
+    grid-template-columns: 2fr 1fr;
+  }
 }
-
 
-/*--------------------------
-	4. OTP VErification
---------------------------------*/
-.OTP-container {
-	display: flex;
-	width: 100vw;
-	height: 100vh;
-	background: #f5f5f5;
+/* Video Player Section */
+.video-section {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.OTP-left {
-	flex: 1;
-	background: linear-gradient(135deg, #fce4ec, #f8bbd0);
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: 40px;
-	text-align: center;
+.video-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 1.5rem;
 }
 
-.OTP-left h2 {
-	font-size: 24px;
-	color: #333;
-	margin-bottom: 10px;
+.video-player {
+  width: 100%;
+  border-radius: 0.5rem;
+  background-color: #000;
+  aspect-ratio: 16 / 9;
 }
 
-.OTP-left p {
-	font-size: 14px;
-	color: #666;
-	width: 80%;
-	margin-bottom: 40px;
+.no-video {
+  width: 100%;
+  height: 16rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  color: #6b7280;
+  border-radius: 0.5rem;
 }
 
-.OTP-illustration {
-	max-width: 80%;
-	margin-bottom: 20px;
+.video-info {
+  margin-bottom: 2rem;
 }
 
-.OTP-right {
-	flex: 1;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: #fff;
-	padding: 20px;
-	box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-	width: 100%;
+.video-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #1f2937;
 }
 
-.OTP-form {
-	width: 100%;
-	max-width: 400px;
-	text-align: center;
+.video-description {
+  color: #4b5563;
+  line-height: 1.5;
 }
 
-.OTP-form h1 {
-	font-size: 26px;
-	color: #333;
-	margin-bottom: 30px;
+/* Sidebar Styles */
+.sidebar {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.OTP-input-container {
-	display: flex;
-	justify-content: space-between;
-	gap: 10px;
-	margin-bottom: 20px;
+.sidebar-header {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.OTP-input {
-	width: 50px;
-	height: 50px;
-	font-size: 20px;
-	text-align: center;
-	border: 1px solid #ccc;
-	border-radius: 5px;
-	background-color: #f9f9f9;
+.sidebar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
 }
 
-.OTP-input:focus {
-	border-color: #1890ff;
-	box-shadow: 0 0 5px #1890ff;
-	outline: none;
+.video-count {
+  color: #6b7280;
+  font-size: 0.875rem;
 }
 
-.OTP-submit-button {
-	width: 100%;
-	height: 40px;
-	font-size: 16px;
-	color: #fff;
-	background: #1890ff;
-	border: none;
-	border-radius: 5px;
-	cursor: pointer;
+.video-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.OTP-submit-button:hover {
-	background: #40a9ff;
+.video-item {
+  width: 100%;
 }
 
-.link-resend-otp {
-	text-decoration: none;
+.video-item button {
+  width: 100%;
+  padding: 1rem;
+  text-align: left;
+  background-color: #f3f4f6;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-/* Responsive Styles */
-@media (max-width: 1024px) {
-
-	/* Laptop */
-	.OTP-left {
-		display: none;
-	}
-
-	.OTP-right {
-		flex: 1;
-		width: 100%;
-	}
+.video-item button:hover {
+  background-color: #e5e7eb;
 }
-
-@media (max-width: 768px) {
-
-	/* Tablet and Mobile */
-	.OTP-left {
-		display: none;
-	}
 
-	.OTP-right {
-		flex: 1;
-		width: 100%;
-		padding: 20px;
-	}
+.video-item.active button {
+  background-color: #dbeafe;
+  color: #1d4ed8;
 }
 
-/*--------------------------
-	5. Dashboard
-	--------------------------------*/
-
-/* General Container */
-.dashboard-container {
-	width: 100vw;
-	display: flex;
-	flex-direction: column;
-	gap: 24px;
-	padding: 24px;
-	background-color: #f7f9fc;
-	height: 100vh;
-	overflow: auto;
-	box-sizing: border-box;
+.lesson-number {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e0e7ff;
+  color: #4f46e5;
+  border-radius: 9999px;
+  font-weight: 600;
+  margin-right: 1rem;
 }
 
-/* Fullscreen Row */
-.dashboard-widget-row,
-.dashboard-main-content {
-	width: 100%;
-	margin: 0 auto;
+.lesson-info {
+  flex: 1;
 }
 
-/* Widget Section */
-.dashboard-graph-widget {
-	background: linear-gradient(135deg, #4caf50, #8bc34a);
-	color: white;
-	padding: 24px;
-	border-radius: 12px;
-	text-align: center;
-	position: relative;
-	overflow: hidden;
-	box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+.lesson-title {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
 }
 
-.dashboard-graph-widget .dashboard-icon-container {
-	position: absolute;
-	top: 12px;
-	right: 12px;
-	opacity: 0.2;
-	font-size: 24px;
+.lesson-date {
+  font-size: 0.875rem;
+  color: #6b7280;
 }
 
-.dashboard-graph-widget .graphico-details h3 {
-	font-size: 1.5rem;
-	margin: 0;
+/* Feedback Section */
+.feedback-complaint-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e7eb;
 }
 
-.dashboard-graph-widget .graphico-details p {
-	font-size: 0.875rem;
-	margin: 0;
+.feedback-form {
+  background-color: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
 }
 
-.dashboard-graph-widget .dashboard-percentage {
-	margin-top: 12px;
-	font-size: 1rem;
-	font-weight: bold;
+.form-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #1f2937;
 }
 
-/* Chart Section */
-.dashboard-chart-wrapper {
-	background: #ffffff;
-	border-radius: 12px;
-	padding: 24px;
-	box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
-	height: 100%;
+.form-textarea {
+  width: 100%;
+  min-height: 8rem;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  margin-bottom: 0.5rem;
+  resize: vertical;
 }
 
-.dashboard-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 24px;
+.form-textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-.dashboard-date-range {
-	display: flex;
-	align-items: center;
-	gap: 8px;
+.char-count {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
 }
 
-/* Info Box */
-.dashboard-info-box {
-	background: #ffffff;
-	border-radius: 12px;
-	padding: 24px;
-	box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
-	margin-bottom: 24px;
+.char-count.limit-near {
+  color: #f59e0b;
 }
 
-.dashboard-box-header {
-	display: flex;
-	justify-content: space-between;
-	margin-bottom: 16px;
+.char-count.limit-reached {
+  color: #dc2626;
 }
 
-.dashboard-info-box-item {
-	background: #f3f6fa;
-	border-radius: 8px;
-	text-align: center;
-	padding: 12px;
+.feedback-submit-btn {
+  background-color: #4f46e5;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.dashboard-info-box-item h3 {
-	margin: 8px 0;
+.feedback-submit-btn:hover {
+  background-color: #4338ca;
 }
 
-.dashboard-info-box-item .dot {
-	width: 12px;
-	height: 12px;
-	margin: 0 auto 8px;
-	background-color: #888;
-	border-radius: 50%;
+.feedback-submit-btn:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
 }
 
-/* Profit/Loss */
-.dashboard-profit-details {
-	text-align: center;
-	margin-bottom: 24px;
+/* Status Messages */
+.status-message {
+  padding: 1rem;
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
 }
 
-.dashboard-profit {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 16px;
-	border-radius: 8px;
-	margin-bottom: 16px;
-	background: #f3f6fa;
+.status-success {
+  background-color: #dcfce7;
+  color: #166534;
 }
 
-.dashboard-profit.green {
-	background: #eaffea;
+.status-error {
+  background-color: #fee2e2;
+  color: #991b1b;
 }
 
-.dashboard-profit.red {
-	background: #ffeaea;
+/* Modal Styles */
+.edit-modal {
+  padding: 1.5rem;
 }
 
-.dashboard-profit .dot {
-	background-color: #28a745;
+.modal-form-item {
+  margin-bottom: 1.5rem;
 }
 
-.dashboard-profit.red .dot {
-	background-color: #dc3545;
+.modal-form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #374151;
 }
 
-.dashboard-profit h3,
-.dashboard-profit p {
-	margin: 0;
+.modal-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
 }
-
-/* Responsive Design */
-@media (max-width: 768px) {
-	.dashboard-header {
-		flex-direction: column;
-		gap: 16px;
-	}
 
-	.dashboard-graph-widget,
-	.dashboard-chart-wrapper,
-	.dashboard-info-box {
-		text-align: center;
-	}
+.modal-textarea {
+  width: 100%;
+  min-height: 6rem;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  resize: vertical;
 }
-
-
-/*--------------------------
-	 6. Forget Password
-	--------------------------------*/
 
-.forget-password-container {
-	display: flex;
-	min-width: 98vw;
-	height: 100vh;
-	width: 100vw;
-	background: #fff;
-	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-	border-radius: 8px;
-	overflow: hidden;
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
 }
 
-.forget-password-left {
-	flex: 1;
-	background: linear-gradient(135deg, #fce4ec, #f8bbd0);
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: 40px;
-	text-align: center;
-	overflow: hidden;
+/* Loading State */
+.loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-size: 1.125rem;
+  color: #6b7280;
 }
 
-.forget-password-left p {
-	font-size: 14px;
-	color: #666;
-	width: 80%;
-	max-width: 500px;
-	margin-bottom: 30px;
+/* Upload Component Styles */
+.upload-container {
+  border: 2px dashed #d1d5db;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
 }
 
-.forget-password-left.hidden-on-laptop {
-	display: flex;
+.upload-container:hover {
+  border-color: #6366f1;
 }
 
-.forget-password-right {
-	flex: 1;
-	padding: 2rem;
-	display: flex;
-	flex-direction: column;
-	justify-content: space-around;
-	align-items: center;
+.upload-icon {
+  font-size: 1.5rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
 }
 
-.forget-password-back-to-home {
-	align-self: flex-start;
-	font-size: 14px;
-	color: #777;
-	margin-top: -100px;
-	cursor: pointer;
+.upload-text {
+  color: #374151;
+  font-size: 0.875rem;
 }
 
-.forget-password-back-to-home:hover {
-	color: #333;
+/* Button Styles */
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-.forget-password-form {
-	width: 100%;
-	max-width: 400px;
-	margin-bottom: 50px;
+.primary-button {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
 }
 
-.forget-password-heading {
-	margin-top: -100px;
+.primary-button:hover {
+  background-color: #4338ca;
 }
 
-.forget-password-input-field {
-	width: 93%;
-	padding: 0.8rem;
-	font-size: 18px;
-	margin: 0.5rem 0;
-	border: 1px solid #ccc;
-	border-radius: 4px;
+.secondary-button {
+  background-color: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
 }
 
-.btn-forget-password {
-	width: 100%;
-	padding: 0.8rem;
-	background-color: #007bff;
-	color: white;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
+.secondary-button:hover {
+  background-color: #f3f4f6;
 }
 
-@media (max-width: 768px) {
-
-	.forget-password-left.hidden-on-laptop {
-		display: none;
-	}
+.animated-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-
-
-
-/*-----------------
-	7. Reset Password
------------------------*/
-
-.reset-password-field {
-	height: 45px;
+.animated-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }

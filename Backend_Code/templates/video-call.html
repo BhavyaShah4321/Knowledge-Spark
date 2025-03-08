@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video-Call</title>
+  <link href="https://fonts.googleapis.com/css?family=DM+Sans:400,500,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/video-call.css">
+  <script src="/static/js/jquery.min.js"></script>
+  <style>
+    /* HTML: <div class="loader"></div> */
+    .loader {
+      width: 40px;
+      aspect-ratio: 4;
+      --_g: no-repeat radial-gradient(circle closest-side, #3d42df 90%, #0000);
+      background:
+        var(--_g) 0% 50%,
+        var(--_g) 50% 50%,
+        var(--_g) 100% 50%;
+      background-size: calc(100%/3) 100%;
+      animation: l7 1s infinite linear;
+    }
+
+    @keyframes l7 {
+      33% {
+        background-size: calc(100%/3) 0%, calc(100%/3) 100%, calc(100%/3) 100%
+      }
+
+      50% {
+        background-size: calc(100%/3) 100%, calc(100%/3) 0%, calc(100%/3) 100%
+      }
+
+      66% {
+        background-size: calc(100%/3) 100%, calc(100%/3) 100%, calc(100%/3) 0%
+      }
+    }
+
+  
+  </style>
+
+</head>
+
+<body style="position: relative;">
+
+  <div style="width:100%;height:100%;display: none;margin:20px 0px 0px 20px;z-index:100000000000000;overflow:hidden;background:white;"
+    id="grant-permission-main" >
+
+    <div id="main_message2" style="display:flex;justify-content: flex-start;flex-direction: column;
+    background: white;position: fixed;box-shadow: 0px 0px 10px 0px grey;
+    width: auto;z-index: 100000000;padding: 10px;padding-right: 0px;
+    border-radius: 15px;top: 50%;left: 50%;transform: translate(-50%, -50%);">
+
+      <div id="message_top2" style="display: flex;align-items: center;width:100%;">
+
+        <img src="/static/images/info_image.png" id="message_image2" alt=""
+          style="width: 40px;height: 40px;margin: 5px;">
+
+        <div id="message_topic2"
+          style="font-size: 30px;color:  #6868e7;margin: 5px;font-weight: 600;margin-right:35px;">Info</div>
+
+
+      </div>
+      <div id="message2" style="color: black;font-size: larger;padding: 10px;">
+
+      </div>
+      <!-- <div style='padding: 10px; padding-right: 20px;'>
+        <b>Note:</b> If you wish to grant permission, please reload the page. Alternatively , click the camera icon in
+        the address bar (top left corner) and manually enable the required permissions, then refresh the page.
+      </div> -->
+
+      <!-- <div class="chat-header" onclick="location.reload();"> -->
+        <!-- <button class="chat-header-button" style="background-image:none;padding-left:16px;"> -->
+          <!-- Reload -->
+        <!-- </button> -->
+      <!-- </div> -->
+    </div>
+
+  </div>
+  
+
+
+
+  <div id="main_message"
+    style="display:none;justify-content: flex-start;flex-direction: column;background: white;position: fixed;top: 10px;box-shadow: 0px 0px 10px 0px grey;width: auto;z-index: 100000000;padding: 10px;padding-right: 0px;border-radius: 15px;">
+
+
+    <div id="message_top" style="display: flex;align-items: center;width:100%;">
+
+      <img src="/static/images/checked.png" id="message_image" alt="" style="    width: 40px;height: 40px;margin: 5px;">
+
+      <div id="message_topic" style="font-size: 30px;color: green;margin: 5px;font-weight: 600;margin-right:35px;">Chat
+        image</div>
+
+      <div style="float: right;width:100%;">
+        <img src="/static/images/close.png" id="message_close" alt="" style="      width: 25px;
+    margin-top: -32px;
+    margin-right: 6px;
+    float: right;">
+      </div>
+
+    </div>
+    <div id="message" style="color: black;font-size: larger;padding: 10px;text-align:justify">
+      Email alreday registered
+    </div>
+  </div>
+
+  <div class="app-container">
+
+    <button class="mode-switch">
+      <svg class="sun" fill="none" stroke="#fbb046" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        class="feather feather-sun" viewBox="0 0 24 24">
+        <defs />
+        <circle cx="12" cy="12" r="5" />
+        <path
+          d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+      </svg>
+      <svg class="moon" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        class="feather feather-moon" viewBox="0 0 24 24">
+        <defs />
+        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+      </svg>
+    </button>
+
+    <div class="chat-header" style="margin-left: 75px;position:absolute;">
+      <button class="chat-header-button" style="background-image:none;">
+        <a href="/" style="color: white;padding-right:5px;">Back to Home</a>
+      </button>
+    </div>
+
+
+
+    <div class="app-main">
+
+      <div class="video_focus"
+    style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; overflow: scroll; scrollbar-width: none; -ms-overflow-style: none;">
+
+    <div id="main_frame_video"
+          style="width: 80%;min-width:300px;min-height:500px;display:flex;justify-content:center;align-items:center;position:relative;">
+          <video style="border: 2px solid white;
+    width: 80%;
+    height: 400px;
+    min-width: 400px;
+    min-height: 600px;"></video>
+        </div>
+        <div class="video-call-wrapper" id="videos" style="display: flex;
+    justify-content: center;
+    height: auto;
+    margin-bottom: 30px;
+    max-width: 100%; /* Set a maximum width */
+    overflow-x: scroll; /* Enable horizontal scrolling */
+    overflow-y: hidden; /* Disable vertical scrolling */
+    white-space: nowrap; /* Prevent content from wrapping */
+    -ms-overflow-style: none; /* Hide scrollbar in Internet Explorer and Edge */
+    scrollbar-width: none; /* Hide scrollbar in Firefox */
+">
+        </div>
+      </div>
+
+
+
+      <div class="video-call-actions " style="padding-top: 0px;">
+        <button class="video-action-button " id="audioing" style="display: flex;
+    justify-content: center;align-items:center;"><img src="/static/images/portfolio_website_mic_on.png" alt=""
+            style="width: 30px;height:30px;"></button>
+        <button class="video-action-button" id="videoing" style="display: flex;
+    justify-content: center;align-items:center;"><img src="/static/images/portfolio_website_video_on.png" alt=""
+            style="width: 30px;height:30px;"></button>
+        <button class="video-action-button" id="shareing" style="display: flex;
+    justify-content: center;align-items:center;"><img src="/static/images/share.png" alt=""
+            style="width: 30px;height:30px;"></button>
+        <!-- <button class="video-action-button maximize" ></button> -->
+        <button class="video-action-button endcall" id="endcall">Leave</button>
+        <!-- <button class="video-action-button magnifier">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" class="feather feather-zoom-in" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35M11 8v6M8 11h6" />
+          </svg>
+          <span>100%</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="feather feather-zoom-out">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            <line x1="8" y1="11" x2="14" y2="11" />
+          </svg>
+        </button> -->
+
+      </div>
+
+    </div>
+
+    <!-- <div class="right-side">
+      <button class="btn-close-right">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor"
+          stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="feather feather-x-circle"
+          viewBox="0 0 24 24">
+          <defs></defs>
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M15 9l-6 6M9 9l6 6"></path>
+        </svg>
+      </button>
+
+      <div class="chat-container">
+        <div class="chat-header">
+          <button class="chat-header-button">
+            Live Chat
+          </button>
+        </div>
+        <div class="chat-area" id="all_chat_messages">
+
+
+        </div>
+        <div class="chat-typing-area-wrapper">
+          <div class="chat-typing-area">
+            <input type="text" id="send_chat_message_value" placeholder="Type your meesage..." class="chat-input"
+              required>
+            <button class="send-button" onclick="send_chat_message()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-send" viewBox="0 0 24 24">
+                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div> -->
+      <!-- <div class="participants" id="all_user">
+        <div class="participant profile-picture">
+          <img
+            src="https://images.unsplash.com/photo-1576110397661-64a019d88a98?ixlib=rb-1.2.1&auto=format&fit=crop&w=1234&q=80"
+            alt="pp">
+        </div>
+        <div class="participant profile-picture">
+          <img
+            src="https://images.unsplash.com/photo-1566821582776-92b13ab46bb4?ixlib=rb-1.2.1&auto=format&fit=crop&w=900&q=60"
+            alt="pp">
+        </div>
+        <div class="participant profile-picture">
+          <img
+            src="https://images.unsplash.com/photo-1600207438283-a5de6d9df13e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1234&q=80"
+            alt="pp">
+        </div>
+        <div class="participant profile-picture">
+          <img
+            src="https://images.unsplash.com/photo-1581824283135-0666cf353f35?ixlib=rb-1.2.1&auto=format&fit=crop&w=1276&q=80"
+            alt="pp">
+        </div>
+        <div class="participant-more">2+</div>
+      </div>
+    </div> -->
+    <button class="expand-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="feather feather-message-circle">
+        <path
+          d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+      </svg>
+    </button>
+  </div>
+</body>
+<script src="/static/js/video-call.js"></script>
+<script>
+  let message = document.getElementById("message")
+  let message_close = document.getElementById("message_close")
+  let message_topic = document.getElementById("message_topic")
+  let message_image = document.getElementById("message_image")
+  let message_top = document.getElementById("message_top")
+  let main_message = document.getElementById("main_message")
+
+  const url = window.location.href;
+  const segments = new URL(url).pathname.split("/"); // Split the path into segments
+  const uuid = segments[segments.length - 2]; // Get the second last segment
+
+  let user_username = ""
+  let user_id = ""
+  let user_uuid = ""
+  let user_image = ""
+  var ws;
+
+//  const urlParams = new URLSearchParams(window.location.search);
+//const token = urlParams.get("token");
+//
+//
+//const authenticated = token
+//console.log("Authenticated Token:", authenticated);
+
+function getCookie(name) {
+  const cookies = document.cookie.split("; ");
+  for (let i = 0; i < cookies.length; i++) {
+      const [key, value] = cookies[i].split("=");
+      if (key === name) return value;
+  }
+  return null;
+}
+
+const authenticated = getCookie("token");
+console.log("token",getCookie("token"))
+console.log('authenticated',authenticated)
+
+  if (authenticated) {
+    get_user_details()
+    check_link_valid()
+    //chat_websocket_connection()
+
+  }
+  else {
+    message.innerHTML = "You are not logged in"
+    message_image.src = "/static/images/remove.png";
+    message_topic.innerHTML = "Error";
+    message_topic.style.color = "red";
+    main_message.style.display = "flex";
+
+    //setTimeout(() => {
+    //  window.location.href = `http://localhost:3000/`
+    //}, 2000);
+  }
+  message_close.onclick = function () {
+    main_message.style.display = "None"
+  }
+
+  function check_link_valid() {
+    data = {
+      uuid: uuid
+    }
+    main_message.style.display = "none"
+    fetch(`${window.location.origin}/api/video-call/check-uuid/`, {
+      method: "POST",
+      "headers": {
+        "content-type": "application/json",
+        "Authorization": `Bearer ${authenticated}`
+      },
+      body: JSON.stringify(data)
+    }).then((response) => {
+      return response.json()
+
+    }).then((response) => {
+      if (response.success === false) {
+        message.innerHTML = "Invalid Link "
+        message_image.src = "/static/images/remove.png";
+        message_topic.innerHTML = "Error";
+        message_topic.style.color = "red";
+        main_message.style.display = "flex";
+
+        setTimeout(() => {
+          window.location.href=`/`
+        }, 3000);
+      }
+    })
+  }
+
+  async function get_user_details() {
+    console.log("done")
+
+    await fetch(`${window.location.origin}/api/user/get-user-single/`, {
+      method: "GET",
+      "headers": {
+        "content-type": "application/json",
+        "Authorization": `Bearer ${authenticated}`
+      },
+    }).then((response) => {
+      return response.json()
+    }).then((response) => {
+      if (response.success) {
+
+        user_username = response.data.username
+        user_image = response.data.profile_picture
+        user_id = response.data.id
+        user_uuid = response.data.user_uuid
+        console.log("done")
+      }
+      else {
+        alert("Error in 'get_user_details' function please check")
+      }
+    })
+    //fetch_chat_message()
+
+
+
+  }
+
+  function chat_websocket_connection() {
+    let url=""
+    if (window.location.hostname=="www.kartikprajapati.com"){
+      url=`wss://www.kartikprajapati.com/ws/chat/${uuid}/`
+    }
+    else{
+      url=`ws://localhost:8001/ws/chat/${uuid}/`
+
+    }
+    ws = new WebSocket(url)
+
+    ws.onopen = ((e) => {
+      console.log("connnection made successfully")
+    })
+    ws.onmessage = ((message) => {
+      data = JSON.parse((message.data))
+      new_message(data)
+    })
+    ws.onclose = ((message) => {
+      //alert("Are you Sure to leave chat")
+    })
+    ws.onerror = ((error) => {
+      console.log("Chat websocke connection error:- ", error)
+    })
+  }
+
+  async function fetch_chat_message() {
+    data = {
+      "uuid": uuid
+    }
+    await fetch(`${window.location.origin}/api/video-chat-message/get-chat-message-uuid/`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "Authorization": `Bearer ${authenticated}`
+      },
+      body: JSON.stringify(data)
+    }).then((response) => {
+      return response.json()
+    }).then((response) => {
+      console.log(response)
+      if (response.success) {
+        if (response.data.length > 0) {
+          let str = ''
+          response.data.forEach((data) => {
+            console.log(data.user_username)
+            console.log(user_username)
+            if (data.user_username == user_username) {
+              str = `<div class="message-wrapper reverse">
+            <div class="profile-picture">
+              <img
+                src="/media/${data.user_profile_picture}"
+                alt="pp">
+            </div>
+            <div class="message-content">
+              <p class="name">${data.user_username}</p>
+              <div class="message" style="min-width: fit-content;">${data.message}</div>
+            </div>
+          </div>`
+            }
+            else {
+              str = `<div class="message-wrapper">
+            <div class="profile-picture">
+              <img
+                src="/media/${data.user_profile_picture}">
+            </div>
+            <div class="message-content">
+              <p class="name">${data.user_username}</p>
+              <div class="message" style="min-width: fit-content;">${data.message}</div>
+            </div>
+          </div>`
+            }
+            document.getElementById("all_chat_messages").innerHTML += str
+          })
+          scrollToBottom()
+
+        }
+        else {
+          str = ` <div id="chat-box" style="width: 100%; max-width: 600px; margin: 20px auto; padding: 10px; border: 1px solid #ddd; border-radius: 8px; background-color: #f7f7f7; display: flex; flex-direction: column;">
+            <div class="empty-message" style="text-align: center; font-size: 16px; color: #1e90ff; background-color: #e0f7ff; padding: 10px; border: 1px solid #1e90ff; border-radius: 5px; margin-top: 20px;">
+              No messages yet. Be the first to send one!
+            </div>
+          </div>`
+          document.getElementById("all_chat_messages").innerHTML += str
+
+
+        }
+      }
+      else {
+        console.log("cannot fetch chat box message", response)
+      }
+    })
+  }
+
+
+  function send_chat_message() {
+    message = document.getElementById('send_chat_message_value')
+    if (message.value.trim().length != 0) {
+      ws.send(JSON.stringify({
+        "type": "chat_message",
+        "message": message.value,
+        "user": user_id,
+        "user_username": user_username,
+        "user_image": user_image
+      }))
+
+      message.value = ""
+      message.placeholder = "Type your message..."
+
+    }
+    scrollToBottom()
+
+  }
+
+
+  // document.getElementById("send_chat_message_value").oninput = () => {
+  //   ws.send(JSON.stringify({
+  //     "type": "typing_start",
+  //     "user": user_id,
+  //     "user_username": user_username,
+  //     "user_image": user_image
+  //   }))
+  // }
+
+  // document.getElementById("send_chat_message_value").onblur = () => {
+  //   ws.send(JSON.stringify({
+  //     "type": "typing_end",
+  //     "user": user_id,
+  //     "user_username": user_username,
+  //     "user_image": user_image
+  //   }))
+  // }
+
+  function new_message(data) {
+    console.log(data["type"]);
+
+    if (data["type"] == "chat_message") {
+      let str = '';
+      if (document.getElementById("chat-box")) {
+        document.getElementById("chat-box").style.display = "none"
+      }
+
+      if (data["user_username"] == user_username) {
+        str = `<div class="message-wrapper reverse">
+                <div class="profile-picture">
+                  <img src="${data.user_image}" />
+                </div>
+                <div class="message-content">
+                  <p class="name">${data.user_username}</p>
+                  <div class="message" style="min-width: fit-content;">${data.message}</div>
+                </div>
+              </div>`;
+      } else {
+        str = `<div class="message-wrapper">
+                <div class="profile-picture">
+                  <img src="${data.user_image}" alt="pp" />
+                </div>
+                <div class="message-content">
+                  <p class="name">${data.user_username}</p>
+                  <div class="message" style="min-width: fit-content;">${data.message}</div>
+                </div>
+              </div>`;
+      }
+
+      document.getElementById("all_chat_messages").innerHTML += str;
+      scrollToBottomIfNeeded();
+    }
+
+    // Handle typing start event
+    if (data.type == "typing_start") {
+      if (data.user_username != user_username) {
+        if (document.getElementById(`temp${data.user}`)) {
+          document.getElementById(`temp${data.user}`).style.display = "flex";
+
+        } else {
+          const typingStr = `<div class="message-wrapper" id="temp${data.user}">
+                    <div class="profile-picture">
+                      <img src="${data.user_image}">
+                    </div>
+                    <div class="message-content" style="text-align: center; display: flex; justify-content: space-between; align-items: center;flex-direction:column;">
+
+                  <p class="name">${data.user_username}</p>
+
+                        <div class="loader"></div>
+                    </div>
+                  </div>`;
+
+          document.getElementById("all_chat_messages").innerHTML += typingStr;
+          //document.getElementById("all_chat_messages").appendChild(typingStr);
+        }
+      }
+      scrollToBottomIfNeeded();
+    }
+
+    // Handle typing end event (corrected to not be nested)
+    if (data.type == "typing_end") {
+      const typingElement = document.getElementById(`temp${data.user}`);
+      if (typingElement) {
+        typingElement.remove();  // This line removes the element from the DOM
+      }
+      scrollToBottomIfNeeded();
+    }
+  }
+
+
+  function scrollToBottom() {
+    const chatContainer = document.getElementById('all_chat_messages');
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+  function scrollToBottomIfNeeded() {
+    const chatContainer = document.getElementById('all_chat_messages');
+
+    // Get the current scroll position and the height of the container and its content
+    const scrollHeight = chatContainer.scrollHeight;
+    const clientHeight = chatContainer.clientHeight;
+    const scrollTop = chatContainer.scrollTop;
+
+    // Check if the user is already at the bottom or close to it (e.g., within the last 5 messages)
+    const isNearBottom = scrollHeight - scrollTop - clientHeight <= 250; // 100px is a buffer
+
+    // If the user is near the bottom, scroll down to the bottom
+    if (isNearBottom) {
+      chatContainer.scrollTop = scrollHeight;
+    }
+  }
+
+
+  ////////////////////////////////////video call javascript ///////////////////////////////////////////
+
+
+
+  const videoing = document.getElementById("videoing")
+  const audioing = document.getElementById("audioing")
+
+  const userVideoMap = {};
+
+  let rtcpeerconnection = {};
+
+  let message2 = document.getElementById("message2")
+  let message_close2 = document.getElementById("message_close2")
+  let message_topic2 = document.getElementById("message_topic2")
+  let message_image2 = document.getElementById("message_image2")
+  let message_top2 = document.getElementById("message_top2")
+  let main_message2 = document.getElementById("main_message2")
+  let endcalling = document.getElementById("endcall")
+  let grant_permission_main = document.getElementById("grant-permission-main")
+
+
+  audioing.disabled = true
+  audioing.style.opacity = "0.3"
+
+  videoing.disabled = true
+  videoing.style.opacity = "0.3"
+
+
+
+
+  let shareButton = document.getElementById("shareing")
+
+
+  let stream = ""
+
+  var video_ws;
+  document.addEventListener("DOMContentLoaded", function () {
+    if (authenticated){
+
+      websocket_connection_video_call()
+    }
+  });
+
+
+  function websocket_connection_video_call() {
+    let url=""
+    if (window.location.hostname=="www.kartikprajapati.com"){
+      url=`wss://www.kartikprajapati.com/ws/video-call/${uuid}/`
+    }
+    else{
+      url=`ws://localhost:8001/ws/video-call/${uuid}/`
+
+    }
+    video_ws = new WebSocket(url)
+    //video_ws = new WebSocket(`ws://${window.location.hostname}:8001/ws/video-call/${uuid}/`)
+
+    video_ws.onopen = function (response) {
+      console.log("connection made video call")
+      video_call_connection_made()
+    }
+    video_ws.onmessage = function (response) {
+      data = JSON.parse(response.data)
+      video_call_new_message(data)
+    }
+    video_ws.onclose = function (response) {
+        endcall(user_uuid)
+      
+      console.log("video call connection_closed :-", response)
+    }
+    video_ws.onerror = function (response) {
+      console.log("video call get error connection :-", response)
+    }
+  }
+
+  function video_call_connection_made() {
+    console.log("called")
+    let permission_video_audio = navigator.mediaDevices.getUserMedia({
+      "video":true,
+      "audio":true,
+      "microphone":true,
+    }).then((s) => {
+      console.log(s)
+
+      if (s.getVideoTracks().length === 0 || s.getAudioTracks().length === 0) {
+        return false
+      }
+
+      addUserVideo(user_username, user_uuid)
+
+      stream = s
+      console.log(stream.getAudioTracks());
+
+      let video = document.getElementById(`video${user_uuid}`)
+
+      video.srcObject = s
+      video.onloadeddata = () => {
+        video.play()
+    }
+      //video.muted = true;
+      video.muted = false;
+
+
+      video_ws.send(JSON.stringify({
+        "type": "video_call_join",
+        "user": user_id,
+        "user_uuid": user_uuid,
+        "user_username": user_username
+      }))
+
+
+      shareButton.onclick = function () {
+        const videoCallLink = `${window.location.href}/${uuid}/`;  // Replace with your video call URL
+
+        if (navigator.share) {
+          navigator.share({
+            title: 'Join My Video Call',
+            text: 'Click the link below to join my video call:',
+            url: videoCallLink
+          }).then(() => {
+            console.log('Video call link shared successfully');
+          }).catch((error) => {
+            console.log('Error sharing the video call link:', error);
+          });
+        } else {
+          alert('Your browser does not support the Web Share API.');
+        }
+      };
+      call_own_video()
+
+    }).catch((s) => {
+      message2.innerHTML = "We need your permission to access both your video and audio to start the meeting. Please allow access to both to join the video call. <br><b>For example:</b> 'Click on the browser permission prompt to grant access.' ";
+      message_image2.src = "/static/images/info_image.png";
+      
+      message_topic2.innerHTML = "Permission Required";
+      message_topic2.style.color = "#6868e7";
+      
+      main_message2.style.display = "flex";
+      grant_permission_main.style.display = "block";
+    
+      // Optionally, add a more specific call-to-action or instruction if needed:
+      // For example: "Click on the browser permission prompt to grant access."
+    });
+
+  }
+
+  function video_call_new_message(data) {
+    if (Object.keys(rtcpeerconnection).length === 0) {
+      // rtcpeerconnection is empty
+      endcalling.onclick = () => {
+        check=confirm("Are you sure to leave the meeting")
+        if (check){
+          window.location.href = "/"
+
+        }
+        else{
+return 
+        }
+      }
+    }
+    if (data.type == "video_call_join") {
+      console.log(user_uuid)
+
+      if (data.user_username != user_username) {
+
+        message.innerHTML = `${data.user_username} joined the meeting`
+        message_image.src = "/static/images/info_image.png";
+        message_topic.innerHTML = "Info";
+        message_topic.style.color = "#6868e7";
+        main_message.style.display = "flex";
+
+
+        rtcconnection(data["user_uuid"])
+        
+        create_offer(data["user_uuid"])
+        videoing.disabled = false
+        audioing.disabled = false
+
+        videoing.style.opacity = "1"
+        audioing.style.opacity = "1"
+
+        videoing.onclick = () => {
+          console.log("videoing",data["user_uuid"])
+
+          if (rtcpeerconnection[data['user_uuid']]) {
+            // Call the audiotoggelmute function to toggle audio mute for the corresponding RTC peer connection
+            videotoggle(rtcpeerconnection[data['user_uuid']], data['user_uuid']);
+          } else {
+          }
+        }
+        endcalling.onclick = () => {
+
+            console.log('called')
+            check=confirm("Are you sure to leave the meeting")
+        if (check){
+
+          if (rtcpeerconnection[data['user_uuid']]) {
+            endcall(data['user_uuid']);
+            
+          }
+          else {
+            window.location.href = "/"
+          }
+        }
+        else{
+          return
+        }
+        }
+        audioing.onclick = () => {
+          console.log("audioing",data["user_uuid"])
+          console.log("RTC Connection for user: ", data['user_uuid'], rtcpeerconnection[data['user_uuid']]);
+        
+          if (rtcpeerconnection[data['user_uuid']]) {
+            // Call audiotoggle() to toggle audio state
+            audiotoggle(rtcpeerconnection[data['user_uuid']]);
+        
+            // Get the updated audio track from the local stream
+           
+                
+            
+        }
+        else {
+              console.warn("RTC Connection not found for user:", data['user_uuid']);
+          }
+        };
+
+      }
+    }
+    if (data.type == "video_call_offer") {
+      console.log(user_uuid)
+
+      console.log(data)
+      console.log("user_uuid_by offer",data["user_uuid_by"])
+
+      let video_call_uuid_by = document.getElementById(`video${data.user_uuid_by}`)
+
+      if (data.user_uuid_for == user_uuid) {
+        rtcconnection(data["user_uuid_by"])
+        create_answer_and_send(data)
+
+        if (!video_call_uuid_by) {
+          addUserVideo(data["user_username"], data["user_uuid_by"])
+          rtcpeerconnection[data["user_uuid_by"]].ontrack = (e) => {
+            video_of_user = document.getElementById(`video${data["user_uuid_by"]}`)
+            video_of_user.srcObject = e.streams[0];
+            video_of_user.onloadedmetadata = () => {
+
+
+              video_of_user.play().then(() => console.log(`Video with UUID ${data["user_uuid_by"]} playback started successfully.`))
+                .catch(error => console.error(`Error starting video playback for UUID ${data["user_uuid_by"]}:`, error));
+
+            }
+          }
+          videoing.disabled = false
+          audioing.disabled = false
+
+          videoing.style.opacity = "1"
+          audioing.style.opacity = "1"
+
+          videoing.onclick = () => {
+            console.log("videoing",data['user_uuid_by'])
+            if (rtcpeerconnection[data['user_uuid_by']]) {
+              videotoggle(rtcpeerconnection[data['user_uuid_by']], data['user_uuid_for']);
+            } else {
+            }
+          }
+          audioing.onclick = () => {
+            console.log("audioing",data['user_uuid_by'])
+
+            console.log("RTC Connection for user: ", data['user_uuid_by'], rtcpeerconnection[data['user_uuid_by']]);
+          
+            if (rtcpeerconnection[data['user_uuid_by']]) {
+              // Call audiotoggle() to toggle audio state
+              audiotoggle(rtcpeerconnection[data['user_uuid_by']]);
+          
+              // Get the updated audio track from the local stream
+              
+          }
+           else {
+                console.warn("RTC Connection not found for user:", data['user_uuid_by']);
+            }
+          };
+          endcalling.onclick = () => {
+
+            check=confirm("Are you sure to leave the meeting")
+            if (check){
+              if (rtcpeerconnection[data['user_uuid_by']]) {
+                endcall(data['user_uuid_by']);
+                
+              } else {
+                window.location.href = "/"
+
+              }
+            }
+            else{
+              return
+            }
+            
+              
+          }
+        }
+
+      }
+    }
+
+    if (data.type == "video_call_answer") {
+      console.log(user_uuid)
+      console.log("user_uuid_by",data["user_uuid_by"])
+      if (data["user_uuid_for"] == user_uuid) {
+        let video_call_uuid_by = document.getElementById(`video${data.user_uuid_by}`)
+
+        rtcpeerconnection[data["user_uuid_by"]].setRemoteDescription(data['answer'])
+
+        if (!video_call_uuid_by) {
+          console.log("video username other", data["user_username"])
+
+          addUserVideo(data["user_username"], data["user_uuid_by"])
+          rtcpeerconnection[data["user_uuid_by"]].ontrack = (e) => {
+            video_of_user = document.getElementById(`video${data["user_uuid_by"]}`)
+            video_of_user.srcObject = e.streams[0]
+            video_of_user.onloadedmetadata = () => {
+
+
+              video_of_user.play().then(() => console.log(`Video with UUID ${data["user_uuid_by"]} playback started successfully.`))
+                .catch(error => console.error(`Error starting video playback for UUID ${data["user_uuid_by"]}:`, error));
+
+            }
+
+
+          }
+
+        }
+
+      }
+    }
+
+    if (data.type == "video_call_candidate") {
+      if (data["user_uuid_for"] == user_uuid) {
+        const newicecandidate = new RTCIceCandidate(data["candidate"])
+        if (rtcpeerconnection[data["user_uuid_by"]].remoteDescription) {
+          rtcpeerconnection[data['user_uuid_by']].addIceCandidate(newicecandidate)
+
+        }
+      }
+    }
+    else if (data['type'] == 'video_call_end_call') {
+      console.log("end called called")
+      if (rtcpeerconnection[data['user_uuid_by']]) {
+        message.innerHTML = `${data['user_username']} left the meeting `
+        message_image.src = "/static/images/info_image.png";
+        message_topic.innerHTML = "Info";
+        message_topic.style.color = "#6868e7";
+        main_message.style.display = "flex";
+
+
+        rtcpeerconnection[data['user_uuid_by']].close()
+        const videoElement = document.getElementById(`video${data['user_uuid_by']}`);
+        if (videoElement) {
+          const parentNode = videoElement.parentNode;
+          console.log(parentNode)
+          if (parentNode) {
+            parentNode.remove();
+          }
+        } else {
+          console.log("Video element not found.");
+        }
+        delete rtcpeerconnection[data['user_uuid_by']]
+        delete userVideoMap[data['user_uuid_by']]
+
+        if (document.getElementById(`mainFramevideo${data['user_uuid_by']}`)){
+          myuuid=document.getElementById(`video${user_uuid}`)
+          updateMainFrame(myuuid)
+        
+        }
+        if (Object.keys(rtcpeerconnection).length === 0) {
+          // rtcpeerconnection is empty
+          videoing.style.opacity = "0.3"
+          audioing.style.opacity = "0.3"
+
+        }
+      }
+
+    }
+
+  }
+
+  //let iceServers = {
+  //  iceServers: [
+  //    {
+  //      'urls': 'turn:93.127.195.105:3478',
+  //      'username': "kartik",
+  //      'credential': "kartik"
+  //    },
+  //  ]
+  //
+  //}
+  let iceServers = {
+    iceServers: [
+      {
+        urls: 'stun:stun.l.google.com:19302'
+      },
+      {
+        urls: 'stun:stun1.l.google.com:19302'
+      },
+      {
+        urls: 'stun:stun2.l.google.com:19302'
+      },
+      {
+        urls: 'stun:stun3.l.google.com:19302'
+      },
+      {
+        urls: 'stun:stun4.l.google.com:19302'
+      }
+    ]
+  };
+//
+  async function rtcconnection(uuid) {
+    if (!rtcpeerconnection[uuid]) {
+      rtcpeerconnection[uuid] = new RTCPeerConnection(iceServers);
+      rtcpeerconnection[uuid].onicecandidate = (candidate) => {
+        if (candidate.candidate) {
+          video_ws.send(JSON.stringify({
+            'type': 'video_call_candidate',
+            'candidate': candidate.candidate,
+            "user": user_id,
+            "user_uuid_for": uuid,
+            "user_uuid_by": user_uuid
+          }));
+        }
+      };
+
+      if (stream) {
+        stream.getTracks().forEach(track => {
+          rtcpeerconnection[uuid].addTrack(track, stream);
+        });
+      } else {
+        console.error('Stream is not defined.');
+      }
+    }
+  }
+
+  async function create_offer(uuid) {
+    await get_user_details()
+    console.log("createing offer for",uuid)
+    console.log("my uuid",user_uuid)
+    console.log("rtcpeerconnection", rtcpeerconnection)
+    rtcpeerconnection[uuid].createOffer().then((offer) => {
+      rtcpeerconnection[uuid].setLocalDescription(offer)
+      video_ws.send(JSON.stringify({
+        "type": "video_call_offer",
+        "offer": offer,
+        "user": user_id,
+        "user_username": user_username,
+        "user_uuid_for": uuid,
+        "user_uuid_by": user_uuid
+      }))
+    })
+  }
+
+  function create_answer_and_send(data) {
+    let peerConnection = rtcpeerconnection[data["user_uuid_by"]];
+
+    //if (peerConnection.signalingState === "have-remote-offer") {
+        peerConnection.setRemoteDescription(new RTCSessionDescription(data["offer"]))
+            .then(() => peerConnection.createAnswer())
+            .then((answer) => {
+                return peerConnection.setLocalDescription(answer)
+                    .then(() => {
+                        video_ws.send(JSON.stringify({
+                            "type": "video_call_answer",
+                            "answer": answer,
+                            "user_username": user_username,
+                            "user": user_id,
+                            "user_uuid_for": data["user_uuid_by"],
+                            "user_uuid_by": user_uuid,
+                        }));
+                    });
+            })
+            .catch(error => console.error("Error in answering call:", error));
+//    }
+}
+
+  // Function to add a user's video
+ function updateMainFrame(selectedVideo) {
+  
+  console.log("Updating main frame with:", selectedVideo);
+    if (!selectedVideo) {
+        console.error("No video element provided to updateMainFrame.");
+        return;
+    }
+   console.log("mainFrame", selectedVideo);
+    const mainFrame = document.querySelector("#main_frame_video");
+
+    // Clear the main frame and append the selected video
+    mainFrame.innerHTML = "";
+
+    // Clone the video
+    const clonedVideo = selectedVideo.cloneNode(true);
+    clonedVideo.autoplay = true;
+    clonedVideo.muted = selectedVideo.muted; 
+    clonedVideo.style.width = "80%";
+    clonedVideo.style.height = "400px";
+    clonedVideo.style.position = "relative";
+    clonedVideo.style.minWidth = "250px";
+    clonedVideo.style.minHeight = "400px";
+
+    // Handle stream or source
+    const originalStream = selectedVideo.srcObject;
+    if (originalStream) {
+        clonedVideo.srcObject = originalStream; // Use stream if available
+    } else {
+        clonedVideo.src = selectedVideo.src; // Use the source URL
+        clonedVideo.currentTime = selectedVideo.currentTime; // Sync playback time
+    }
+
+    // Ensure video plays after metadata is loaded
+    clonedVideo.addEventListener("loadedmetadata", () => {
+        clonedVideo.play().catch(err => {
+            console.error("Error while trying to play the video:", err);
+        });
+    });
+
+    // Create a name tag
+
+    // Append video and name tag to the main frame
+    mainFrame.appendChild(clonedVideo);
+
+    // Assign a new unique ID to the cloned video
+    clonedVideo.id = `mainFrame${selectedVideo.id}`;
+}
+
+function addUserVideo(userName, myuuid) {
+    console.log(userName);
+
+    if (userVideoMap[myuuid]) {
+        return userVideoMap[myuuid]; // Return the existing video element
+    } else {
+        // Create video container
+        const videoWrapper = document.createElement("div");
+        videoWrapper.classList.add("video-participant");
+        videoWrapper.style.cssText = `
+            width: 100px; height: 100px; margin: 10px;
+            position: relative; background-color: #555;
+        `;
+
+        // Add user name
+        const nameTag = document.createElement("a");
+        nameTag.classList.add("name-tag");
+        nameTag.href = "#";
+        nameTag.textContent = userName;
+        nameTag.style.cssText = `
+            position: absolute; bottom: 10px; left: 10px;
+            color: white; font-weight: bold;
+        `;
+
+        // Create video element
+        const videoElement = document.createElement("video");
+        videoElement.id = `video${myuuid}`;
+        videoElement.style.cssText = `
+            width: 100px; height: 100px; border: 10px solid white; object-fit: cover;
+        `;
+        videoElement.autoplay = true;
+        videoElement.playsInline = true;
+        videoElement.poster = "/static/images/video_off_poster.webp";
+
+        // Event listeners to manage poster
+        videoElement.addEventListener("play", () => {
+            videoElement.poster = ""; // Remove poster
+        });
+
+        videoElement.addEventListener("pause", () => {
+            videoElement.poster = "/static/images/video_off_poster.webp"; // Show poster on pause
+        });
+
+        videoElement.addEventListener("ended", () => {
+            videoElement.poster = "/static/images/video_off_poster.webp"; // Show poster on end
+        });
+
+        // Add click event to update the main frame
+        videoElement.addEventListener("click", () => {
+            updateMainFrame(videoElement);
+        });
+
+        // Append elements
+        videoWrapper.appendChild(nameTag);
+        videoWrapper.appendChild(videoElement);
+
+        const videosContainer = document.getElementById("videos");
+        videosContainer.appendChild(videoWrapper);
+
+        userVideoMap[myuuid] = videoElement; // Store in the map
+        console.log(`Video element for user ${userName} created.`);
+
+        // Automatically set this video as the main frame
+        //updateMainFrame(videoElement);
+
+        return videoElement;
+    }
+}
+
+function call_own_video(){
+  myvideo=document.getElementById(`video${user_uuid}`)
+  console.log("my video is  called from here ", myvideo)
+  updateMainFrame(myvideo)
+}
+
+function audiotoggle(rtcpeerconnection) {
+  console.log("audiotoggle called");
+
+  // Get the audio track from the local stream
+  const audiotrack = stream?.getAudioTracks()[0];
+
+  if (!audiotrack) {
+      console.error("No audio track found!");
+      return;
+  }
+
+  // Toggle audio track enabled state
+  audiotrack.enabled = !audiotrack.enabled;
+
+  // Update UI
+  audioing.innerHTML = audiotrack.enabled
+      ? `<img src="/static/images/portfolio_website_mic_on.png" alt="" style="width: 30px;height:30px;">`
+      : `<img src="/static/images/portfolio_website_mic_off.png" alt="" style="width: 30px;height:30px;">`;
+
+  // Ensure rtcpeerconnection is valid
+  if (rtcpeerconnection) {
+      const senders = rtcpeerconnection.getSenders();
+      senders.forEach(sender => {
+          if (sender.track?.kind === 'audio') {
+            console.log("sender.track")
+            sender.replaceTrack(audiotrack);
+            
+
+          }
+      });
+  }
+
+  for (const uuid in rtcpeerconnection) {
+    if (rtcpeerconnection.hasOwnProperty(uuid)) {
+        if (uuid !== video_uuid) { // Exclude local user
+            const otherSender = rtcpeerconnection[uuid].getSenders();
+            otherSender.forEach(sender => {
+                if (sender.track.kind === 'audio') {
+                    sender.track.enabled = audiotrack.enabled;
+                }
+            });
+        }
+    }
+}
+
+  
+
+}
+
+
+
+  function videotoggle(rtcpeercoonection, user_video_uuid) {
+    console.log(rtcpeercoonection);
+    const videoElement = document.getElementById(`video${user_video_uuid}`);
+    if (!videoElement) {
+      console.error(`Video element with ID video${user_video_uuid} not found.`);
+      return;
+    }
+
+    const videoTrack = stream.getVideoTracks()[0];
+    if (videoTrack) {
+      videoTrack.enabled = !videoTrack.enabled;
+
+      // Update button UI
+       if (videoTrack.enabled) {
+            videoing.innerHTML = `<img src="/static/images/portfolio_website_video_on.png" alt="" style="width: 30px;height:30px;">`;
+            videoElement.poster = ""; // Remove poster when video is on
+            videoElement.style.backgroundColor = ""; // Remove background color
+        } else {
+            videoing.innerHTML = `<img src="/static/images/portfolio_website_video_off.png" alt="" style="width: 30px;height:30px;">`;
+            videoElement.poster = "/static/images/video_off_poster.webp"; // Set poster for video off
+            videoElement.style.backgroundColor = "black"; // Optional fallback background
+        }
+
+      // Update RTCPeerConnection senders
+      const sender = rtcpeercoonection.getSenders();
+      sender.forEach(sender => {
+        if (sender.track.kind === 'video') {
+          sender.replaceTrack(videoTrack);
+        }
+      })
+
+
+      const videoTrack2 = stream.getVideoTracks()[1];
+    if (videoTrack2) {
+    
+      videoTrack2.enabled = !videoTrack2.enabled;
+      // Update RTCPeerConnection senders
+      const sender2 = rtcpeercoonection.getSenders();
+      sender2.forEach(sender => {
+        if (sender.track.kind === 'video') {
+          sender.replaceTrack(videoTrack2);
+        }
+      })
+    }
+    }
+  }
+
+
+
+  async function endcall(user_uuid_for) {
+    console.log("endcall fucntional called")
+    if (rtcpeerconnection[user_uuid_for]) {
+      rtcpeerconnection[user_uuid_for].close();
+
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      video_ws.send(JSON.stringify({
+        'type': 'video_call_end_call',
+        'user': user_id,
+        'user_username': user_username,
+        'user_uuid_for': user_uuid_for,
+        'user_uuid_by': user_uuid
+      }))
+      document.getElementById("videos").innerHTML = ""
+
+      if (document.getElementById(`mainFramevideo${user_uuid_for}`)){
+        myuuid=document.getElementById(`video${user_uuid}`)
+        updateMainFrame(myuuid)
+      }
+
+      fetch(`${window.location.origin}/api/video-call/endvideocall/`,{
+        method:"POST",
+        headers: {
+          "content-type": "application/json",
+          "Authorization": `Bearer ${authenticated}`
+        },
+        body: JSON.stringify({"uuid":uuid})
+      }).then((response)=>{
+        window.location.href="http://localhost:3000/"
+        return response.json()
+      })
+  
+
+    } else {
+      console.log("No active RTC connection for the user's UUID");
+    }
+  }
+
+// Trigger a confirmation dialog before unloading
+//window.onbeforeunload = (event) => {
+//  // Display a confirmation dialog
+//  const confirmationMessage = "Are you sure you want to leave this page? Your video call will be disconnected.";
+//  event.preventDefault(); // Required for some browsers
+//  event.returnValue = confirmationMessage; // Triggers the confirmation dialog
+//  return confirmationMessage;
+//};
+
+// Perform cleanup actions only if the user confirms leaving
+window.addEventListener("unload", () => {
+  console.log("before unload called")
+  try {
+      // Notify other participants or server
+      if (video_ws && video_ws.readyState === WebSocket.OPEN) {
+          video_ws.send(JSON.stringify({
+
+              type: 'video_call_end_call',
+              user_uuid_by: user_uuid,
+              user_uuid_for: user_uuid,
+              user: user_id,
+              user_username: user_username,
+          }));
+      }
+
+      // Clean up RTC connections
+      if (rtcpeerconnection) {
+          Object.values(rtcpeerconnection).forEach(pc => {
+              if (pc) pc.close();
+          });
+          rtcpeerconnection = {}; // Clear all connections
+      }
+
+      console.log("Resources cleaned up successfully.");
+  } catch (error) {
+      console.error("Error during cleanup:", error);
+  }
+});
+
+
+
+</script>
+
+</html>

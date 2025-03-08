@@ -26,12 +26,13 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*","localhost:3000"]
+ALLOWED_HOSTS = ["*","localhost:3000","localhost:8000",]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,6 +45,9 @@ INSTALLED_APPS = [
     "user",
     'corsheaders',
     'course',
+    "chat",
+    "complaint",
+    "videocall",
 ]
 
 MIDDLEWARE = [
@@ -178,3 +182,18 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
+
+
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+
+RAZORPAY_KEY_ID = "rzp_test_KJQCW0zpmV0TnT"
+RAZORPAY_KEY_SECRET = "Ea7vmq7GBoEnDPHIb9fwAHF5"
