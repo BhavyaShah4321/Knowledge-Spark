@@ -364,20 +364,12 @@ const StudentCourses = () => {
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [hoveredCourse, setHoveredCourse] = useState(null);
+  const [categories,setCategories] = useState();
   const carouselRef = useRef(null);
   const navigate = useNavigate();
 
-  // Mock categories for filtering
-  const categories = [
-    { key: 'all', name: 'All Courses' },
-    { key: 'programming', name: 'Programming' },
-    { key: 'design', name: 'Design' },
-    { key: 'business', name: 'Business' },
-    { key: 'marketing', name: 'Marketing' }
-  ];
-
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchData = async () => {
       try {
         const authData = JSON.parse(localStorage.getItem("auth_token"));
         if (!authData || !authData.access_token) {
@@ -386,35 +378,96 @@ const StudentCourses = () => {
         }
         const accessToken = authData.access_token;
         
-        const response = await fetch("http://localhost:8000/api/course/", {
+        // Fetch categories
+        const categoryResponse = await fetch("http://localhost:8000/api/course-category/", {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         });
-        const data = await response.json();
+        const categoryData = await categoryResponse.json();
+        
+        const apiCategories = categoryData.results.data
+          .filter(category => category.status === "active")
+          .map(category => ({
+            key: category.id.toString(),
+            name: category.name
+          }));
+        
+        setCategories([{ key: 'all', name: 'All Courses' }, ...apiCategories]);
+        
+        // Fetch courses
+        const courseResponse = await fetch("http://localhost:8000/api/course/", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        const courseData = await courseResponse.json();
         
         // Add some sample data for demonstration
-        const activeCourses = data.results.data
+        const activeCourses = courseData.results.data
           .filter(course => course.course_status === "active")
           .map(course => ({
             ...course,
             students_enrolled: Math.floor(Math.random() * 500) + 50,
             rating: (Math.random() * 2 + 3).toFixed(1),
             duration: `${Math.floor(Math.random() * 10) + 2} hours`,
-            category: categories[Math.floor(Math.random() * (categories.length - 1)) + 1].key,
+            category_id: course.course_category,
             trending: Math.random() > 0.7
           }));
         
         setCourses(activeCourses);
         setFilteredCourses(activeCourses);
       } catch (err) {
-        message.error("Failed to fetch courses.");
+        console.error("Error fetching data:", err);
+        message.error("Failed to fetch data.");
       } finally {
         setLoading(false);
       }
     };
-    fetchCourses();
+    
+    fetchData();
   }, []);
+
+
+  // useEffect(() => {
+  //   const fetchCourses = async () => {
+  //     try {
+  //       const authData = JSON.parse(localStorage.getItem("auth_token"));
+  //       if (!authData || !authData.access_token) {
+  //         message.error("Authentication tokens are missing. Please log in again.");
+  //         return;
+  //       }
+  //       const accessToken = authData.access_token;
+        
+  //       const response = await fetch("http://localhost:8000/api/course/", {
+  //         headers: {
+  //           Authorization: `Bearer ${accessToken}`,
+  //         },
+  //       });
+  //       const data = await response.json();
+        
+  //       // Add some sample data for demonstration
+  //       const activeCourses = data.results.data
+  //         .filter(course => course.course_status === "active")
+  //         .map(course => ({
+  //           ...course,
+  //           students_enrolled: Math.floor(Math.random() * 500) + 50,
+  //           rating: (Math.random() * 2 + 3).toFixed(1),
+  //           duration: `${Math.floor(Math.random() * 10) + 2} hours`,
+  //           category: categories[Math.floor(Math.random() * (categories.length - 1)) + 1].key,
+  //           trending: Math.random() > 0.7
+  //         }));
+        
+  //       setCourses(activeCourses);
+  //       setFilteredCourses(activeCourses);
+  //     } catch (err) {
+  //       message.error("Failed to fetch courses.");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchCourses();
+  // }, []);
 
   const handleSearch = (value) => {
     const searchTerm = value.toLowerCase();
@@ -431,17 +484,18 @@ const StudentCourses = () => {
     
     if (searchTerm) {
       filtered = filtered.filter(course => 
-        course.course_title.toLowerCase().includes(searchTerm) ||
-        course.course_teacher_username.toLowerCase().includes(searchTerm)
+        course.course_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        course.course_teacher_username.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    
+  
     if (category && category !== 'all') {
-      filtered = filtered.filter(course => course.category === category);
+      filtered = filtered.filter(course => course.course_category.toString() === category.toString());
     }
-    
+  
     setFilteredCourses(filtered);
   };
+  
 
   const handlePurchase = (course) => {
     setSelectedCourse(course);
@@ -536,7 +590,7 @@ const StudentCourses = () => {
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
       {/* Hero Section with Featured Courses */}
-      <div style={{ marginBottom: '40px', position: 'relative' }}>
+      {/* <div style={{ marginBottom: '40px', position: 'relative' }}>
         <Title level={2} style={{ textAlign: 'center', marginBottom: '24px' }}>
           <FireOutlined style={{ color: '#ff4d4f', marginRight: '8px' }} />
           Featured Courses
@@ -645,7 +699,7 @@ const StudentCourses = () => {
             onClick={() => carouselRef.current.next()}
           />
         </div>
-      </div>
+      </div> */}
 
       {/* Main Content */}
       <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
