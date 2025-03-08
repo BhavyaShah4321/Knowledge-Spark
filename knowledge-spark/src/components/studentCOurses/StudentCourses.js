@@ -314,32 +314,31 @@
 
 // export default StudentCourses;
 
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Card, 
-  Modal, 
-  Button, 
-  Tag, 
-  Spin, 
-  message, 
-  Input, 
-  Typography, 
-  Row, 
-  Col, 
+import {
+  Card,
+  Modal,
+  Button,
+  Tag,
+  Spin,
+  message,
+  Input,
+  Typography,
+  Row,
+  Col,
   Empty,
   Space,
   Divider,
   Avatar,
   Carousel,
   Progress,
-  Tooltip
+  Tooltip,
 } from 'antd';
-import { 
-  SearchOutlined, 
-  BookOutlined, 
-  UserOutlined, 
+import {
+  SearchOutlined,
+  BookOutlined,
+  UserOutlined,
   DollarOutlined,
   FireOutlined,
   StarOutlined,
@@ -348,7 +347,7 @@ import {
   RightCircleOutlined,
   LeftCircleOutlined,
   FilterOutlined,
-  SortAscendingOutlined
+  SortAscendingOutlined,
 } from '@ant-design/icons';
 
 const { Meta } = Card;
@@ -364,221 +363,204 @@ const StudentCourses = () => {
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [hoveredCourse, setHoveredCourse] = useState(null);
-  const [categories,setCategories] = useState();
+  const [categories, setCategories] = useState([]);
+   const [userId, setUserId] = useState(null);
   const carouselRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    const authData = JSON.parse(localStorage.getItem("auth_token"));
+    if (authData?.user?.id) {
+      setUserId(authData.user.id);
+    }
+  }, []);
+
+  // Fetch courses and categories on component mount
+  useEffect(() => {
     const fetchData = async () => {
       try {
-        const authData = JSON.parse(localStorage.getItem("auth_token"));
+        const authData = JSON.parse(localStorage.getItem('auth_token'));
         if (!authData || !authData.access_token) {
-          message.error("Authentication tokens are missing. Please log in again.");
+          message.error('Authentication tokens are missing. Please log in again.');
           return;
         }
         const accessToken = authData.access_token;
-        
+
         // Fetch categories
-        const categoryResponse = await fetch("http://localhost:8000/api/course-category/", {
+        const categoryResponse = await fetch('http://localhost:8000/api/course-category/', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         });
         const categoryData = await categoryResponse.json();
-        
+
         const apiCategories = categoryData.results.data
-          .filter(category => category.status === "active")
-          .map(category => ({
+          .filter((category) => category.status === 'active')
+          .map((category) => ({
             key: category.id.toString(),
-            name: category.name
+            name: category.name,
           }));
-        
+
         setCategories([{ key: 'all', name: 'All Courses' }, ...apiCategories]);
-        
+
         // Fetch courses
-        const courseResponse = await fetch("http://localhost:8000/api/course/", {
+        const courseResponse = await fetch('http://localhost:8000/api/course/', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         });
         const courseData = await courseResponse.json();
-        
-        // Add some sample data for demonstration
+
         const activeCourses = courseData.results.data
-          .filter(course => course.course_status === "active")
-          .map(course => ({
+          .filter((course) => course.course_status === 'active')
+          .map((course) => ({
             ...course,
             students_enrolled: Math.floor(Math.random() * 500) + 50,
             rating: (Math.random() * 2 + 3).toFixed(1),
             duration: `${Math.floor(Math.random() * 10) + 2} hours`,
             category_id: course.course_category,
-            trending: Math.random() > 0.7
+            trending: Math.random() > 0.7,
           }));
-        
+
         setCourses(activeCourses);
         setFilteredCourses(activeCourses);
       } catch (err) {
-        console.error("Error fetching data:", err);
-        message.error("Failed to fetch data.");
+        console.error('Error fetching data:', err);
+        message.error('Failed to fetch data.');
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, []);
 
-
-  // useEffect(() => {
-  //   const fetchCourses = async () => {
-  //     try {
-  //       const authData = JSON.parse(localStorage.getItem("auth_token"));
-  //       if (!authData || !authData.access_token) {
-  //         message.error("Authentication tokens are missing. Please log in again.");
-  //         return;
-  //       }
-  //       const accessToken = authData.access_token;
-        
-  //       const response = await fetch("http://localhost:8000/api/course/", {
-  //         headers: {
-  //           Authorization: `Bearer ${accessToken}`,
-  //         },
-  //       });
-  //       const data = await response.json();
-        
-  //       // Add some sample data for demonstration
-  //       const activeCourses = data.results.data
-  //         .filter(course => course.course_status === "active")
-  //         .map(course => ({
-  //           ...course,
-  //           students_enrolled: Math.floor(Math.random() * 500) + 50,
-  //           rating: (Math.random() * 2 + 3).toFixed(1),
-  //           duration: `${Math.floor(Math.random() * 10) + 2} hours`,
-  //           category: categories[Math.floor(Math.random() * (categories.length - 1)) + 1].key,
-  //           trending: Math.random() > 0.7
-  //         }));
-        
-  //       setCourses(activeCourses);
-  //       setFilteredCourses(activeCourses);
-  //     } catch (err) {
-  //       message.error("Failed to fetch courses.");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchCourses();
-  // }, []);
-
+  // Handle search functionality
   const handleSearch = (value) => {
     const searchTerm = value.toLowerCase();
     filterCourses(searchTerm, selectedCategory);
   };
 
+  // Handle category filter change
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
     filterCourses('', category);
   };
 
+  // Filter courses based on search term and category
   const filterCourses = (searchTerm, category) => {
     let filtered = courses;
-    
+
     if (searchTerm) {
-      filtered = filtered.filter(course => 
-        course.course_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.course_teacher_username.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (course) =>
+          course.course_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          course.course_teacher_username.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-  
+
     if (category && category !== 'all') {
-      filtered = filtered.filter(course => course.course_category.toString() === category.toString());
+      filtered = filtered.filter((course) => course.course_category.toString() === category.toString());
     }
-  
+
     setFilteredCourses(filtered);
   };
-  
 
-  const handlePurchase = (course) => {
-    setSelectedCourse(course);
-    setModalVisible(true);
-  };
+  // Handle course purchase
+ // Update the initializeRazorpay function to include user ID in the payload
+const initializeRazorpay = async () => {
+  if (!selectedCourse) return;
 
-  const initializeRazorpay = async () => {
-    if (!selectedCourse) return;
-    
-    setPaymentProcessing(true);
-    try {
-      const authData = JSON.parse(localStorage.getItem("auth_token"));
-      const accessToken = authData.access_token;
+  setPaymentProcessing(true);
+  try {
+    const authData = JSON.parse(localStorage.getItem('auth_token'));
+    const accessToken = authData.access_token;
 
-      const orderResponse = await fetch("http://localhost:8000/api/create-order", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          courseId: selectedCourse.id,
-          amount: selectedCourse.course_price * 100,
-        }),
-      });
-      
-      const orderData = await orderResponse.json();
+    // Step 1: Create a purchase order
+    const orderResponse = await fetch('http://127.0.0.1:8000/api/course-purchase/purchase-course/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        user: userId,
+        course_id: selectedCourse.id,
+        amount: selectedCourse.course_price,
+      }),
+    });
 
-      const options = {
-        key: "YOUR_RAZORPAY_KEY_ID",
-        amount: selectedCourse.course_price * 100,
-        currency: "INR",
-        name: "Course Purchase",
-        description: `Purchase of ${selectedCourse.course_title}`,
-        order_id: orderData.orderId,
-        handler: async (response) => {
-          try {
-            const verifyResponse = await fetch("http://localhost:8000/api/verify-payment", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`,
-              },
-              body: JSON.stringify({
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature,
-                courseId: selectedCourse.id,
-              }),
-            });
-            
-            const verifyData = await verifyResponse.json();
-            
-            if (verifyData.success) {
-              message.success("Payment successful!");
-              navigate(`/view-course/${selectedCourse.id}`);
-            }
-          } catch (err) {
-            message.error("Payment verification failed");
-          }
-        },
-        prefill: {
-          name: "Student Name",
-          email: "student@example.com",
-        },
-        theme: {
-          color: "#1890ff",
-        },
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-    } catch (err) {
-      message.error("Payment initialization failed");
-    } finally {
-      setPaymentProcessing(false);
-      setModalVisible(false);
+    if (!orderResponse.ok) {
+      throw new Error('Failed to create order');
     }
-  };
 
-  // Get trending courses for the featured carousel
-  const trendingCourses = courses.filter(course => course.trending).slice(0, 5);
+    const orderData = await orderResponse.json();
 
+    if (!orderData.success) {
+      message.error(orderData.message || 'Failed to initiate payment');
+      return;
+    }
+
+    const { order_id, amount: orderAmount } = orderData.data;
+
+    // Step 2: Open Razorpay payment window
+    const options = {
+      key: 'rzp_test_KJQCW0zpmV0TnT', // Replace with your Razorpay key ID
+      amount: orderAmount * 100, // Amount in paise
+      currency: 'INR',
+      name: selectedCourse.course_title,
+      description: `Purchase of ${selectedCourse.course_title}`,
+      order_id: order_id,
+      handler: async function (response) {
+        // Step 3: Verify payment
+        try {
+          const verifyResponse = await fetch('http://127.0.0.1:8000/api/course-purchase/verify-payment/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            }),
+          });
+
+          if (!verifyResponse.ok) {
+            throw new Error('Failed to verify payment');
+          }
+
+          const verifyData = await verifyResponse.json();
+
+          if (verifyData.success) {
+            message.success('Payment successful! Your course is now accessible.');
+            navigate(`/view-course/${selectedCourse.id}`);
+          } else {
+            message.error(verifyData.message || 'Payment verification failed!');
+          }
+        } catch (err) {
+          console.error('Payment verification error:', err);
+          message.error('Payment verification failed');
+        }
+      },
+      theme: {
+        color: '#3399cc',
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  } catch (err) {
+    console.error('Payment initialization error:', err);
+    message.error(err.message || 'Payment initialization failed');
+  } finally {
+    setPaymentProcessing(false);
+    setModalVisible(false);
+  }
+};
+
+  // Render loading state
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
@@ -589,118 +571,6 @@ const StudentCourses = () => {
 
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-      {/* Hero Section with Featured Courses */}
-      {/* <div style={{ marginBottom: '40px', position: 'relative' }}>
-        <Title level={2} style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <FireOutlined style={{ color: '#ff4d4f', marginRight: '8px' }} />
-          Featured Courses
-        </Title>
-        
-        <div style={{ position: 'relative' }}>
-          <Button 
-            icon={<LeftCircleOutlined />} 
-            style={{ 
-              position: 'absolute', 
-              left: '-20px', 
-              top: '50%', 
-              zIndex: 2, 
-              transform: 'translateY(-50%)',
-              borderRadius: '50%',
-              border: 'none',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-              backgroundColor: 'white',
-              fontSize: '24px'
-            }}
-            onClick={() => carouselRef.current.prev()}
-          />
-          
-          <Carousel 
-            autoplay 
-            ref={carouselRef} 
-            dots={{ className: 'custom-carousel-dots' }}
-            style={{ 
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)', 
-              borderRadius: '16px', 
-              overflow: 'hidden' 
-            }}
-          >
-            {trendingCourses.map(course => (
-              <div key={`trending-${course.id}`}>
-                <div style={{ 
-                  height: '350px', 
-                  position: 'relative', 
-                  backgroundImage: course.course_thumbnail 
-                    ? `url(http://localhost:8000${course.course_thumbnail})` 
-                    : 'url(/api/placeholder/800/400)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}>
-                  <div style={{ 
-                    position: 'absolute', 
-                    bottom: 0, 
-                    left: 0, 
-                    right: 0,
-                    padding: '40px 24px 24px',
-                    background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
-                    color: 'white'
-                  }}>
-                    <Tag color="red" style={{ marginBottom: '8px' }}>
-                      <FireOutlined /> Trending
-                    </Tag>
-                    <Title level={2} style={{ color: 'white', margin: '0 0 8px 0' }}>
-                      {course.course_title}
-                    </Title>
-                    <Space align="center" style={{ marginBottom: '16px' }}>
-                      <Avatar src="/api/placeholder/40/40" icon={<UserOutlined />} />
-                      <Text style={{ color: 'white' }}>{course.course_teacher_username}</Text>
-                      <Divider type="vertical" style={{ borderColor: 'rgba(255,255,255,0.3)' }} />
-                      <Space>
-                        <StarOutlined style={{ color: '#fadb14' }} />
-                        <Text style={{ color: 'white' }}>{course.rating}</Text>
-                      </Space>
-                      <Divider type="vertical" style={{ borderColor: 'rgba(255,255,255,0.3)' }} />
-                      <Space>
-                        <TeamOutlined />
-                        <Text style={{ color: 'white' }}>{course.students_enrolled} students</Text>
-                      </Space>
-                    </Space>
-                    <Button 
-                      type="primary" 
-                      size="large"
-                      onClick={() => handlePurchase(course)}
-                      style={{ 
-                        background: 'linear-gradient(90deg, #1890ff, #36cfc9)',
-                        border: 'none',
-                        boxShadow: '0 4px 12px rgba(24,144,255,0.35)'
-                      }}
-                    >
-                      {course.course_price ? `Enroll for ₹${course.course_price}` : "Enroll for Free"}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </Carousel>
-          
-          <Button 
-            icon={<RightCircleOutlined />} 
-            style={{ 
-              position: 'absolute', 
-              right: '-20px', 
-              top: '50%', 
-              zIndex: 2, 
-              transform: 'translateY(-50%)',
-              borderRadius: '50%',
-              border: 'none',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-              backgroundColor: 'white',
-              fontSize: '24px'
-            }}
-            onClick={() => carouselRef.current.next()}
-          />
-        </div>
-      </div> */}
-
       {/* Main Content */}
       <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
         <Col>
@@ -725,20 +595,20 @@ const StudentCourses = () => {
       <div style={{ marginBottom: '24px', overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '8px' }}>
         <Space size="middle" style={{ display: 'inline-flex' }}>
           <FilterOutlined style={{ fontSize: '18px', color: '#1890ff' }} />
-          {categories.map(category => (
+          {categories.map((category) => (
             <Button
               key={category.key}
               type={selectedCategory === category.key ? 'primary' : 'default'}
               onClick={() => handleCategoryChange(category.key)}
-              style={{ 
+              style={{
                 borderRadius: '20px',
-                ...(selectedCategory === category.key 
-                  ? { 
+                ...(selectedCategory === category.key
+                  ? {
                       background: 'linear-gradient(90deg, #1890ff, #36cfc9)',
                       border: 'none',
-                      boxShadow: '0 2px 8px rgba(24,144,255,0.25)'
-                    } 
-                  : {})
+                      boxShadow: '0 2px 8px rgba(24,144,255,0.25)',
+                    }
+                  : {}),
               }}
             >
               {category.name}
@@ -747,6 +617,7 @@ const StudentCourses = () => {
         </Space>
       </div>
 
+      {/* Course List */}
       {filteredCourses.length === 0 ? (
         <Empty
           description="No courses found"
@@ -759,14 +630,15 @@ const StudentCourses = () => {
             <Col xs={24} sm={12} md={8} lg={6} key={course.id}>
               <Card
                 hoverable
-                style={{ 
-                  borderRadius: '12px', 
-                  overflow: 'hidden', 
+                style={{
+                  borderRadius: '12px',
+                  overflow: 'hidden',
                   transition: 'all 0.3s ease',
                   transform: hoveredCourse === course.id ? 'translateY(-8px)' : 'none',
-                  boxShadow: hoveredCourse === course.id 
-                    ? '0 12px 24px rgba(0,0,0,0.15)' 
-                    : '0 4px 12px rgba(0,0,0,0.1)'
+                  boxShadow:
+                    hoveredCourse === course.id
+                      ? '0 12px 24px rgba(0,0,0,0.15)'
+                      : '0 4px 12px rgba(0,0,0,0.1)',
                 }}
                 onMouseEnter={() => setHoveredCourse(course.id)}
                 onMouseLeave={() => setHoveredCourse(null)}
@@ -779,7 +651,7 @@ const StudentCourses = () => {
                           ? `http://localhost:8000${course.course_thumbnail}`
                           : course.videos && course.videos.length > 0
                           ? `http://localhost:8000${course.videos[0].course_video_thumbnail}`
-                          : "/api/placeholder/400/320"
+                          : '/api/placeholder/400/320'
                       }
                       style={{ height: 180, objectFit: 'cover', transition: 'transform 0.5s ease' }}
                       onClick={() => navigate(`/view-course/${course.id}`)}
@@ -789,53 +661,58 @@ const StudentCourses = () => {
                         <FireOutlined /> Trending
                       </Tag>
                     )}
-                    <Tag 
-                      color="blue" 
-                      style={{ 
-                        position: 'absolute', 
-                        top: 12, 
-                        right: 12, 
+                    <Tag
+                      color="blue"
+                      style={{
+                        position: 'absolute',
+                        top: 12,
+                        right: 12,
                         background: 'rgba(24,144,255,0.8)',
                         backdropFilter: 'blur(4px)',
-                        border: 'none'
+                        border: 'none',
                       }}
                     >
                       Available
                     </Tag>
-                    <div style={{ 
-                      position: 'absolute', 
-                      bottom: 0, 
-                      left: 0, 
-                      right: 0, 
-                      background: 'linear-gradient(transparent, rgba(0,0,0,0.6))',
-                      padding: '16px 12px 12px',
-                      transition: 'opacity 0.3s ease',
-                      opacity: hoveredCourse === course.id ? 1 : 0
-                    }}>
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        background: 'linear-gradient(transparent, rgba(0,0,0,0.6))',
+                        padding: '16px 12px 12px',
+                        transition: 'opacity 0.3s ease',
+                        opacity: hoveredCourse === course.id ? 1 : 0,
+                      }}
+                    >
                       <Space>
-                        <Button 
-                          type="primary" 
-                          size="small" 
+                        <Button
+                          type="primary"
+                          size="small"
                           onClick={() => navigate(`/view-course/${course.id}`)}
-                          style={{ 
-                            background: 'white', 
-                            color: '#1890ff', 
-                            borderRadius: '4px' 
+                          style={{
+                            background: 'white',
+                            color: '#1890ff',
+                            borderRadius: '4px',
                           }}
                         >
                           Preview
                         </Button>
-                        <Button 
-                          type="primary" 
-                          size="small" 
-                          onClick={() => handlePurchase(course)}
-                          style={{ 
-                            background: 'linear-gradient(90deg, #1890ff, #36cfc9)', 
+                        <Button
+                          type="primary"
+                          size="small"
+                          onClick={() => {
+                            setSelectedCourse(course);
+                            setModalVisible(true);
+                          }}
+                          style={{
+                            background: 'linear-gradient(90deg, #1890ff, #36cfc9)',
                             border: 'none',
-                            borderRadius: '4px'
+                            borderRadius: '4px',
                           }}
                         >
-                          {course.course_price ? `₹${course.course_price}` : "Free"}
+                          {course.course_price ? `₹${course.course_price}` : 'Free'}
                         </Button>
                       </Space>
                     </div>
@@ -863,43 +740,42 @@ const StudentCourses = () => {
                     </Space>
                   </Space>
 
-                  <Typography.Paragraph 
-                    ellipsis={{ rows: 2 }} 
-                    style={{ 
-                      fontSize: '14px', 
-                      color: 'rgba(0,0,0,0.65)', 
-                      margin: '4px 0 8px' 
+                  <Typography.Paragraph
+                    ellipsis={{ rows: 2 }}
+                    style={{
+                      fontSize: '14px',
+                      color: 'rgba(0,0,0,0.65)',
+                      margin: '4px 0 8px',
                     }}
                   >
                     {course.course_description}
                   </Typography.Paragraph>
 
                   <Space align="center">
-                    <Avatar 
-                      src="/api/placeholder/32/32" 
-                      icon={<UserOutlined />} 
-                      size="small" 
-                    />
+                    <Avatar src="/api/placeholder/32/32" icon={<UserOutlined />} size="small" />
                     <Typography.Text type="secondary" style={{ fontSize: '14px' }}>
                       {course.course_teacher_username}
                     </Typography.Text>
                   </Space>
 
-                  <Button 
-                    type="primary" 
+                  <Button
+                    type="primary"
                     block
-                    onClick={() => handlePurchase(course)}
+                    onClick={() => {
+                      setSelectedCourse(course);
+                      setModalVisible(true);
+                    }}
                     style={{
                       marginTop: '8px',
-                      background: course.course_price 
-                        ? 'linear-gradient(90deg, #1890ff, #36cfc9)' 
+                      background: course.course_price
+                        ? 'linear-gradient(90deg, #1890ff, #36cfc9)'
                         : 'linear-gradient(90deg, #52c41a, #36cfc9)',
                       border: 'none',
                       borderRadius: '6px',
-                      boxShadow: '0 2px 8px rgba(24,144,255,0.25)'
+                      boxShadow: '0 2px 8px rgba(24,144,255,0.25)',
                     }}
                   >
-                    {course.course_price ? `Enroll for ₹${course.course_price}` : "Enroll Free"}
+                    {course.course_price ? `Enroll for ₹${course.course_price}` : 'Enroll Free'}
                   </Button>
                 </Space>
               </Card>
@@ -908,12 +784,13 @@ const StudentCourses = () => {
         </Row>
       )}
 
+      {/* Purchase Modal */}
       <Modal
         title={null}
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
-        width={800}
+        width={700}
         style={{ borderRadius: '16px', overflow: 'hidden' }}
         bodyStyle={{ padding: 0 }}
         centered
@@ -927,20 +804,22 @@ const StudentCourses = () => {
                     ? `http://localhost:8000${selectedCourse.course_thumbnail}`
                     : selectedCourse.videos && selectedCourse.videos.length > 0
                     ? `http://localhost:8000${selectedCourse.videos[0].course_video_thumbnail}`
-                    : "/api/placeholder/400/320"
+                    : '/api/placeholder/400/320'
                 }
                 alt={selectedCourse.course_title}
                 style={{ width: '100%', height: 300, objectFit: 'cover' }}
               />
-              <div style={{ 
-                position: 'absolute', 
-                bottom: 0, 
-                left: 0, 
-                right: 0,
-                padding: '40px 24px 24px',
-                background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
-                color: 'white'
-              }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  padding: '40px 24px 24px',
+                  background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
+                  color: 'white',
+                }}
+              >
                 {selectedCourse.trending && (
                   <Tag color="red" style={{ marginBottom: '8px' }}>
                     <FireOutlined /> Trending
@@ -951,7 +830,7 @@ const StudentCourses = () => {
                 </Title>
               </div>
             </div>
-            
+
             <div style={{ padding: '24px' }}>
               <Row gutter={[24, 24]}>
                 <Col xs={24} md={16}>
@@ -965,37 +844,43 @@ const StudentCourses = () => {
                         <Text type="secondary">Course Instructor</Text>
                       </div>
                     </Space>
-                    
+
                     <div>
-                      <Title level={4} style={{ marginBottom: '16px' }}>About This Course</Title>
+                      <Title level={4} style={{ marginBottom: '16px' }}>
+                        About This Course
+                      </Title>
                       <Paragraph>{selectedCourse.course_description}</Paragraph>
                     </div>
-                    
+
                     {selectedCourse.course_outcomes && (
                       <div>
-                        <Title level={4} style={{ marginBottom: '16px' }}>What You'll Learn</Title>
+                        <Title level={4} style={{ marginBottom: '16px' }}>
+                          What You'll Learn
+                        </Title>
                         <Row gutter={[16, 16]}>
                           {selectedCourse.course_outcomes.split('\n').map((outcome, index) => (
                             <Col xs={24} md={12} key={index}>
-                              <Card 
-                                size="small" 
-                                style={{ 
+                              <Card
+                                size="small"
+                                style={{
                                   borderRadius: '8px',
-                                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                                 }}
                               >
                                 <Space align="start">
-                                  <div style={{ 
-                                    color: '#1890ff',
-                                    backgroundColor: 'rgba(24,144,255,0.1)', 
-                                    borderRadius: '50%',
-                                    width: '24px',
-                                    height: '24px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    marginRight: '8px'
-                                  }}>
+                                  <div
+                                    style={{
+                                      color: '#1890ff',
+                                      backgroundColor: 'rgba(24,144,255,0.1)',
+                                      borderRadius: '50%',
+                                      width: '24px',
+                                      height: '24px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      marginRight: '8px',
+                                    }}
+                                  >
                                     {index + 1}
                                   </div>
                                   <Text>{outcome}</Text>
@@ -1006,17 +891,19 @@ const StudentCourses = () => {
                         </Row>
                       </div>
                     )}
-                    
-                    <div>
-                      <Title level={4} style={{ marginBottom: '16px' }}>Course Info</Title>
+
+                    {/* <div>
+                      <Title level={4} style={{ marginBottom: '16px' }}>
+                        Course Info
+                      </Title>
                       <Row gutter={[16, 16]}>
                         <Col xs={12} sm={8}>
-                          <Card 
-                            size="small" 
-                            style={{ 
+                          <Card
+                            size="small"
+                            style={{
                               textAlign: 'center',
                               borderRadius: '8px',
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                             }}
                           >
                             <Space direction="vertical" size={0}>
@@ -1027,12 +914,12 @@ const StudentCourses = () => {
                           </Card>
                         </Col>
                         <Col xs={12} sm={8}>
-                          <Card 
-                            size="small" 
-                            style={{ 
+                          <Card
+                            size="small"
+                            style={{
                               textAlign: 'center',
                               borderRadius: '8px',
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                             }}
                           >
                             <Space direction="vertical" size={0}>
@@ -1043,12 +930,12 @@ const StudentCourses = () => {
                           </Card>
                         </Col>
                         <Col xs={12} sm={8}>
-                          <Card 
-                            size="small" 
-                            style={{ 
+                          <Card
+                            size="small"
+                            style={{
                               textAlign: 'center',
                               borderRadius: '8px',
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                             }}
                           >
                             <Space direction="vertical" size={0}>
@@ -1059,65 +946,72 @@ const StudentCourses = () => {
                           </Card>
                         </Col>
                       </Row>
-                    </div>
+                    </div> */}
                   </Space>
                 </Col>
-                
+
                 <Col xs={24} md={8}>
-                  <div style={{ 
-                    position: 'sticky', 
-                    top: '24px', 
-                    backgroundColor: '#f8f9fa',
-                    borderRadius: '12px',
-                    padding: '24px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                  }}>
+                  <div
+                    style={{
+                      position: 'sticky',
+                      top: '24px',
+                      backgroundColor: '#f8f9fa',
+                      borderRadius: '12px',
+                      padding: '24px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    }}
+                  >
                     <Title level={2} style={{ margin: '0 0 24px 0', textAlign: 'center' }}>
-                      {selectedCourse.course_price 
-                        ? <><span style={{ fontSize: '16px' }}>₹</span>{selectedCourse.course_price}</>
-                        : "Free Access"
-                      }
+                      {selectedCourse.course_price ? (
+                        <>
+                          <span style={{ fontSize: '16px' }}>₹</span>
+                          {selectedCourse.course_price}
+                        </>
+                      ) : (
+                        'Free Access'
+                      )}
                     </Title>
-                    
+
                     <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                      <Button 
-                        type="primary" 
+                      <Button
+                        type="primary"
                         size="large"
                         block
                         loading={paymentProcessing}
                         onClick={initializeRazorpay}
-                        style={{ 
+                        style={{
                           height: '48px',
                           fontSize: '16px',
                           background: 'linear-gradient(90deg, #1890ff, #36cfc9)',
                           border: 'none',
                           borderRadius: '8px',
-                          boxShadow: '0 4px 12px rgba(24,144,255,0.25)'
+                          boxShadow: '0 4px 12px rgba(24,144,255,0.25)',
                         }}
                       >
-                        {paymentProcessing ? "Processing..." : selectedCourse.course_price 
-                          ? "Enroll Now" 
-                          : "Start Learning Now"
-                        }
+                        {paymentProcessing
+                          ? 'Processing...'
+                          : selectedCourse.course_price
+                          ? 'Enroll Now'
+                          : 'Start Learning Now'}
                       </Button>
-                      
-                      <Button 
+
+                      <Button
                         type="default"
                         size="large"
                         block
                         onClick={() => setModalVisible(false)}
-                        style={{ 
+                        style={{
                           height: '48px',
-                          borderRadius: '8px'
+                          borderRadius: '8px',
                         }}
                       >
                         Cancel
                       </Button>
                     </Space>
-                    
+
                     <Divider />
-                    
-                    <Space direction="vertical" size={12} style={{ width: '100%' }}>
+
+                    {/* <Space direction="vertical" size={12} style={{ width: '100%' }}>
                       <div>
                         <Text strong>This course includes:</Text>
                       </div>
@@ -1137,7 +1031,7 @@ const StudentCourses = () => {
                         <DollarOutlined style={{ color: '#1890ff' }} />
                         <Text>Lifetime access</Text>
                       </Space>
-                    </Space>
+                    </Space> */}
                   </div>
                 </Col>
               </Row>

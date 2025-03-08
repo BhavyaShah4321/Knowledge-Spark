@@ -1,13 +1,19 @@
 import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import { Form, Input, message } from "antd";
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import loginimg from "../../Image/login-img.png";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  useEffect(() => {
+    const storedAuth = localStorage.getItem("auth_token");
+    if (storedAuth) {
+      navigate("/dashboard"); // Redirect to dashboard if token exists
+    }
+  }, [navigate]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
