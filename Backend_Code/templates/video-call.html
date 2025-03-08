@@ -140,8 +140,8 @@
           <video style="border: 2px solid white;
     width: 80%;
     height: 400px;
-    min-width: 250px;
-    min-height: 400px;"></video>
+    min-width: 400px;
+    min-height: 600px;"></video>
         </div>
         <div class="video-call-wrapper" id="videos" style="display: flex;
     justify-content: center;
@@ -191,7 +191,7 @@
 
     </div>
 
-    <div class="right-side">
+    <!-- <div class="right-side">
       <button class="btn-close-right">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor"
           stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="feather feather-x-circle"
@@ -224,7 +224,7 @@
             </button>
           </div>
         </div>
-      </div>
+      </div> -->
       <!-- <div class="participants" id="all_user">
         <div class="participant profile-picture">
           <img
@@ -301,7 +301,7 @@ console.log('authenticated',authenticated)
   if (authenticated) {
     get_user_details()
     check_link_valid()
-    chat_websocket_connection()
+    //chat_websocket_connection()
 
   }
   else {
@@ -373,7 +373,7 @@ console.log('authenticated',authenticated)
         alert("Error in 'get_user_details' function please check")
       }
     })
-    fetch_chat_message()
+    //fetch_chat_message()
 
 
 
@@ -494,23 +494,23 @@ console.log('authenticated',authenticated)
   }
 
 
-  document.getElementById("send_chat_message_value").oninput = () => {
-    ws.send(JSON.stringify({
-      "type": "typing_start",
-      "user": user_id,
-      "user_username": user_username,
-      "user_image": user_image
-    }))
-  }
+  // document.getElementById("send_chat_message_value").oninput = () => {
+  //   ws.send(JSON.stringify({
+  //     "type": "typing_start",
+  //     "user": user_id,
+  //     "user_username": user_username,
+  //     "user_image": user_image
+  //   }))
+  // }
 
-  document.getElementById("send_chat_message_value").onblur = () => {
-    ws.send(JSON.stringify({
-      "type": "typing_end",
-      "user": user_id,
-      "user_username": user_username,
-      "user_image": user_image
-    }))
-  }
+  // document.getElementById("send_chat_message_value").onblur = () => {
+  //   ws.send(JSON.stringify({
+  //     "type": "typing_end",
+  //     "user": user_id,
+  //     "user_username": user_username,
+  //     "user_image": user_image
+  //   }))
+  // }
 
   function new_message(data) {
     console.log(data["type"]);
