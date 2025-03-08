@@ -8,7 +8,7 @@ const PrivateRoute = ({ allowedRoles }) => {
 
   if (!authToken) {
     // Redirect to login if not authenticated
-    return <Navigate to="/dashboard" />;
+    return <Navigate to="/" />;
   }
 
   
