@@ -81,7 +81,7 @@ const Root = () => {
       {/* Student-Specific Routes */}
       <Route element={<PrivateRoute allowedRoles={["Student"]} />}>
         <Route path="/student-coures" element={<StudentCourses />} />
-        <Route path="/student-chat" element={<StudentChat />} />
+        <Route path="/student-chat" element={<TeacherChat />} />
         <Route path='/profile/:teacherId' element={<Profile/>} />
       </Route>
     </Routes>
