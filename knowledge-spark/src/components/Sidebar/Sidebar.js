@@ -58,14 +58,9 @@ export default function Sidebar() {
       key: "/dashboard",
       label: "Dashboard",
       icon: <BarChartOutlined />,
-      roles: ["Admin", "Teacher", "Student"],
+      roles: ["Admin", "Teacher", ],
     },
-    {
-      key: "/mycourses",
-      label: "My Course",
-      icon: <BarChartOutlined />,
-      roles: ["Student"],
-    },
+    
     {
       key: "/teacher-list",
       label: "Teachers",
@@ -88,6 +83,12 @@ export default function Sidebar() {
       key: "/course-list",
       label: "Courses",
       icon: <RiseOutlined />,
+      roles: ["Admin"],
+    },
+    {
+      key: "/purchase-courses",
+      label: "Purchased Courses",
+      icon: <RobotOutlined />,
       roles: ["Admin"],
     },
     {
@@ -115,6 +116,7 @@ export default function Sidebar() {
       icon: <RobotOutlined />,
       roles: ["Teacher"],
     },
+   
     {
       key: "/teacher-chat",
       label: "Chat",
@@ -128,18 +130,24 @@ export default function Sidebar() {
       roles: ["Student"],
     },
     {
+      key: "/mycourses",
+      label: "My Course",
+      icon: <BarChartOutlined />,
+      roles: ["Student"],
+    },
+    {
       key: "/student-chat",
       label: "Chat",
       icon: <WechatOutlined />,
       roles: ["Student"],
     },
 
-    {
-      key: "/student-payment",
-      label: "Purchase Course",
-      icon: <CreditCardOutlined />,
-      roles: ["Student"],
-    },
+    // {
+    //   key: "/student-payment",
+    //   label: "Purchase Course",
+    //   icon: <CreditCardOutlined />,
+    //   roles: ["Student"],
+    // },
     {
       key: "/complaint-list",
       label: "Complaints",
@@ -158,6 +166,7 @@ export default function Sidebar() {
       icon: <RiseOutlined />,
       roles: ["Teacher", "Student"],
     },
+    
   ];
 
   // Filter items based on user type from localStorage
