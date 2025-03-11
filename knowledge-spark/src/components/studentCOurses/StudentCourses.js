@@ -625,163 +625,181 @@ const initializeRazorpay = async () => {
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       ) : (
-        <Row gutter={[24, 24]}>
-          {filteredCourses.map((course) => (
-            <Col xs={24} sm={12} md={8} lg={6} key={course.id}>
-              <Card
-                hoverable
-                style={{
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  transition: 'all 0.3s ease',
-                  transform: hoveredCourse === course.id ? 'translateY(-8px)' : 'none',
-                  boxShadow:
-                    hoveredCourse === course.id
-                      ? '0 12px 24px rgba(0,0,0,0.15)'
-                      : '0 4px 12px rgba(0,0,0,0.1)',
-                }}
-                onMouseEnter={() => setHoveredCourse(course.id)}
-                onMouseLeave={() => setHoveredCourse(null)}
-                cover={
-                  <div style={{ position: 'relative' }}>
-                    <img
-                      alt={course.course_title}
-                      src={
-                        course.course_thumbnail
-                          ? `http://localhost:8000${course.course_thumbnail}`
-                          : course.videos && course.videos.length > 0
-                          ? `http://localhost:8000${course.videos[0].course_video_thumbnail}`
-                          : '/api/placeholder/400/320'
-                      }
-                      style={{ height: 180, objectFit: 'cover', transition: 'transform 0.5s ease' }}
-                      onClick={() => navigate(`/view-course/${course.id}`)}
-                    />
-                    {course.trending && (
-                      <Tag color="red" style={{ position: 'absolute', top: 12, left: 12 }}>
-                        <FireOutlined /> Trending
-                      </Tag>
-                    )}
-                    <Tag
-                      color="blue"
-                      style={{
-                        position: 'absolute',
-                        top: 12,
-                        right: 12,
-                        background: 'rgba(24,144,255,0.8)',
-                        backdropFilter: 'blur(4px)',
-                        border: 'none',
-                      }}
-                    >
-                      Available
-                    </Tag>
-                    <div
-                      style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        background: 'linear-gradient(transparent, rgba(0,0,0,0.6))',
-                        padding: '16px 12px 12px',
-                        transition: 'opacity 0.3s ease',
-                        opacity: hoveredCourse === course.id ? 1 : 0,
-                      }}
-                    >
-                      <Space>
-                        <Button
-                          type="primary"
-                          size="small"
-                          onClick={() => navigate(`/view-course/${course.id}`)}
-                          style={{
-                            background: 'white',
-                            color: '#1890ff',
-                            borderRadius: '4px',
-                          }}
-                        >
-                          Preview
-                        </Button>
-                        <Button
-                          type="primary"
-                          size="small"
-                          onClick={() => {
-                            setSelectedCourse(course);
-                            setModalVisible(true);
-                          }}
-                          style={{
-                            background: 'linear-gradient(90deg, #1890ff, #36cfc9)',
-                            border: 'none',
-                            borderRadius: '4px',
-                          }}
-                        >
-                          {course.course_price ? `₹${course.course_price}` : 'Free'}
-                        </Button>
-                      </Space>
-                    </div>
-                  </div>
-                }
-                bodyStyle={{ padding: '16px' }}
-              >
-                <Space direction="vertical" size={8} style={{ width: '100%' }}>
-                  <Typography.Text strong style={{ fontSize: '16px', lineHeight: '22px', display: 'block' }}>
-                    {course.course_title}
-                  </Typography.Text>
-
-                  <Space split={<Divider type="vertical" style={{ margin: '0 4px' }} />}>
-                    <Space size={4}>
-                      <StarOutlined style={{ color: '#fadb14' }} />
-                      <Text>{course.rating}</Text>
-                    </Space>
-                    <Space size={4}>
-                      <TeamOutlined style={{ color: '#1890ff' }} />
-                      <Text>{course.students_enrolled}</Text>
-                    </Space>
-                    <Space size={4}>
-                      <ClockCircleOutlined style={{ color: '#52c41a' }} />
-                      <Text>{course.duration}</Text>
-                    </Space>
-                  </Space>
-
-                  <Typography.Paragraph
-                    ellipsis={{ rows: 2 }}
+        <Row gutter={[24, 24]} justify="center" style={{ padding: '40px 20px' }}>
+      {filteredCourses.map((course) => (
+        <Col xs={24} sm={12} md={8} lg={6} key={course.id}>
+          <Card
+            hoverable
+            style={{
+              borderRadius: '16px',
+              overflow: 'hidden',
+              transition: 'all 0.3s ease',
+              transform: hoveredCourse === course.id ? 'scale(1.05)' : 'scale(1)',
+              boxShadow:
+                hoveredCourse === course.id
+                  ? '0 12px 24px rgba(0,0,0,0.2)'
+                  : '0 4px 12px rgba(0,0,0,0.1)',
+              background: '#fff',
+              position: 'relative',
+            }}
+            onMouseEnter={() => setHoveredCourse(course.id)}
+            onMouseLeave={() => setHoveredCourse(null)}
+            cover={
+              <div style={{ position: 'relative', overflow: 'hidden' }}>
+                <img
+                  alt={course.course_title}
+                  src={
+                    course.course_thumbnail
+                      ? `http://localhost:8000${course.course_thumbnail}`
+                      : course.videos?.[0]?.course_video_thumbnail
+                      ? `http://localhost:8000${course.videos[0].course_video_thumbnail}`
+                      : '/api/placeholder/400/320'
+                  }
+                  style={{
+                    height: 200,
+                    objectFit: 'cover',
+                    width: '100%',
+                    transition: 'transform 0.5s ease',
+                  }}
+                  onClick={() => navigate(`/view-course/${course.id}`)}
+                />
+                {course.trending && (
+                  <Tag
+                    color="red"
                     style={{
-                      fontSize: '14px',
-                      color: 'rgba(0,0,0,0.65)',
-                      margin: '4px 0 8px',
+                      position: 'absolute',
+                      top: 12,
+                      left: 12,
+                      fontWeight: 'bold',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
                     }}
                   >
-                    {course.course_description}
-                  </Typography.Paragraph>
-
-                  <Space align="center">
-                    <Avatar src="/api/placeholder/32/32" icon={<UserOutlined />} size="small" />
-                    <Typography.Text type="secondary" style={{ fontSize: '14px' }}>
-                      {course.course_teacher_username}
-                    </Typography.Text>
-                  </Space>
-
+                    <FireOutlined /> Trending
+                  </Tag>
+                )}
+                <Tag
+                  color="blue"
+                  style={{
+                    position: 'absolute',
+                    top: 12,
+                    right: 12,
+                    background: 'rgba(24,144,255,0.8)',
+                    backdropFilter: 'blur(4px)',
+                    border: 'none',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  Available
+                </Tag>
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
+                    padding: '16px 12px',
+                    transition: 'opacity 0.3s ease',
+                    opacity: hoveredCourse === course.id ? 1 : 0,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                  }}
+                >
                   <Button
                     type="primary"
-                    block
+                    size="small"
+                    onClick={() => navigate(`/view-course/${course.id}`)}
+                    style={{
+                      background: 'white',
+                      color: '#1890ff',
+                      borderRadius: '6px',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Preview
+                  </Button>
+                  <Button
+                    type="primary"
+                    size="small"
                     onClick={() => {
                       setSelectedCourse(course);
                       setModalVisible(true);
                     }}
                     style={{
-                      marginTop: '8px',
-                      background: course.course_price
-                        ? 'linear-gradient(90deg, #1890ff, #36cfc9)'
-                        : 'linear-gradient(90deg, #52c41a, #36cfc9)',
+                      background: 'linear-gradient(90deg, #1890ff, #36cfc9)',
                       border: 'none',
                       borderRadius: '6px',
-                      boxShadow: '0 2px 8px rgba(24,144,255,0.25)',
+                      fontWeight: 'bold',
                     }}
                   >
-                    {course.course_price ? `Enroll for ₹${course.course_price}` : 'Enroll Free'}
+                    {course.course_price ? `₹${course.course_price}` : 'Free'}
                   </Button>
-                </Space>
-              </Card>
-            </Col>
-          ))}
-        </Row>
+                </div>
+              </div>
+            }
+            bodyStyle={{ padding: '20px', textAlign: 'center' }}
+          >
+            <Space direction="vertical" size={8} style={{ width: '100%' }}>
+              <Typography.Text
+                strong
+                style={{
+                  fontSize: '18px',
+                  lineHeight: '24px',
+                  display: 'block',
+                  color: '#333',
+                }}
+              >
+                {course.course_title}
+              </Typography.Text>
+
+              <Typography.Paragraph
+                ellipsis={{ rows: 2 }}
+                style={{
+                  fontSize: '14px',
+                  color: 'rgba(0,0,0,0.65)',
+                  margin: '4px 0 8px',
+                  textAlign: 'justify',
+                }}
+              >
+                {course.course_description}
+              </Typography.Paragraph>
+
+              <Space align="center" style={{ marginBottom: '8px' }}>
+                <Avatar src="/api/placeholder/32/32" icon={<UserOutlined />} size="small" />
+                <Typography.Text type="secondary" style={{ fontSize: '14px' }}>
+                  {course.course_teacher_username}
+                </Typography.Text>
+              </Space>
+
+              <Button
+                type="primary"
+                block
+                onClick={() => {
+                  setSelectedCourse(course);
+                  setModalVisible(true);
+                }}
+                style={{
+                  marginTop: '8px',
+                  background: course.course_price
+                    ? 'linear-gradient(90deg, #1890ff, #36cfc9)'
+                    : 'linear-gradient(90deg, #52c41a, #36cfc9)',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontWeight: 'bold',
+                  boxShadow: '0 4px 12px rgba(24,144,255,0.3)',
+                  padding: '10px 16px',
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                {course.course_price ? `Enroll for ₹${course.course_price}` : 'Enroll Free'}
+              </Button>
+            </Space>
+          </Card>
+        </Col>
+      ))}
+    </Row>
       )}
 
       {/* Purchase Modal */}

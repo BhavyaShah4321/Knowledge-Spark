@@ -30,7 +30,8 @@ import OTPVerification from './Authentication/OTPVerification';
 import ResetPassword from './Authentication/ResetPassword';
 import TeacherProfile from '../components/Teacher/ManageCourses/TeacherProfile';
 import TeacherFeedBackList from '../components/Teacher/TeacherFeedBackList';
-
+import MyCourses from '../components/studentCOurses/MyCourses';
+import PurchaseCourse from '../components/PurchaseCourses/PurchaseCourse';
 
 const Root = () => {
   return (
@@ -69,6 +70,8 @@ const Root = () => {
         <Route path="/create-complaint" element={<ComplaintModal />} />
         <Route path="/profile/:id" element={<TeacherProfile />} />
         <Route path="/teacher-feedback" element={<TeacherFeedBackList />} />
+        <Route path="/purchase-courses" element={<PurchaseCourse />} />
+       
 
       </Route>
 
@@ -83,6 +86,7 @@ const Root = () => {
         <Route path="/student-coures" element={<StudentCourses />} />
         <Route path="/student-chat" element={<TeacherChat />} />
         <Route path='/profile/:teacherId' element={<Profile/>} />
+        <Route path="/mycourses" element={<MyCourses />} />
       </Route>
     </Routes>
   );
