@@ -3407,9 +3407,9 @@ h1 {
 .chat-message-container {
   display: flex;
   flex-direction: row;
-  height: 100vh; /* Keep full viewport height */
+  height: 83vh; /* Keep this but we'll adjust inner components */
   background: linear-gradient(120deg, #f5efe6, #e1d5c9);
-  overflow: hidden; /* Prevent overall page scroll */
+  overflow: hidden; /* This prevents the overall page scroll */
   font-family: 'Nunito', sans-serif;
 }
 
@@ -3696,7 +3696,9 @@ h1 {
   overflow: hidden;
   animation: fadeInRight 0.5s ease-out;
   position: relative;
+  height: 100%; /* Take full height */
 }
+
 
 /* Innovative decorative pattern for chat area */
 .chat-message-chat-area::before {
@@ -3764,13 +3766,15 @@ h1 {
 
 /* Message Container */
 .chat-message-message-container {
-  flex: 1; /* Take remaining space */
-  overflow-y: auto; /* Only this area scrolls */
-  padding: 20px;
-  background: #f8f3ec;
-  scroll-behavior: smooth;
-  position: relative;
-  z-index: 1;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden; /* Prevents unwanted horizontal scrolling */
+    padding: 20px;
+    background: #f8f3ec;
+    scroll-behavior: smooth;
+    position: relative;
+    z-index: 1;
+    max-height: calc(100vh - 130px);
 }
 
 .chat-message-message-item {
@@ -3960,7 +3964,9 @@ h1 {
   position: sticky;
   bottom: 0;
   z-index: 10;
+  width: 100%;
 }
+
 
 .chat-message-message-input {
   flex: 1;
@@ -4068,6 +4074,13 @@ h1 {
   height: 2px;
   background: linear-gradient(135deg, #a87b5d, #5d4037);
   transform: translateX(-50%);
+}
+
+.chat-message-message-bubble a {
+  color: #3498db;
+  text-decoration: underline;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Links in Messages */
