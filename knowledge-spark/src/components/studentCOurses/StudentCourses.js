@@ -39,7 +39,7 @@
 //           return;
 //         }
 //         const accessToken = authData.access_token;
-        
+
 //         const response = await fetch("http://localhost:8000/api/course/", {
 //           headers: {
 //             Authorization: `Bearer ${accessToken}`,
@@ -74,7 +74,7 @@
 
 //   const initializeRazorpay = async () => {
 //     if (!selectedCourse) return;
-    
+
 //     setPaymentProcessing(true);
 //     try {
 //       const authData = JSON.parse(localStorage.getItem("auth_token"));
@@ -91,7 +91,7 @@
 //           amount: selectedCourse.course_price * 100,
 //         }),
 //       });
-      
+
 //       const orderData = await orderResponse.json();
 
 //       const options = {
@@ -116,9 +116,9 @@
 //                 courseId: selectedCourse.id,
 //               }),
 //             });
-            
+
 //             const verifyData = await verifyResponse.json();
-            
+
 //             if (verifyData.success) {
 //               message.success("Payment successful!");
 //               navigate(`/view-course/${selectedCourse.id}`);
@@ -271,18 +271,18 @@
 //               alt={selectedCourse.course_title}
 //               style={{ width: '100%', height: 300, objectFit: 'cover', marginBottom: 16, borderRadius: 8 }}
 //             />
-            
+
 //             <Title level={3}>{selectedCourse.course_title}</Title>
 //             <Paragraph type="secondary">
 //               <UserOutlined style={{ marginRight: 8 }} />
 //               {selectedCourse.course_teacher_username}
 //             </Paragraph>
-            
+
 //             <Divider />
-            
+
 //             <Title level={4}>Description</Title>
 //             <Paragraph>{selectedCourse.course_description}</Paragraph>
-            
+
 //             {selectedCourse.course_outcomes && (
 //               <>
 //                 <Title level={4}>What you'll learn</Title>
@@ -295,9 +295,9 @@
 //                 </ul>
 //               </>
 //             )}
-            
+
 //             <Divider />
-            
+
 //             <Row justify="space-between" align="middle">
 //               <Col>
 //                 <Title level={3} style={{ margin: 0 }}>
@@ -331,23 +331,13 @@ import {
   Space,
   Divider,
   Avatar,
-  Carousel,
-  Progress,
-  Tooltip,
 } from 'antd';
 import {
   SearchOutlined,
   BookOutlined,
   UserOutlined,
-  DollarOutlined,
   FireOutlined,
-  StarOutlined,
-  ClockCircleOutlined,
-  TeamOutlined,
-  RightCircleOutlined,
-  LeftCircleOutlined,
   FilterOutlined,
-  SortAscendingOutlined,
 } from '@ant-design/icons';
 
 const { Meta } = Card;
@@ -364,8 +354,7 @@ const StudentCourses = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [hoveredCourse, setHoveredCourse] = useState(null);
   const [categories, setCategories] = useState([]);
-   const [userId, setUserId] = useState(null);
-  const carouselRef = useRef(null);
+  const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -467,98 +456,98 @@ const StudentCourses = () => {
   };
 
   // Handle course purchase
- // Update the initializeRazorpay function to include user ID in the payload
-const initializeRazorpay = async () => {
-  if (!selectedCourse) return;
+  // Update the initializeRazorpay function to include user ID in the payload
+  const initializeRazorpay = async () => {
+    if (!selectedCourse) return;
 
-  setPaymentProcessing(true);
-  try {
-    const authData = JSON.parse(localStorage.getItem('auth_token'));
-    const accessToken = authData.access_token;
+    setPaymentProcessing(true);
+    try {
+      const authData = JSON.parse(localStorage.getItem('auth_token'));
+      const accessToken = authData.access_token;
 
-    // Step 1: Create a purchase order
-    const orderResponse = await fetch('http://127.0.0.1:8000/api/course-purchase/purchase-course/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify({
-        user: userId,
-        course_id: selectedCourse.id,
-        amount: selectedCourse.course_price,
-      }),
-    });
+      // Step 1: Create a purchase order
+      const orderResponse = await fetch('http://127.0.0.1:8000/api/course-purchase/purchase-course/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          user: userId,
+          course_id: selectedCourse.id,
+          amount: selectedCourse.course_price,
+        }),
+      });
 
-    if (!orderResponse.ok) {
-      throw new Error('Failed to create order');
-    }
+      if (!orderResponse.ok) {
+        throw new Error('Failed to create order');
+      }
 
-    const orderData = await orderResponse.json();
+      const orderData = await orderResponse.json();
 
-    if (!orderData.success) {
-      message.error(orderData.message || 'Failed to initiate payment');
-      return;
-    }
+      if (!orderData.success) {
+        message.error(orderData.message || 'Failed to initiate payment');
+        return;
+      }
 
-    const { order_id, amount: orderAmount } = orderData.data;
+      const { order_id, amount: orderAmount } = orderData.data;
 
-    // Step 2: Open Razorpay payment window
-    const options = {
-      key: 'rzp_test_KJQCW0zpmV0TnT', // Replace with your Razorpay key ID
-      amount: orderAmount * 100, // Amount in paise
-      currency: 'INR',
-      name: selectedCourse.course_title,
-      description: `Purchase of ${selectedCourse.course_title}`,
-      order_id: order_id,
-      handler: async function (response) {
-        // Step 3: Verify payment
-        try {
-          const verifyResponse = await fetch('http://127.0.0.1:8000/api/course-purchase/verify-payment/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            }),
-          });
+      // Step 2: Open Razorpay payment window
+      const options = {
+        key: 'rzp_test_KJQCW0zpmV0TnT', // Replace with your Razorpay key ID
+        amount: orderAmount * 100, // Amount in paise
+        currency: 'INR',
+        name: selectedCourse.course_title,
+        description: `Purchase of ${selectedCourse.course_title}`,
+        order_id: order_id,
+        handler: async function (response) {
+          // Step 3: Verify payment
+          try {
+            const verifyResponse = await fetch('http://127.0.0.1:8000/api/course-purchase/verify-payment/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
 
-          if (!verifyResponse.ok) {
-            throw new Error('Failed to verify payment');
+            if (!verifyResponse.ok) {
+              throw new Error('Failed to verify payment');
+            }
+
+            const verifyData = await verifyResponse.json();
+
+            if (verifyData.success) {
+              message.success('Payment successful! Your course is now accessible.');
+              navigate(`/view-course/${selectedCourse.id}`);
+            } else {
+              message.error(verifyData.message || 'Payment verification failed!');
+            }
+          } catch (err) {
+            console.error('Payment verification error:', err);
+            message.error('Payment verification failed');
           }
+        },
+        theme: {
+          color: '#3399cc',
+        },
+      };
 
-          const verifyData = await verifyResponse.json();
-
-          if (verifyData.success) {
-            message.success('Payment successful! Your course is now accessible.');
-            navigate(`/view-course/${selectedCourse.id}`);
-          } else {
-            message.error(verifyData.message || 'Payment verification failed!');
-          }
-        } catch (err) {
-          console.error('Payment verification error:', err);
-          message.error('Payment verification failed');
-        }
-      },
-      theme: {
-        color: '#3399cc',
-      },
-    };
-
-    const rzp = new window.Razorpay(options);
-    rzp.open();
-  } catch (err) {
-    console.error('Payment initialization error:', err);
-    message.error(err.message || 'Payment initialization failed');
-  } finally {
-    setPaymentProcessing(false);
-    setModalVisible(false);
-  }
-};
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error('Payment initialization error:', err);
+      message.error(err.message || 'Payment initialization failed');
+    } finally {
+      setPaymentProcessing(false);
+      setModalVisible(false);
+    }
+  };
 
   // Render loading state
   if (loading) {
@@ -570,490 +559,221 @@ const initializeRazorpay = async () => {
   }
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="container">
       {/* Main Content */}
-      <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
+      <Row justify="space-between" align="middle" className="search-header">
         <Col>
-          <Title level={2} style={{ margin: 0 }}>
-            <BookOutlined style={{ marginRight: '8px' }} />
+          <Title level={2} className="page-title">
+            <BookOutlined className="title-icon" />
             Explore Courses
           </Title>
         </Col>
-        <Col xs={24} sm={12} md={8} style={{ marginTop: 'xs' in window ? '16px' : 0 }}>
-          <Search
-            placeholder="Search courses by name or instructor"
-            allowClear
-            enterButton={<SearchOutlined />}
-            size="large"
-            onChange={(e) => handleSearch(e.target.value)}
-            style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)', borderRadius: '8px' }}
-          />
+        <Col xs={24} sm={12} md={8}>
+          <div className="search-container">
+            <Search
+              placeholder="Search courses by name or instructor"
+              allowClear
+              enterButton
+              size="large"
+              onChange={(e) => handleSearch(e.target.value)}
+              className="search-input"
+            />
+          </div>
         </Col>
       </Row>
 
       {/* Category Filters */}
-      <div style={{ marginBottom: '24px', overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '8px' }}>
-        <Space size="middle" style={{ display: 'inline-flex' }}>
-          <FilterOutlined style={{ fontSize: '18px', color: '#1890ff' }} />
-          {categories.map((category) => (
-            <Button
-              key={category.key}
-              type={selectedCategory === category.key ? 'primary' : 'default'}
-              onClick={() => handleCategoryChange(category.key)}
-              style={{
-                borderRadius: '20px',
-                ...(selectedCategory === category.key
-                  ? {
-                      background: 'linear-gradient(90deg, #1890ff, #36cfc9)',
-                      border: 'none',
-                      boxShadow: '0 2px 8px rgba(24,144,255,0.25)',
-                    }
-                  : {}),
-              }}
-            >
-              {category.name}
-            </Button>
-          ))}
-        </Space>
+      <div className="category-container">
+        {categories.map((category) => (
+          <Button
+            key={category.key}
+            className={`category-pill ${selectedCategory === category.key ? 'active' : ''}`}
+            onClick={() => handleCategoryChange(category.key)}
+          >
+            {category.name}
+          </Button>
+        ))}
       </div>
 
       {/* Course List */}
       {filteredCourses.length === 0 ? (
-        <Empty
-          description="No courses found"
-          style={{ marginTop: '48px' }}
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-        />
+        <div className="empty-state">
+          <Empty
+            description="No courses found"
+            className="empty-icon"
+          />
+          <p className="empty-text">Try adjusting your search criteria</p>
+        </div>
       ) : (
-        <Row gutter={[24, 24]} justify="center" style={{ padding: '40px 20px' }}>
-      {filteredCourses.map((course) => (
-        <Col xs={24} sm={12} md={8} lg={6} key={course.id}>
-          <Card
-            hoverable
-            style={{
-              borderRadius: '16px',
-              overflow: 'hidden',
-              transition: 'all 0.3s ease',
-              transform: hoveredCourse === course.id ? 'scale(1.05)' : 'scale(1)',
-              boxShadow:
-                hoveredCourse === course.id
-                  ? '0 12px 24px rgba(0,0,0,0.2)'
-                  : '0 4px 12px rgba(0,0,0,0.1)',
-              background: '#fff',
-              position: 'relative',
-            }}
-            onMouseEnter={() => setHoveredCourse(course.id)}
-            onMouseLeave={() => setHoveredCourse(null)}
-            cover={
-              <div style={{ position: 'relative', overflow: 'hidden' }}>
+        <div className="course-grid">
+          {filteredCourses.map((course, index) => (
+            <div
+              className="course-card"
+              key={course.id}
+              style={{ "--animation-order": index }}
+              onMouseEnter={() => setHoveredCourse(course.id)}
+              onMouseLeave={() => setHoveredCourse(null)}
+            >
+              <div className="course-image">
                 <img
                   alt={course.course_title}
                   src={
                     course.course_thumbnail
                       ? `http://localhost:8000${course.course_thumbnail}`
                       : course.videos?.[0]?.course_video_thumbnail
-                      ? `http://localhost:8000${course.videos[0].course_video_thumbnail}`
-                      : '/api/placeholder/400/320'
+                        ? `http://localhost:8000${course.videos[0].course_video_thumbnail}`
+                        : '/api/placeholder/400/320'
                   }
-                  style={{
-                    height: 200,
-                    objectFit: 'cover',
-                    width: '100%',
-                    transition: 'transform 0.5s ease',
-                  }}
                   onClick={() => navigate(`/view-course/${course.id}`)}
                 />
-                {course.trending && (
-                  <Tag
-                    color="red"
-                    style={{
-                      position: 'absolute',
-                      top: 12,
-                      left: 12,
-                      fontWeight: 'bold',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                    }}
-                  >
-                    <FireOutlined /> Trending
-                  </Tag>
-                )}
-                <Tag
-                  color="blue"
-                  style={{
-                    position: 'absolute',
-                    top: 12,
-                    right: 12,
-                    background: 'rgba(24,144,255,0.8)',
-                    backdropFilter: 'blur(4px)',
-                    border: 'none',
-                    fontWeight: 'bold',
-                  }}
-                >
+                <span className="course-badge active">
                   Available
-                </Tag>
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
-                    padding: '16px 12px',
-                    transition: 'opacity 0.3s ease',
-                    opacity: hoveredCourse === course.id ? 1 : 0,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                  }}
-                >
+                </span>
+                {hoveredCourse === course.id && (
+                  <div className="image-overlay">
+                    <Button
+                      className="preview-button"
+                      onClick={() => navigate(`/view-course/${course.id}`)}
+                    >
+                      Preview
+                    </Button>
+                    <Button
+                      className="price-button"
+                      onClick={() => {
+                        setSelectedCourse(course);
+                        setModalVisible(true);
+                      }}
+                    >
+                      {course.course_price ? `₹${course.course_price}` : 'Free'}
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <div className="course-card-content">
+                <h3 className="course-title">{course.course_title}</h3>
+
+                <p className="course-description">{course.course_description}</p>
+
+                <div className="teacher-info">
+                  <span className="teacher-avatar">
+                    <UserOutlined />
+                  </span>
+                  <span className="course-teacher">{course.course_teacher_username}</span>
+                </div>
+
+                <div className="course-footer">
+                  <span className={`course-price ${!course.course_price ? 'free' : ''}`}>
+                    {course.course_price ? `₹${course.course_price}` : 'Free'}
+                  </span>
                   <Button
-                    type="primary"
-                    size="small"
-                    onClick={() => navigate(`/view-course/${course.id}`)}
-                    style={{
-                      background: 'white',
-                      color: '#1890ff',
-                      borderRadius: '6px',
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    Preview
-                  </Button>
-                  <Button
-                    type="primary"
-                    size="small"
+                    className="course-button"
                     onClick={() => {
                       setSelectedCourse(course);
                       setModalVisible(true);
                     }}
-                    style={{
-                      background: 'linear-gradient(90deg, #1890ff, #36cfc9)',
-                      border: 'none',
-                      borderRadius: '6px',
-                      fontWeight: 'bold',
-                    }}
                   >
-                    {course.course_price ? `₹${course.course_price}` : 'Free'}
+                    {course.course_price ? 'Enroll Now' : 'Start Free'}
                   </Button>
                 </div>
               </div>
-            }
-            bodyStyle={{ padding: '20px', textAlign: 'center' }}
-          >
-            <Space direction="vertical" size={8} style={{ width: '100%' }}>
-              <Typography.Text
-                strong
-                style={{
-                  fontSize: '18px',
-                  lineHeight: '24px',
-                  display: 'block',
-                  color: '#333',
-                }}
-              >
-                {course.course_title}
-              </Typography.Text>
-
-              <Typography.Paragraph
-                ellipsis={{ rows: 2 }}
-                style={{
-                  fontSize: '14px',
-                  color: 'rgba(0,0,0,0.65)',
-                  margin: '4px 0 8px',
-                  textAlign: 'justify',
-                }}
-              >
-                {course.course_description}
-              </Typography.Paragraph>
-
-              <Space align="center" style={{ marginBottom: '8px' }}>
-                <Avatar src="/api/placeholder/32/32" icon={<UserOutlined />} size="small" />
-                <Typography.Text type="secondary" style={{ fontSize: '14px' }}>
-                  {course.course_teacher_username}
-                </Typography.Text>
-              </Space>
-
-              <Button
-                type="primary"
-                block
-                onClick={() => {
-                  setSelectedCourse(course);
-                  setModalVisible(true);
-                }}
-                style={{
-                  marginTop: '8px',
-                  background: course.course_price
-                    ? 'linear-gradient(90deg, #1890ff, #36cfc9)'
-                    : 'linear-gradient(90deg, #52c41a, #36cfc9)',
-                  border: 'none',
-                  borderRadius: '6px',
-                  fontWeight: 'bold',
-                  boxShadow: '0 4px 12px rgba(24,144,255,0.3)',
-                  padding: '10px 16px',
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                {course.course_price ? `Enroll for ₹${course.course_price}` : 'Enroll Free'}
-              </Button>
-            </Space>
-          </Card>
-        </Col>
-      ))}
-    </Row>
+            </div>
+          ))}
+        </div>
       )}
 
       {/* Purchase Modal */}
       <Modal
-        title={null}
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
-        width={700}
-        style={{ borderRadius: '16px', overflow: 'hidden' }}
-        bodyStyle={{ padding: 0 }}
+        width={750}
+        className="course-modal"
         centered
       >
         {selectedCourse && (
-          <div>
-            <div style={{ position: 'relative' }}>
+          <div className="modal-content">
+            {/* Header Section */}
+            <div className="modal-header">
               <img
                 src={
                   selectedCourse.course_thumbnail
                     ? `http://localhost:8000${selectedCourse.course_thumbnail}`
-                    : selectedCourse.videos && selectedCourse.videos.length > 0
-                    ? `http://localhost:8000${selectedCourse.videos[0].course_video_thumbnail}`
-                    : '/api/placeholder/400/320'
+                    : "/api/placeholder/400/320"
                 }
                 alt={selectedCourse.course_title}
-                style={{ width: '100%', height: 300, objectFit: 'cover' }}
+                className="modal-image"
               />
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  padding: '40px 24px 24px',
-                  background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
-                  color: 'white',
-                }}
-              >
-                {selectedCourse.trending && (
-                  <Tag color="red" style={{ marginBottom: '8px' }}>
-                    <FireOutlined /> Trending
-                  </Tag>
-                )}
-                <Title level={3} style={{ color: 'white', margin: '0 0 8px 0' }}>
+              <div className="modal-overlay">
+                <Title level={3} className="modal-title">
                   {selectedCourse.course_title}
                 </Title>
               </div>
             </div>
 
-            <div style={{ padding: '24px' }}>
-              <Row gutter={[24, 24]}>
-                <Col xs={24} md={16}>
-                  <Space direction="vertical" size={24} style={{ width: '100%' }}>
-                    <Space size="middle">
-                      <Avatar src="/api/placeholder/40/40" icon={<UserOutlined />} size={48} />
-                      <div>
-                        <Text strong style={{ display: 'block', fontSize: '16px' }}>
-                          {selectedCourse.course_teacher_username}
-                        </Text>
-                        <Text type="secondary">Course Instructor</Text>
-                      </div>
-                    </Space>
-
-                    <div>
-                      <Title level={4} style={{ marginBottom: '16px' }}>
-                        About This Course
-                      </Title>
-                      <Paragraph>{selectedCourse.course_description}</Paragraph>
+            {/* Course Info */}
+            <Row gutter={[24, 24]} className="modal-body">
+              <Col xs={24} md={16}>
+                <Space direction="vertical" size={24} className="course-details">
+                  <div className="instructor-info">
+                    <Avatar icon={<UserOutlined />} size={48} className="instructor-avatar" />
+                    <div className="instructor-details">
+                      <Text strong className="instructor-name">
+                        {selectedCourse.course_teacher_username}
+                      </Text>
+                      <Text type="secondary" className="instructor-role">
+                        Instructor
+                      </Text>
                     </div>
-
-                    {selectedCourse.course_outcomes && (
-                      <div>
-                        <Title level={4} style={{ marginBottom: '16px' }}>
-                          What You'll Learn
-                        </Title>
-                        <Row gutter={[16, 16]}>
-                          {selectedCourse.course_outcomes.split('\n').map((outcome, index) => (
-                            <Col xs={24} md={12} key={index}>
-                              <Card
-                                size="small"
-                                style={{
-                                  borderRadius: '8px',
-                                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                                }}
-                              >
-                                <Space align="start">
-                                  <div
-                                    style={{
-                                      color: '#1890ff',
-                                      backgroundColor: 'rgba(24,144,255,0.1)',
-                                      borderRadius: '50%',
-                                      width: '24px',
-                                      height: '24px',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      marginRight: '8px',
-                                    }}
-                                  >
-                                    {index + 1}
-                                  </div>
-                                  <Text>{outcome}</Text>
-                                </Space>
-                              </Card>
-                            </Col>
-                          ))}
-                        </Row>
-                      </div>
-                    )}
-
-                    {/* <div>
-                      <Title level={4} style={{ marginBottom: '16px' }}>
-                        Course Info
-                      </Title>
-                      <Row gutter={[16, 16]}>
-                        <Col xs={12} sm={8}>
-                          <Card
-                            size="small"
-                            style={{
-                              textAlign: 'center',
-                              borderRadius: '8px',
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                            }}
-                          >
-                            <Space direction="vertical" size={0}>
-                              <ClockCircleOutlined style={{ fontSize: '24px', color: '#1890ff' }} />
-                              <Text type="secondary">Duration</Text>
-                              <Text strong>{selectedCourse.duration}</Text>
-                            </Space>
-                          </Card>
-                        </Col>
-                        <Col xs={12} sm={8}>
-                          <Card
-                            size="small"
-                            style={{
-                              textAlign: 'center',
-                              borderRadius: '8px',
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                            }}
-                          >
-                            <Space direction="vertical" size={0}>
-                              <TeamOutlined style={{ fontSize: '24px', color: '#1890ff' }} />
-                              <Text type="secondary">Students</Text>
-                              <Text strong>{selectedCourse.students_enrolled}</Text>
-                            </Space>
-                          </Card>
-                        </Col>
-                        <Col xs={12} sm={8}>
-                          <Card
-                            size="small"
-                            style={{
-                              textAlign: 'center',
-                              borderRadius: '8px',
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                            }}
-                          >
-                            <Space direction="vertical" size={0}>
-                              <StarOutlined style={{ fontSize: '24px', color: '#fadb14' }} />
-                              <Text type="secondary">Rating</Text>
-                              <Text strong>{selectedCourse.rating}/5.0</Text>
-                            </Space>
-                          </Card>
-                        </Col>
-                      </Row>
-                    </div> */}
-                  </Space>
-                </Col>
-
-                <Col xs={24} md={8}>
-                  <div
-                    style={{
-                      position: 'sticky',
-                      top: '24px',
-                      backgroundColor: '#f8f9fa',
-                      borderRadius: '12px',
-                      padding: '24px',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                    }}
-                  >
-                    <Title level={2} style={{ margin: '0 0 24px 0', textAlign: 'center' }}>
-                      {selectedCourse.course_price ? (
-                        <>
-                          <span style={{ fontSize: '16px' }}>₹</span>
-                          {selectedCourse.course_price}
-                        </>
-                      ) : (
-                        'Free Access'
-                      )}
-                    </Title>
-
-                    <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                      <Button
-                        type="primary"
-                        size="large"
-                        block
-                        loading={paymentProcessing}
-                        onClick={initializeRazorpay}
-                        style={{
-                          height: '48px',
-                          fontSize: '16px',
-                          background: 'linear-gradient(90deg, #1890ff, #36cfc9)',
-                          border: 'none',
-                          borderRadius: '8px',
-                          boxShadow: '0 4px 12px rgba(24,144,255,0.25)',
-                        }}
-                      >
-                        {paymentProcessing
-                          ? 'Processing...'
-                          : selectedCourse.course_price
-                          ? 'Enroll Now'
-                          : 'Start Learning Now'}
-                      </Button>
-
-                      <Button
-                        type="default"
-                        size="large"
-                        block
-                        onClick={() => setModalVisible(false)}
-                        style={{
-                          height: '48px',
-                          borderRadius: '8px',
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </Space>
-
-                    <Divider />
-
-                    {/* <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                      <div>
-                        <Text strong>This course includes:</Text>
-                      </div>
-                      <Space align="center">
-                        <ClockCircleOutlined style={{ color: '#1890ff' }} />
-                        <Text>{selectedCourse.duration} of video content</Text>
-                      </Space>
-                      <Space align="center">
-                        <BookOutlined style={{ color: '#1890ff' }} />
-                        <Text>Downloadable resources</Text>
-                      </Space>
-                      <Space align="center">
-                        <TeamOutlined style={{ color: '#1890ff' }} />
-                        <Text>Community access</Text>
-                      </Space>
-                      <Space align="center">
-                        <DollarOutlined style={{ color: '#1890ff' }} />
-                        <Text>Lifetime access</Text>
-                      </Space>
-                    </Space> */}
                   </div>
-                </Col>
-              </Row>
-            </div>
+
+                  {/* Description */}
+                  <Paragraph className="course-desc">{selectedCourse.course_description}</Paragraph>
+
+                  {/* Outcomes */}
+                  {selectedCourse.course_outcomes && (
+                    <div className="course-outcomes">
+                      <Title level={4} className="section-title">What You’ll Learn</Title>
+                      <Row gutter={[16, 16]}>
+                        {selectedCourse.course_outcomes.split("\n").map((outcome, index) => (
+                          <Col xs={24} md={12} key={index}>
+                            <Card className="outcome-card">
+                              <Text>{outcome}</Text>
+                            </Card>
+                          </Col>
+                        ))}
+                      </Row>
+                    </div>
+                  )}
+                </Space>
+              </Col>
+
+              {/* Sidebar */}
+              <Col xs={24} md={8}>
+                <div className="purchase-sidebar">
+                  <Title level={2} className="course-price">
+                    {selectedCourse.course_price ? `₹${selectedCourse.course_price}` : "Free"}
+                  </Title>
+                  <Button
+                    type="primary"
+                    size="large"
+                    loading={paymentProcessing}
+                    onClick={initializeRazorpay}
+                    className="enroll-button"
+                  >
+                    {paymentProcessing ? "Processing..." : "Enroll Now"}
+                  </Button>
+                  <Button
+                    type="default"
+                    size="large"
+                    onClick={() => setModalVisible(false)}
+                    className="cancel-button"
+                  >
+                    Cancel
+                  </Button>
+                  <Divider />
+                </div>
+              </Col>
+            </Row>
           </div>
         )}
       </Modal>
