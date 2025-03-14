@@ -632,9 +632,16 @@ class CoursePurchaseViewSet(ModelViewSet):
         course_id = request.data.get("course_id")
         amount = request.data.get("amount")
 
+
         if not course_id or not amount:
             return Response({"success": False, "message": "Course ID and amount are required."}, status=status.HTTP_400_BAD_REQUEST)
 
+        try:
+            
+            course_instance=Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return Response({"success":True,"message":"course with this id doesnot exists"})
+        
         amount_in_paise = int(float(amount) * 100)  # Convert to paise for Razorpay
         client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
@@ -661,6 +668,8 @@ class CoursePurchaseViewSet(ModelViewSet):
                         "order_id": razorpay_order["id"],
                         "amount": amount,
                         "currency": "INR",
+                        "teacher_name":course_instance.course_teacher.username,
+                        "course_thumbnail":str(course_instance.course_thumbnail),
                     },
                 },
                 status=status.HTTP_201_CREATED,

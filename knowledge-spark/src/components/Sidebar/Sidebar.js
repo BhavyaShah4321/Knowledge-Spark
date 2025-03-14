@@ -116,6 +116,12 @@ export default function Sidebar() {
       icon: <RobotOutlined />,
       roles: ["Teacher"],
     },
+    {
+      key: "/course-purchase-list",
+      label: "Purchased Courses",
+      icon: <BarChartOutlined />,
+      roles: ["Teacher"],
+    },
    
     {
       key: "/teacher-chat",

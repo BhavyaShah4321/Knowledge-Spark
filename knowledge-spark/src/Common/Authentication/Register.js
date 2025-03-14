@@ -110,10 +110,14 @@ function Register() {
                 />
                 <h2>Welcome to Knowledge Spark.</h2>
                 <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                    eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-                    ad minim veniam.
-                </p>
+          <b>
+          🌟 Empowering Learning, Anytime, Anywhere! 🔹 For Teachers: Create and
+          manage courses effortlessly. Share your knowledge with students
+          worldwide. 🔹 For Students: Explore a wide range of courses, learn
+          from expert educators, and enhance your skills at your own pace. 🚀
+          Register now and ignite your learning journey!
+          </b>
+        </p>
             </div>
 
             <div className="register-right">
