@@ -3,6 +3,7 @@ import { message } from 'antd';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const authHeader = () => {
     const userData = JSON.parse(localStorage.getItem("auth_token"));
@@ -73,6 +74,7 @@ const getUsers = async () => {
 };
 
 const TeacherChat = () => {
+    const location = useLocation();
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [newMessage, setNewMessage] = useState('');
@@ -83,11 +85,20 @@ const TeacherChat = () => {
     const [userData, setUserData] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
     const [loaded, setLoaded] = useState(false);
+    const [targetUuid, setTargetUuid] = useState(null);
 
     const messagesEndRef = useRef(null);
     const wsRef = useRef(null);
     const typingTimeoutRef = useRef(null);
     const sentMessagesRef = useRef(new Set());
+
+
+    useEffect(() => {
+        if (location.state && location.state.uuid) {
+            console.log("UUID received from navigation:", location.state.uuid);
+            setTargetUuid(location.state.uuid);
+        }
+    }, [location.state]);
 
 
     useEffect(() => {
@@ -97,6 +108,19 @@ const TeacherChat = () => {
             loggedInUserId = userDataFromStorage.user.id;
         }
     }, []);
+
+    useEffect(() => {
+        if (users.length > 0 && targetUuid) {
+            const targetUser = users.find(user => user.uuid === targetUuid);
+            if (targetUser) {
+                console.log("Auto-selecting conversation with UUID:", targetUuid);
+                setSelectedUser(targetUser);
+                setTargetUuid(null); // Reset target UUID after selection
+            } else {
+                console.warn("No matching conversation found for UUID:", targetUuid);
+            }
+        }
+    }, [users, targetUuid]);
 
 
     useEffect(() => {
@@ -187,9 +211,6 @@ const TeacherChat = () => {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
-
-    let reconnectAttempts = 0;
-    const maxReconnectAttempts = 5;
 
     const wsConnection = (uuid) => {
         const protocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -561,7 +582,7 @@ const TeacherChat = () => {
         e.stopPropagation();
         try {
             await axios.delete(
-                `http://localhost:8000/api/chat-message/${user.chatId}/`,
+                `http://localhost:8000/api/chat/${user.chatId}/`,
                 { headers: authHeader() }
             );
 
@@ -686,12 +707,12 @@ const TeacherChat = () => {
                             </div>
                             <div className="chat-message-user-actions">
                                 <span className="chat-message-timestamp">{user.lastTime}</span>
-                                <button
-                                    className="chat-message-delete-button"
-                                    onClick={(e) => handleDeleteChat(user, e)}
-                                >
-                                    <DeleteOutlined className="chat-message-delete-button" />
-                                </button>
+                                {/* <button
+            className="chat-message-delete-button"
+            onClick={(e) => handleDeleteChat(user, e)}
+        >
+            <DeleteOutlined className="chat-message-delete-button" />
+        </button> */}
                             </div>
                         </div>
                     ))}

@@ -83,7 +83,7 @@ const TeacherProfile = () => {
       const uuid = response.data.data.uuid;
   
       // Navigate to the chat page and pass the uuid as state
-      navigate("/student-chat", { state: { uuid } });
+      navigate("/teacher-chat", { state: { uuid } });
     } catch (error) {
       console.error("Error creating chat:", error);
     }
