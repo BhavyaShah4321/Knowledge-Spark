@@ -313,7 +313,6 @@
 // };
 
 // export default StudentCourses;
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -338,8 +337,10 @@ import {
   UserOutlined,
   FireOutlined,
   FilterOutlined,
+  EyeOutlined,
 } from '@ant-design/icons';
-
+import axios from 'axios';
+import '../../Styles/Main.css';
 const { Meta } = Card;
 const { Title, Paragraph, Text } = Typography;
 const { Search } = Input;
@@ -351,18 +352,66 @@ const StudentCourses = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [purchasedCourses, setPurchasedCourses] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [hoveredCourse, setHoveredCourse] = useState(null);
   const [categories, setCategories] = useState([]);
   const [userId, setUserId] = useState(null);
+  // const [purchasedCourses, setPurchasedCourses] = useState([]);
   const navigate = useNavigate();
-
+  
+  
   useEffect(() => {
     const authData = JSON.parse(localStorage.getItem("auth_token"));
     if (authData?.user?.id) {
+      console.log('myid',authData?.user?.id);
+      
       setUserId(authData.user.id);
     }
   }, []);
+
+  // Fetch user's purchased courses
+  useEffect(() => {
+    const fetchPurchasedCourses = async () => {
+      if (!userId) return;
+      
+      try {
+        const authData = JSON.parse(localStorage.getItem('auth_token'));
+        if (!authData || !authData.access_token) {
+          return;
+        }
+        const accessToken = authData.access_token;
+
+      
+         const response = await axios.post(
+                `http://localhost:8000/api/course-purchase/purchases-by-user/`,
+                { user_id: userId},
+                {
+                  headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                  },
+                }
+              );
+
+      
+        // const data = await response.json();
+        
+      
+          const purchasedCourseIds = response.data.results.map(purchase => purchase.course);
+          console.log('purchasedCourseIds',purchasedCourseIds);
+          
+          setPurchasedCourses(purchasedCourseIds);
+        
+      } catch (err) {
+        console.error('Error fetching purchased courses:', err);
+      }
+    };
+
+     
+    if (userId) {
+      fetchPurchasedCourses();
+    }
+  }, [userId]);
 
   // Fetch courses and categories on component mount
   useEffect(() => {
@@ -424,6 +473,11 @@ const StudentCourses = () => {
     fetchData();
   }, []);
 
+  // Check if user has purchased a course
+  const isCoursePurchased = (courseId) => {
+    return purchasedCourses.includes(courseId);
+  };
+
   // Handle search functionality
   const handleSearch = (value) => {
     const searchTerm = value.toLowerCase();
@@ -456,7 +510,6 @@ const StudentCourses = () => {
   };
 
   // Handle course purchase
-  // Update the initializeRazorpay function to include user ID in the payload
   const initializeRazorpay = async () => {
     if (!selectedCourse) return;
 
@@ -524,6 +577,8 @@ const StudentCourses = () => {
 
             if (verifyData.success) {
               message.success('Payment successful! Your course is now accessible.');
+              // Add the purchased course to purchasedCourses state
+              setPurchasedCourses([...purchasedCourses, selectedCourse.id]);
               navigate(`/view-course/${selectedCourse.id}`);
             } else {
               message.error(verifyData.message || 'Payment verification failed!');
@@ -547,6 +602,11 @@ const StudentCourses = () => {
       setPaymentProcessing(false);
       setModalVisible(false);
     }
+  };
+
+  // Navigate to course view page
+  const handleViewCourse = (courseId) => {
+    navigate(`/view-course/${courseId}`);
   };
 
   // Render loading state
@@ -597,90 +657,102 @@ const StudentCourses = () => {
 
       {/* Course List */}
       {filteredCourses.length === 0 ? (
-        <div className="empty-state">
-          <Empty
-            description="No courses found"
-            className="empty-icon"
-          />
-          <p className="empty-text">Try adjusting your search criteria</p>
-        </div>
-      ) : (
-        <div className="course-grid">
-          {filteredCourses.map((course, index) => (
-            <div
-              className="course-card"
-              key={course.id}
-              style={{ "--animation-order": index }}
-              onMouseEnter={() => setHoveredCourse(course.id)}
-              onMouseLeave={() => setHoveredCourse(null)}
-            >
-              <div className="course-image">
-                <img
-                  alt={course.course_title}
-                  src={
-                    course.course_thumbnail
-                      ? `http://localhost:8000${course.course_thumbnail}`
-                      : course.videos?.[0]?.course_video_thumbnail
-                        ? `http://localhost:8000${course.videos[0].course_video_thumbnail}`
-                        : '/api/placeholder/400/320'
-                  }
-                  onClick={() => navigate(`/view-course/${course.id}`)}
-                />
-                <span className="course-badge active">
-                  Available
-                </span>
-                {hoveredCourse === course.id && (
-                  <div className="image-overlay">
-                    <Button
-                      className="preview-button"
-                      onClick={() => navigate(`/view-course/${course.id}`)}
-                    >
-                      Preview
-                    </Button>
-                    <Button
-                      className="price-button"
-                      onClick={() => {
-                        setSelectedCourse(course);
-                        setModalVisible(true);
-                      }}
-                    >
-                      {course.course_price ? `₹${course.course_price}` : 'Free'}
-                    </Button>
-                  </div>
+  <div className="empty-state">
+    <Empty
+      description="No courses found"
+      className="empty-icon"
+    />
+    <p className="empty-text">Try adjusting your search criteria</p>
+  </div>
+) : (
+  <div className="course-grid">
+    {filteredCourses.map((course, index) => {
+      const purchased = isCoursePurchased(course.id);
+      
+      return (
+        <div
+          className="course-card"
+          key={course.id}
+          style={{ "--animation-order": index }}
+          onMouseEnter={() => setHoveredCourse(course.id)}
+          onMouseLeave={() => setHoveredCourse(null)}
+        >
+          <div className="course-image">
+            <img
+              alt={course.course_title}
+              src={
+                course.course_thumbnail
+                  ? `http://localhost:8000${course.course_thumbnail}`
+                  : course.videos?.[0]?.course_video_thumbnail
+                    ? `http://localhost:8000${course.videos[0].course_video_thumbnail}`
+                    : '/api/placeholder/400/320'
+              }
+              onClick={() => navigate(`/view-course/${course.id}`)}
+              className="course-thumbnail"
+            />
+            <span className={`course-badge ${purchased ? 'enrolled' : 'active'}`}>
+              {purchased ? 'Enrolled' : 'Available'}
+            </span>
+            {hoveredCourse === course.id && (
+              <div className="image-overlay">
+                {purchased ? (
+                  <Button
+                    className="view-button"
+                    icon={<EyeOutlined />}
+                    onClick={() => handleViewCourse(course.id)}
+                  >
+                    View Course
+                  </Button>
+                ) : (
+                  <Button
+                    className="price-button"
+                    onClick={() => navigate(`/view-course/${course.id}`)}
+                  >
+                    Preview
+                  </Button>
                 )}
               </div>
-              <div className="course-card-content">
-                <h3 className="course-title">{course.course_title}</h3>
-
-                <p className="course-description">{course.course_description}</p>
-
-                <div className="teacher-info">
-                  <span className="teacher-avatar">
-                    <UserOutlined />
-                  </span>
-                  <span className="course-teacher">{course.course_teacher_username}</span>
-                </div>
-
-                <div className="course-footer">
-                  <span className={`course-price ${!course.course_price ? 'free' : ''}`}>
-                    {course.course_price ? `₹${course.course_price}` : 'Free'}
-                  </span>
-                  <Button
-                    className="course-button"
-                    onClick={() => {
-                      setSelectedCourse(course);
-                      setModalVisible(true);
-                    }}
-                  >
-                    {course.course_price ? 'Enroll Now' : 'Start Free'}
-                  </Button>
-                </div>
-              </div>
+            )}
+          </div>
+          <div className="course-card-content">
+            <h3 className="course-title">{course.course_title}</h3>
+            <p className="course-description">{course.course_description}</p>
+            <div className="teacher-info">
+              <span className="teacher-avatar">
+                <UserOutlined />
+              </span>
+              <span className="course-teacher">{course.course_teacher_username}</span>
             </div>
-          ))}
+            <div className="course-footer">
+              <span className={`course-price ${!course.course_price ? 'free' : ''}`}>
+                {course.course_price ? `₹${course.course_price}` : 'Free'}
+              </span>
+              {purchased ? (
+                <Button
+                  className="view-course-button"
+                  onClick={() => handleViewCourse(course.id)}
+                  icon={<EyeOutlined />}
+                >
+                  View Course
+                </Button>
+              ) : (
+                <Button
+                  className="primary"
+                  onClick={() => {
+                    setSelectedCourse(course);
+                    setModalVisible(true);
+                  }}
+                >
+                  {course.course_price ? 'Enroll Now' : 'Start Free'}
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
-      )}
-
+      );
+    })}
+  </div>
+)}
       {/* Purchase Modal */}
       <Modal
         open={modalVisible}
@@ -690,7 +762,7 @@ const StudentCourses = () => {
         className="course-modal"
         centered
       >
-        {selectedCourse && (
+       {selectedCourse && (
           <div className="modal-content">
             {/* Header Section */}
             <div className="modal-header">
@@ -732,7 +804,7 @@ const StudentCourses = () => {
                   {/* Outcomes */}
                   {selectedCourse.course_outcomes && (
                     <div className="course-outcomes">
-                      <Title level={4} className="section-title">What You’ll Learn</Title>
+                      <Title level={4} className="section-title">What You'll Learn</Title>
                       <Row gutter={[16, 16]}>
                         {selectedCourse.course_outcomes.split("\n").map((outcome, index) => (
                           <Col xs={24} md={12} key={index}>
@@ -753,15 +825,30 @@ const StudentCourses = () => {
                   <Title level={2} className="course-price">
                     {selectedCourse.course_price ? `₹${selectedCourse.course_price}` : "Free"}
                   </Title>
-                  <Button
-                    type="primary"
-                    size="large"
-                    loading={paymentProcessing}
-                    onClick={initializeRazorpay}
-                    className="enroll-button"
-                  >
-                    {paymentProcessing ? "Processing..." : "Enroll Now"}
-                  </Button>
+                  {isCoursePurchased(selectedCourse.id) ? (
+                    <Button
+                      type="primary"
+                      size="large"
+                      icon={<EyeOutlined />}
+                      onClick={() => {
+                        setModalVisible(false);
+                        handleViewCourse(selectedCourse.id);
+                      }}
+                      className="view-button"
+                    >
+                      View Course
+                    </Button>
+                  ) : (
+                    <Button
+                      type="primary"
+                      size="large"
+                      loading={paymentProcessing}
+                      onClick={initializeRazorpay}
+                      className="enroll-button"
+                    >
+                      {paymentProcessing ? "Processing..." : "Enroll Now"}
+                    </Button>
+                  )}
                   <Button
                     type="default"
                     size="large"
@@ -780,5 +867,4 @@ const StudentCourses = () => {
     </div>
   );
 };
-
 export default StudentCourses;

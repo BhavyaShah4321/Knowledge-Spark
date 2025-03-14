@@ -49,6 +49,7 @@ const ViewCourseVideo = () => {
   const [editingCourseVideo, setEditingCourseVideo] = useState(null);
   const [courseVideoForm] = Form.useForm();
   const { TextArea } = Input;
+  const [editVideoModalVisible, setEditVideoModalVisible] = useState(false);
   const { id } = useParams();
   const [course, setCourse] = useState(null);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -57,7 +58,7 @@ const ViewCourseVideo = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [hoveredCourse, setHoveredCourse] = useState(null);
   const [categories, setCategories] = useState([]);
-  const [userId, setUserId] = useState(null);
+  // const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [feedback, setFeedback] = useState("");
@@ -73,6 +74,16 @@ const ViewCourseVideo = () => {
   const [watchedVideos, setWatchedVideos] = useState([]);
   // Add a state for enrollment modal
   const [enrollmentModalVisible, setEnrollmentModalVisible] = useState(false);
+   const [userId, setUserId] = useState(null);
+     const [purchasedCourses, setPurchasedCourses] = useState([]);
+   useEffect(() => {
+    const authData = JSON.parse(localStorage.getItem("auth_token"));
+    if (authData?.user?.id) {
+      console.log('myid',authData?.user?.id);
+      
+      setUserId(authData.user.id);
+    }
+  }, []);
 
   const BASE_URL = "http://localhost:8000";
 
@@ -93,6 +104,48 @@ const ViewCourseVideo = () => {
     }
   }, []);
 
+
+ useEffect(() => {
+    const fetchPurchasedCourses = async () => {
+      if (!userId) return;
+      
+      try {
+        const authData = JSON.parse(localStorage.getItem('auth_token'));
+        if (!authData || !authData.access_token) {
+          return;
+        }
+        const accessToken = authData.access_token;
+
+      
+         const response = await axios.post(
+                `http://localhost:8000/api/course-purchase/purchases-by-user/`,
+                { user_id: userId},
+                {
+                  headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                  },
+                }
+              );
+
+      
+        // const data = await response.json();
+        
+      
+          const purchasedCourseIds = response.data.results.map(purchase => purchase.course);
+          console.log('purchasedCourseIds',purchasedCourseIds);
+          
+          setPurchasedCourses(purchasedCourseIds);
+        
+      } catch (err) {
+        console.error('Error fetching purchased courses:', err);
+      }
+    };
+
+     
+    if (userId) {
+      fetchPurchasedCourses();
+    }
+  }, [userId]);
   useEffect(() => {
     const fetchCourseData = async () => {
       try {
@@ -122,10 +175,10 @@ const ViewCourseVideo = () => {
           setIsEnrolled(enrollmentResponse.data.is_enrolled);
 
           // Get watched videos from local storage
-          const storedWatched = localStorage.getItem(`watched_videos_${id}`);
-          if (storedWatched) {
-            setWatchedVideos(JSON.parse(storedWatched));
-          }
+          // const storedWatched = localStorage.getItem(`watched_videos_${id}`);
+          // if (storedWatched) {
+          //   setWatchedVideos(JSON.parse(storedWatched));
+          // }
         }
       } catch (error) {
         console.error("Error fetching course data:", error);
@@ -165,26 +218,29 @@ const ViewCourseVideo = () => {
   }, [id]);
 
   // Function to mark a video as watched
-  const markVideoAsWatched = (videoId) => {
-    if (!watchedVideos.includes(videoId)) {
-      const newWatchedVideos = [...watchedVideos, videoId];
-      setWatchedVideos(newWatchedVideos);
-      localStorage.setItem(
-        `watched_videos_${id}`,
-        JSON.stringify(newWatchedVideos)
-      );
-    }
-  };
+  // const markVideoAsWatched = (videoId) => {
+  //   if (!watchedVideos.includes(videoId)) {
+  //     const newWatchedVideos = [...watchedVideos, videoId];
+  //     setWatchedVideos(newWatchedVideos);
+  //     localStorage.setItem(
+  //       `watched_videos_${id}`,
+  //       JSON.stringify(newWatchedVideos)
+  //     );
+  //   }
+  // };
 
   // Function to check if a video can be watched
   const canWatchVideo = (videoIndex) => {
     // Teachers can watch any video
     if (currentUser?.type === "Teacher") return true;
-
+  
+    // If the user has purchased the course, they can watch any video
+    if (purchasedCourses.includes(parseInt(id))) return true;
+  
     // Students who are enrolled can watch any video
     if (isEnrolled) return true;
-
-    // Non-enrolled students can only watch first two videos
+  
+    // Non-enrolled students can only watch the first two videos
     return videoIndex < 2;
   };
 
@@ -192,7 +248,7 @@ const ViewCourseVideo = () => {
   const handleVideoSelect = (video, index) => {
     if (canWatchVideo(index)) {
       setSelectedVideo(video);
-      markVideoAsWatched(video.id);
+      // markVideoAsWatched(video.id);
     } else {
       setEnrollmentModalVisible(true);
     }
@@ -324,84 +380,124 @@ const ViewCourseVideo = () => {
     }
   };
 
-  const handleEditVideo = (video) => {
-    setEditingCourseVideo({
-      videoId: video.id,
-      ...video,
+ // Edit Video Button
+<Button
+  type="primary"
+  icon={<EditOutlined />}
+  onClick={() => handleEditVideo(selectedVideo)}
+  disabled={!selectedVideo}
+>
+  Edit Course Video
+</Button>
+
+// Edit Video Handler Function
+const handleEditVideo = (video) => {
+  if (!video) {
+    message.error("No video selected for editing");
+    return;
+  }
+  
+  console.log("Editing video:", video);
+  setEditingCourseVideo({
+    videoId: video.id,
+    course_video_title: video.course_video_title,
+    course_video_description: video.course_video_description,
+    course_video: video.course_video,
+    course_video_thumbnail: video.course_video_thumbnail,
+  });
+  
+  // Reset the form first
+  courseVideoForm.resetFields();
+  
+  // Then set values
+  courseVideoForm.setFieldsValue({
+    course_video_title: video.course_video_title,
+    course_video_description: video.course_video_description,
+  });
+  
+  // Open the edit modal
+  setEditVideoModalVisible(true);
+};
+
+const handleCourseVideoSubmit = async (values) => {
+  try {
+    const accessToken = getAccessToken();
+    const formData = new FormData();
+
+    const form_data = {
+      course_video_title: values.course_video_title,
+      course_video_description: values.course_video_description,
+      course: id,
+    };
+    // Handle video file
+    if (values.course_video && values.course_video[0]?.originFileObj) {
+      formData.append("course_video", values.course_video[0].originFileObj);
+    }
+
+    // Handle thumbnail
+    if (values.course_video_thumbnail && values.course_video_thumbnail[0]?.originFileObj) {
+      formData.append(
+        "course_video_thumbnail",
+        values.course_video_thumbnail[0].originFileObj
+      );
+    }
+
+    formData.append("form_data", JSON.stringify(form_data));
+
+    const endpoint = editingCourseVideo?.videoId
+      ? `${BASE_URL}/api/course-video/${editingCourseVideo.videoId}/`
+      : `${BASE_URL}/api/course-video/`;
+
+    const method = editingCourseVideo?.videoId ? "patch" : "post";
+
+    const response = await axios({
+      method,
+      url: endpoint,
+      data: formData,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'multipart/form-data'
+      },
     });
-    courseVideoForm.setFieldsValue({
-      course_video_title: video.course_video_title,
-      course_video_description: video.course_video_description,
-    });
-    setModalVisible(true);
-  };
 
-  const handleCourseVideoSubmit = async (values) => {
-    try {
-      const accessToken = getAccessToken();
-      const formData = new FormData();
-
-      const form_data = {
-        course_video_title: values.course_video_title,
-        course_video_description: values.course_video_description,
-        course: id,
-      };
-
-      // Handle video file
-      if (values.course_video?.[0]?.originFileObj) {
-        formData.append("course_video", values.course_video[0].originFileObj);
-      } else if (editingCourseVideo && editingCourseVideo.course_video) {
-        form_data.course_video = editingCourseVideo.course_video;
-      }
-
-      // Handle thumbnail
-      if (values.course_video_thumbnail?.[0]?.originFileObj) {
-        formData.append(
-          "course_video_thumbnail",
-          values.course_video_thumbnail[0].originFileObj
-        );
-      } else if (
-        editingCourseVideo &&
-        editingCourseVideo.course_video_thumbnail
-      ) {
-        form_data.course_video_thumbnail =
-          editingCourseVideo.course_video_thumbnail;
-      }
-
-      formData.append("form_data", JSON.stringify(form_data));
-
-      const endpoint = editingCourseVideo?.videoId
-        ? `${BASE_URL}/api/course-video/${editingCourseVideo.videoId}/`
-        : `${BASE_URL}/api/course-video/`;
-
-      const method = editingCourseVideo?.videoId ? "patch" : "post";
-
-      const response = await axios({
-        method,
-        url: endpoint,
-        data: formData,
+    if (response.status === 200 || response.status === 201) {
+      message.success(
+        `Video ${
+          editingCourseVideo?.videoId ? "updated" : "added"
+        } successfully`
+      );
+      
+      // Reload course data to show the updated video
+      const courseResponse = await axios.get(`${BASE_URL}/api/course/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-
-      if (response.status === 200 || response.status === 201) {
-        message.success(
-          `Video ${
-            editingCourseVideo?.videoId ? "updated" : "added"
-          } successfully`
+      
+      setCourse(courseResponse.data.data);
+      
+      // If we edited the currently selected video, update it
+      if (selectedVideo && selectedVideo.id === editingCourseVideo?.videoId) {
+        const updatedVideo = courseResponse.data.data.videos.find(
+          v => v.id === editingCourseVideo.videoId
         );
-        setModalVisible(false);
-        courseVideoForm.resetFields();
-        // fetchCourseData();
+        if (updatedVideo) {
+          setSelectedVideo(updatedVideo);
+        }
       }
-    } catch (error) {
-      console.error("Error submitting course video:", error);
-      message.error(
-        error.response?.data?.message || "Failed to save video details"
-      );
+      
+      // Reset state
+      setEditVideoModalVisible(false);
+      courseVideoForm.resetFields();
+      setEditingCourseVideo(null);
     }
-  };
+  } catch (error) {
+    console.error("Error submitting course video:", error);
+    message.error(
+      error.response?.data?.message || "Failed to save video details"
+    );
+  }
+};
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -494,7 +590,7 @@ const ViewCourseVideo = () => {
                     className="video-player"
                     controls
                     playsInline
-                    onPlay={() => markVideoAsWatched(selectedVideo.id)}
+                    // onPlay={() => markVideoAsWatched(selectedVideo.id)}
                   />
                 ) : (
                   <div className="video-player no-video">
@@ -509,7 +605,7 @@ const ViewCourseVideo = () => {
                 <p className="video-description">
                   {selectedVideo?.course_video_description}
                 </p>
-                {currentUser?.type === "Student" && !isEnrolled && (
+                {/* {currentUser?.type === "Student" && !isEnrolled && (
                   <div style={{ marginTop: "20px", marginBottom: "10px" }}>
                     <Tag color="warning">Free Preview: 2 videos only</Tag>
                     <Button
@@ -520,7 +616,7 @@ const ViewCourseVideo = () => {
                       Enroll Now to Unlock All Videos
                     </Button>
                   </div>
-                )}
+                )} */}
               </div>
               <div className="feedback-complaint-section">
                 {/* Feedback List with Scrollbar */}
@@ -685,50 +781,49 @@ const ViewCourseVideo = () => {
                 </p>
               </div>
               <div className="video-list">
-                {course.videos.map((video, index) => (
-                  <div
-                    key={video.id}
-                    className={`video-item ${
-                      selectedVideo?.id === video.id ? "active" : ""
-                    }`}
-                  >
-                    <button
-                      onClick={() => handleVideoSelect(video, index)}
-                      style={{ position: "relative" }}
-                      disabled={
-                        !canWatchVideo(index) && currentUser?.type === "Student"
-                      }
-                    >
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <div className="lesson-number">{index + 1}</div>
-                        <div className="lesson-info">
-                          <div className="lesson-title">
-                            {video.course_video_title}
-                            {watchedVideos.includes(video.id) && (
-                              <Tag
-                                color="success"
-                                style={{ marginLeft: "8px" }}
-                              >
-                                Watched
-                              </Tag>
-                            )}
-                          </div>
-                          <div className="lesson-date">
-                            {formatDate(video.created_at)}
-                          </div>
-                        </div>
-                        {currentUser?.type === "Student" &&
-                          !isEnrolled &&
-                          index >= 2 && (
-                            <LockOutlined
-                              style={{ marginLeft: "8px", color: "#ff4d4f" }}
-                            />
-                          )}
-                      </div>
-                    </button>
-                  </div>
-                ))}
-              </div>
+  {course.videos.map((video, index) => (
+    <div
+      key={video.id}
+      className={`video-item ${
+        selectedVideo?.id === video.id ? "active" : ""
+      }`}
+    >
+      <button
+        onClick={() => handleVideoSelect(video, index)}
+        style={{ position: "relative" }}
+        disabled={
+          !canWatchVideo(index) && currentUser?.type === "Student"
+        }
+      >
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <div className="lesson-number">{index + 1}</div>
+          <div className="lesson-info">
+            <div className="lesson-title">
+              {video.course_video_title}
+              {watchedVideos.includes(video.id) && (
+                <Tag color="success" style={{ marginLeft: "8px" }}>
+                  Watched
+                </Tag>
+              )}
+            </div>
+            <div className="lesson-date">
+              {formatDate(video.created_at)}
+            </div>
+          </div>
+          {/* Show lock icon only if the user hasn't purchased the course and it's beyond the first two videos */}
+          {currentUser?.type === "Student" &&
+            !purchasedCourses.includes(parseInt(id)) &&
+            !isEnrolled &&
+            index >= 2 && (
+              <LockOutlined
+                style={{ marginLeft: "8px", color: "#ff4d4f" }}
+              />
+            )}
+        </div>
+      </button>
+    </div>
+  ))}
+</div>
             </div>
           </div>
         </div>
@@ -752,148 +847,154 @@ const ViewCourseVideo = () => {
 
       {/* Enrollment Modal */}
       <Modal
-        title="Enroll in this Course"
-        open={enrollmentModalVisible}
-        onCancel={() => setEnrollmentModalVisible(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setEnrollmentModalVisible(false)}>
-            Cancel
-          </Button>,
-          <Button
-            key="enroll"
-            type="primary"
-            onClick={() => {
-              setSelectedCourse(course);
-              setModalVisible(true);
-            }}
-          >
-            Enroll Now
-          </Button>,
-        ]}
-      >
-        <p>
-          You have reached the limit of free preview videos for this course.
-        </p>
-        <p>
-          Enroll now to get access to all {course?.videos?.length} videos and
-          complete the course!
-        </p>
-      </Modal>
+  title="Enroll in this Course"
+  open={enrollmentModalVisible}
+  onCancel={() => setEnrollmentModalVisible(false)}
+  footer={[
+    <Button key="cancel" onClick={() => setEnrollmentModalVisible(false)}>
+      Cancel
+    </Button>,
+    <Button
+      key="enroll"
+      type="primary"
+      onClick={() => {
+        setSelectedCourse(course);
+        setModalVisible(true);
+      }}
+      disabled={purchasedCourses.includes(parseInt(id))} // Disable if already purchased
+    >
+      {purchasedCourses.includes(parseInt(id)) ? "Already Purchased" : "Enroll Now"}
+    </Button>,
+  ]}
+>
+  {purchasedCourses.includes(parseInt(id)) ? (
+    <p>You already have access to all videos in this course.</p>
+  ) : (
+    <>
+      <p>
+        You have reached the limit of free preview videos for this course.
+      </p>
+      <p>
+        Enroll now to get access to all {course?.videos?.length} videos and
+        complete the course!
+      </p>
+    </>
+  )}
+</Modal>
 
       <Modal
-        title={`${editingCourseVideo?.videoId ? "Edit" : "Add"} Course Video`}
-        open={modalVisible}
-        onCancel={() => {
-          setModalVisible(false);
-          courseVideoForm.resetFields();
-        }}
-        // footer={null}
-        width={600}
-        centered
+  title={`Edit Course Video`}
+  open={editVideoModalVisible}
+  onCancel={() => {
+    setEditVideoModalVisible(false);
+    courseVideoForm.resetFields();
+    setEditingCourseVideo(null);
+  }}
+  footer={null}
+  width={600}
+  centered
+>
+  <Form
+    layout="vertical"
+    form={courseVideoForm}
+    onFinish={handleCourseVideoSubmit}
+    className="p-4"
+  >
+    <Form.Item
+      name="course_video_title"
+      label="Video Title"
+      rules={[
+        { required: true, message: "Please enter video title" },
+        {
+          pattern: /^[a-zA-Z\s]+$/,
+          message: "Video title can only include letters and spaces",
+        },
+      ]}
+    >
+      <Input placeholder="Enter video title" />
+    </Form.Item>
+
+    <Form.Item
+      name="course_video_description"
+      label="Video Description"
+      rules={[
+        { required: true, message: "Please enter video description" },
+      ]}
+    >
+      <Input.TextArea placeholder="Enter video description" rows={4} />
+    </Form.Item>
+
+    <Form.Item
+      name="course_video_thumbnail"
+      label="Course Video Thumbnail"
+      rules={[
+        { required: true, message: "Please Upload Course Video Thumbnail" },
+      ]}
+      valuePropName="fileList"
+      getValueFromEvent={(e) => {
+        if (Array.isArray(e)) return e;
+        return e?.fileList;
+      }}
+    >
+      <Upload
+        name="course_video_thumbnail"
+        listType="picture"
+       
+        beforeUpload={() => false}
+        accept="image/*"
+        maxCount={1}
       >
-        <Form
-          layout="vertical"
-          form={courseVideoForm}
-          onFinish={handleCourseVideoSubmit}
-          className="p-4"
-        >
-          <Form.Item
-            name="course_video_title"
-            label="Video Title"
-            rules={[
-              { required: true, message: "Please enter video title" },
-              {
-                pattern: /^[a-zA-Z\s]+$/,
-                message: "Video title can only include letters and spaces",
-              },
-            ]}
-          >
-            <Input placeholder="Enter video title" />
-          </Form.Item>
+        <Button icon={<UploadOutlined />}>Upload Thumbnail</Button>
+      </Upload>
+    </Form.Item>
 
-          <Form.Item
-            name="course_video_description"
-            label="Video Description"
-            rules={[
-              { required: true, message: "Please enter video description" },
-            ]}
-          >
-            <Input.TextArea placeholder="Enter video description" rows={4} />
-          </Form.Item>
+    <Form.Item
+      name="course_video"
+      label="Course Video File"
+      valuePropName="fileList"
+      rules={[
+        { required: true, message: "Please Upload Course Video" },
+      ]}
+      getValueFromEvent={(e) => {
+        if (Array.isArray(e)) return e;
+        return e?.fileList;
+      }}
+    >
+      <Upload
+        name="course_video"
+        listType="text"
+        beforeUpload={() => false}
+        accept="video/*"
+        maxCount={1}
+      >
+        <Button icon={<UploadOutlined />}>Upload New Video</Button>
+      </Upload>
+    </Form.Item>
 
-          <Form.Item
-            name="course_video_thumbnail"
-            label="Video Thumbnail"
-            rules={[
-              {
-                required: !editingCourseVideo?.videoId,
-                message: "Please upload video thumbnail",
-              },
-            ]}
-            valuePropName="fileList"
-            getValueFromEvent={(e) => {
-              if (Array.isArray(e)) return e;
-              return e?.fileList;
-            }}
-          >
-            <Upload
-              name="course_video_thumbnail"
-              listType="picture"
-              beforeUpload={() => false}
-              accept="image/*"
-              maxCount={1}
-            >
-              <Button icon={<UploadOutlined />}>Upload Thumbnail</Button>
-            </Upload>
-          </Form.Item>
-
-          <Form.Item
-            name="course_video"
-            label="Video File"
-            rules={[
-              {
-                required: !editingCourseVideo?.videoId,
-                message: "Please upload video file",
-              },
-            ]}
-            valuePropName="fileList"
-            getValueFromEvent={(e) => {
-              if (Array.isArray(e)) return e;
-              return e?.fileList;
-            }}
-          >
-            <Upload
-              name="course_video"
-              listType="text"
-              beforeUpload={() => false}
-              accept="video/*"
-              maxCount={1}
-            >
-              <Button icon={<UploadOutlined />}>Upload Video</Button>
-            </Upload>
-          </Form.Item>
-
-          <Form.Item
-            className="text-right mb-0 "
-            style={{ display: "flex", justifyContent: "flex-end" }}
-          >
-            <Button
-              className="mr-2 "
-              type="primary"
-              onClick={() => setModalVisible(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              style={{ marginLeft: "10px" }}
-            >
-              {editingCourseVideo?.videoId ? "Edit" : "Add"} Video
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
+    <Form.Item
+      className="text-right mb-0"
+      style={{ display: "flex", justifyContent: "flex-end" }}
+    >
+      <Button
+        className="mr-2"
+        onClick={() => {
+          setEditVideoModalVisible(false);
+          courseVideoForm.resetFields();
+          setEditingCourseVideo(null);
+        }}
+      >
+        Cancel
+      </Button>
+      <Button
+        type="primary"
+        htmlType="submit"
+        style={{ marginLeft: "10px" }}
+      >
+        Update Video
+      </Button>
+    </Form.Item>
+  </Form>
+</Modal>
       <Modal
         title="Teacher Response"
         open={isResponseModalVisible}

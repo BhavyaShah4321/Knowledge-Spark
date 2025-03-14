@@ -10,18 +10,22 @@ function Login() {
   const navigate = useNavigate();
   useEffect(() => {
     const storedAuth = localStorage.getItem("auth_token");
-  
+
     if (storedAuth) {
       try {
         const parsedAuth = JSON.parse(storedAuth);
-  
+
         // Check if the token belongs to your website (validate based on your API structure)
-        if (!parsedAuth.access_token || !parsedAuth.user || !parsedAuth.user.email) {
+        if (
+          !parsedAuth.access_token ||
+          !parsedAuth.user ||
+          !parsedAuth.user.email
+        ) {
           localStorage.removeItem("auth_token");
           navigate("/"); // Redirect to login page
           return;
         }
-  
+
         // If the token seems valid, allow access to dashboard
         navigate("/dashboard");
       } catch (error) {
@@ -33,7 +37,6 @@ function Login() {
       navigate("/"); // Redirect to login if no token exists
     }
   }, [navigate]);
-  
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -46,14 +49,22 @@ function Login() {
 
     try {
       // Attempt normal user login first
-      const normalResponse = await axios.post(normalUserApi, { email, password });
+      const normalResponse = await axios.post(normalUserApi, {
+        email,
+        password,
+      });
 
       if (normalResponse.status === 200 && normalResponse.data.success) {
         const { token, data } = normalResponse.data;
 
         // Check if the account is inactive
-        if ((data.type === 'teacher' || data.type === 'student') && data.status === 'inactive') {
-          message.error("Your account is currently inactive. Please contact the administrator.");
+        if (
+          (data.type === "teacher" || data.type === "student") &&
+          data.status === "inactive"
+        ) {
+          message.error(
+            "Your account is currently inactive. Please contact the administrator."
+          );
           return;
         }
 
@@ -91,8 +102,10 @@ function Login() {
           const { token, data } = adminResponse.data;
 
           // Check if the admin account is inactive
-          if (data.status === 'inactive') {
-            message.error("Your account is currently inactive. Please contact the administrator.");
+          if (data.status === "inactive") {
+            message.error(
+              "Your account is currently inactive. Please contact the administrator."
+            );
             return;
           }
 
@@ -121,7 +134,9 @@ function Login() {
         }
       } catch (adminError) {
         console.error("Admin login failed:", adminError);
-        message.error("Login failed. Please check your credentials and try again.");
+        message.error(
+          "Login failed. Please check your credentials and try again."
+        );
       }
     }
   };
@@ -136,9 +151,13 @@ function Login() {
         />
         <h2>Welcome to Knowledge Spark.</h2>
         <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam.
+          <b>
+          🌟 Empowering Learning, Anytime, Anywhere! 🔹 For Teachers: Create and
+          manage courses effortlessly. Share your knowledge with students
+          worldwide. 🔹 For Students: Explore a wide range of courses, learn
+          from expert educators, and enhance your skills at your own pace. 🚀
+          Log in now and ignite your learning journey!
+          </b>
         </p>
       </div>
 
@@ -190,11 +209,7 @@ function Login() {
                 type={showPassword ? "text" : "password"}
                 suffix={
                   <span onClick={togglePasswordVisibility}>
-                    {showPassword ? (
-                      <EyeInvisibleOutlined />
-                    ) : (
-                      <EyeOutlined />
-                    )}
+                    {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
                   </span>
                 }
               />
