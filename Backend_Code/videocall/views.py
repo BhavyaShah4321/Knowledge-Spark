@@ -155,7 +155,43 @@ class VideoRoomViewSet(ModelViewSet):
         return Response({"success":True,"message":"video call found successfully"},status=status.HTTP_200_OK)
     
     
-    
+    @action(detail=False,methods=["POST",],url_path="get-video-call-by-student")
+    def get_video_call_by_student(self,request,*args,**kwargs):
+        student_id=request.data.get("student_id")
+        
+        if not student_id:
+            return Response({"success":False,"message":"student id is required"},status=status.HTTP_400_BAD_REQUEST)
+        
+            
+        videocall_instance=VideoRoom.objects.filter(student=student_id)
+        page = self.paginate_queryset(videocall_instance)
+        
+        if  page is not None :
+            serializer = self.get_serializer(page, many=True)
+            
+            return self.get_paginated_response(serializer.data)
+        
+        serilaizer=self.serializer_class(videocall_instance)
+        return Response({"success":True,"data":serilaizer.data},status=status.HTTP_200_OK)
+        
+        
+    @action(detail=False,methods=["POST"],url_path="get-video-call-by-teacher")
+    def get_video_call_by_teacher(self,request,*args,**kwargs):
+        teacher_id=request.data.get("teacher_id")
+        
+        if not teacher_id:
+            return Response({"success":False,"message":"teacher id is required"},status=status.HTTP_400_BAD_REQUEST)
+        
+            
+        videocall_instance=VideoRoom.objects.filter(teacher=teacher_id)
+        page = self.paginate_queryset(videocall_instance)
+        
+        if  page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        serilaizer=self.serializer_class(videocall_instance)
+        return Response({"success":True,"data":serilaizer.data},status=status.HTTP_200_OK)
         
         
 
