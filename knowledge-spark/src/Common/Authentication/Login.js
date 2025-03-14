@@ -10,10 +10,30 @@ function Login() {
   const navigate = useNavigate();
   useEffect(() => {
     const storedAuth = localStorage.getItem("auth_token");
+  
     if (storedAuth) {
-      navigate("/dashboard"); // Redirect to dashboard if token exists
+      try {
+        const parsedAuth = JSON.parse(storedAuth);
+  
+        // Check if the token belongs to your website (validate based on your API structure)
+        if (!parsedAuth.access_token || !parsedAuth.user || !parsedAuth.user.email) {
+          localStorage.removeItem("auth_token");
+          navigate("/"); // Redirect to login page
+          return;
+        }
+  
+        // If the token seems valid, allow access to dashboard
+        navigate("/dashboard");
+      } catch (error) {
+        console.error("Invalid token format:", error);
+        localStorage.removeItem("auth_token");
+        navigate("/"); // Redirect to login page
+      }
+    } else {
+      navigate("/"); // Redirect to login if no token exists
     }
   }, [navigate]);
+  
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
