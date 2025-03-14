@@ -218,6 +218,10 @@ class CourseFeedbackSerializer(serializers.ModelSerializer):
 class CoursePurchaseSerializer(serializers.ModelSerializer):
     user_username = serializers.CharField(source="user.username", read_only=True)
     course_title = serializers.CharField(source="course.course_title", read_only=True)
+    course_teacher = serializers.CharField(source="course.course_teacher.username", read_only=True)
+    course_thumbnail = serializers.CharField(source="course.course_thumbnail", read_only=True)
+    
+    
     # amount = serializers.CharField(source="course.course_price", read_only=True)
     
     class Meta:
@@ -227,6 +231,8 @@ class CoursePurchaseSerializer(serializers.ModelSerializer):
             "user",
             "user_username",
             "course",
+            "course_teacher",
+            "course_thumbnail",
             "course_title",
             "razorpay_order_id",
             "razorpay_payment_id",
