@@ -82,8 +82,33 @@ function OTPVerification() {
             });
 
             if (response.status === 200) {
-                message.success(response.data.message);
-                navigate("/");
+                const { token, data } = response.data;
+
+                // Check if the account is inactive
+                if ((data.type === 'teacher' || data.type === 'student') && data.status === 'inactive') {
+                    message.error("Your account is currently inactive. Please contact the administrator.");
+                    return;
+                }
+
+                document.cookie = `token=${token.access_token}; path=/;SameSite=Lax`;
+                localStorage.setItem(
+                    "auth_token",
+                    JSON.stringify({
+                        access_token: token.access_token,
+                        refresh_token: token.refresh_token,
+                        user: {
+                            id: data.id,
+                            username: data.username,
+                            email: data.email,
+                            type: data.type,
+                            status: data.status,
+                            profile_picture: data.profile_picture,
+                            created_at: data.created_at,
+                        },
+                        user_type: "Member",
+                    }))
+                navigate("/dashboard");
+                return;
             }
         } catch (error) {
             console.error("Error during OTP verification:", error);
@@ -140,7 +165,13 @@ function OTPVerification() {
                 />
                 <h2>Welcome to Knowledge Spark.</h2>
                 <p>
-                    Please enter the OTP sent to your registered email address to verify your account.
+                    <b>
+                        🌟 Empowering Learning, Anytime, Anywhere! 🔹 For Teachers: Create and
+                        manage courses effortlessly. Share your knowledge with students
+                        worldwide. 🔹 For Students: Explore a wide range of courses, learn
+                        from expert educators, and enhance your skills at your own pace. 🚀
+                        Log in now and ignite your learning journey!
+                    </b>
                 </p>
             </div>
 
