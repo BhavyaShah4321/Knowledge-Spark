@@ -33,6 +33,7 @@ import TeacherFeedBackList from '../components/Teacher/TeacherFeedBackList';
 import MyCourses from '../components/studentCOurses/MyCourses';
 import PurchaseCourse from '../components/PurchaseCourses/PurchaseCourse';
 import CoursePurchaseList from '../components/Teacher/ManageCourses/CoursePurchaseList';
+import StudentFeedback from '../components/studentCOurses/StudentFeedback';
 
 const Root = () => {
   return (
@@ -73,6 +74,7 @@ const Root = () => {
         <Route path="/teacher-feedback" element={<TeacherFeedBackList />} />
         <Route path="/purchase-courses" element={<PurchaseCourse />} />
         <Route path="/course-purchase-list" element={<CoursePurchaseList />} />
+        <Route path="/student-feedbacks" element={<StudentFeedback />} />
 
       </Route>
 
