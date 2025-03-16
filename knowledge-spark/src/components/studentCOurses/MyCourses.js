@@ -88,6 +88,10 @@ const MyCourses = () => {
     }
   };
 
+  const handleViewCourse = (courseId) => {
+    navigate(`/view-course/${courseId}`,{state: "My Courses"});
+  };
+
   return (
     <Layout style={{ minHeight: "100vh" }}>
       {/* Sidebar */}
@@ -154,7 +158,7 @@ const MyCourses = () => {
                             ? `http://localhost:8000${course.videos[0].course_video_thumbnail}`
                             : "/api/placeholder/400/320"
                         }
-                        // onClick={() => navigate(`/view-course/${course.id}`)}
+                        onClick={() => handleViewCourse(course.id)}
                       />
                     }
                   >

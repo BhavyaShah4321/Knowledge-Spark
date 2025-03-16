@@ -46,21 +46,29 @@ export default function Category() {
     return authData.access_token;
   };
 
-  const fetchCategoryDetails = async (page = 1) => {
+  const fetchCategoryDetails = async (page = 1, search = "") => {
     try {
       setLoading(true);
       const accessToken = getAccessToken();
 
-      const response = await axios.get(`http://localhost:8000/api/course-category/`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const response = await axios.get(
+        `http://localhost:8000/api/course-category/`, 
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          params: {
+            page,
+            search, // Send search query to backend
+          },
+        }
+      );
 
       const categoryDetails = response.data;
       setCategoryData(categoryDetails.results.data || []);
       setFilteredData(categoryDetails.results.data || []);
       setTotalItems(categoryDetails.count || 0);
+      setCurrentPage(page); // Update page state
     } catch (error) {
       console.error("Error fetching category details:", error);
       message.error("Failed to fetch category details");
@@ -68,10 +76,6 @@ export default function Category() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchCategoryDetails(currentPage);
-  }, [currentPage]);
 
 
   useEffect(() => {
@@ -188,8 +192,8 @@ export default function Category() {
 
 
   useEffect(() => {
-    fetchCategoryDetails(currentPage);
-  }, [currentPage]);
+    fetchCategoryDetails(currentPage, searchText);
+  }, [currentPage, searchText]);
   
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
@@ -414,7 +418,8 @@ export default function Category() {
         pagination={{
           current: currentPage,
           total: totalItems,
-          showTotal: (total) => `Total ${total} items`, // This will display the total records
+          showTotal: (total) => `Total ${total} items`,
+          pageSize: 10,
         }}
         loading={loading}
         onChange={(pagination) => setCurrentPage(pagination.current)}

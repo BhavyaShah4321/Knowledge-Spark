@@ -33,10 +33,11 @@ import { ReactComponent as EditIcon } from "../../Image/EditIcon.svg";
 import { ReactComponent as FilterIcon } from "../../Image/FilterIcon.svg";
 
 function StudentList() {
+  const [pageSize, setPageSize] = useState(10); // Default Page Size
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [data, setData] = useState([]);
-  const [open,setOpen]=useState('');
+  const [open, setOpen] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -44,25 +45,29 @@ function StudentList() {
   const [form] = Form.useForm();
   const [editingStudent, setEditingStudent] = useState(null);
   // Fetch students details from the API
-  const fetchStudentDetails = async (page = 1, searchQuery = "") => {
+  const fetchStudentDetails = async (page = 1, size = 10, searchQuery = "") => {
     try {
       setLoading(true);
       const authData = JSON.parse(localStorage.getItem("auth_token"));
-      if (!authData || !authData.access_token) {
-        console.error(
-          "Authentication tokens are missing. Please log in again."
-        );
+      if (!authData?.access_token) {
+        console.error("Authentication tokens are missing. Please log in again.");
         return;
       }
-      const accessToken = authData.access_token;
+
       const response = await axios.get(
-        `http://localhost:8000/api/user/?page=${page}&search=Student&search_text=${searchQuery}`,
+        `http://localhost:8000/api/user/`,
         {
+          params: {
+            page: page,
+            page_size: size,
+            search: `Student ${searchQuery}`.trim(),
+          },
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${authData.access_token}`,
           },
         }
       );
+
       const studentDetails = response.data;
       setData(studentDetails.results.data || []);
       setTotalItems(studentDetails.count || 0);
@@ -73,27 +78,31 @@ function StudentList() {
     }
   };
 
-  // Handle search text change
+  // Handle Search Input Change
   const onSearchChange = (e) => {
     const value = e.target.value;
     setSearchText(value);
-
-    // Filter data locally
-    const filteredData = data.filter(
-      (item) =>
-        item.username.toLowerCase().includes(value.toLowerCase()) ||
-        item.email.toLowerCase().includes(value.toLowerCase())
-    );
-
-    setData(filteredData);
+    setCurrentPage(1); // Reset to first page on search
+    fetchStudentDetails(1, pageSize, value);
   };
 
-  // Reset filter to the default
+  // Reset Filter
   const resetFilter = () => {
     setSearchText("");
     setCurrentPage(1);
-    fetchStudentDetails(1);
+    fetchStudentDetails(1, pageSize, "");
   };
+
+  // Handle Table Change (Pagination & Sorting)
+  const handleTableChange = (pagination) => {
+    setCurrentPage(pagination.current);
+    setPageSize(pagination.pageSize);
+    fetchStudentDetails(pagination.current, pagination.pageSize, searchText);
+  };
+
+  useEffect(() => {
+    fetchStudentDetails(currentPage, pageSize, searchText);
+  }, [currentPage, pageSize]);
 
   // Handle row selection
   const rowSelection = {
@@ -101,9 +110,6 @@ function StudentList() {
     onChange: (keys) => setSelectedRowKeys(keys),
   };
 
-  useEffect(() => {
-    fetchStudentDetails(currentPage);
-  }, [currentPage]);
 
   // Update student status (Active/Inactive)
   const updateStudentStatus = async (id, isActive) => {
@@ -205,7 +211,7 @@ function StudentList() {
     // Otherwise, prepend the base URL
     return `http://localhost:8000${profilePicture}`;
   };
-  
+
 
   // Table columns configuration
   const columns = [
@@ -300,10 +306,6 @@ function StudentList() {
     },
   ];
 
-  const handleTableChange = (pagination) => {
-    setCurrentPage(pagination.current);
-    fetchStudentDetails(pagination.current);
-  };
   const handleSubmit = async (values) => {
     try {
       // Get auth token
@@ -513,20 +515,20 @@ function StudentList() {
       </Modal>
 
       <Table
-        // rowSelection={rowSelection}
         dataSource={Array.isArray(data) ? data : []}
         columns={columns}
         rowKey="id"
+        loading={loading}
         pagination={{
           current: currentPage,
+          pageSize: pageSize,
           total: totalItems,
-          showTotal: (total) => `Total ${total} items`, // This will display the total records
+          showSizeChanger: true, // Enables page size selection
+          pageSizeOptions: ["5", "10", "20", "50"],
+          showTotal: (total) => `Total ${total} items`,
         }}
-        loading={loading}
         onChange={handleTableChange}
-        scroll={{
-          x: 1500,
-        }}
+        scroll={{ x: 1500 }}
       />
     </div>
   );

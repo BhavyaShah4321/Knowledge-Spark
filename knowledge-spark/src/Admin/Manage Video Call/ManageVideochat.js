@@ -11,6 +11,7 @@ function ManageVideochat() {
   const [searchText, setSearchText] = useState("");
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);  // Default page size
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,17 +20,14 @@ function ManageVideochat() {
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-
   const openEditModal = (record) => {
     setEditData(record);
     setIsEditModalOpen(true);
   };
-
   const closeEditModal = () => {
     setEditData(null);
     setIsEditModalOpen(false);
   };
-
 
   const auth_token = JSON.parse(localStorage.getItem('auth_token') || "{}");
   if (!auth_token?.access_token) {
@@ -40,19 +38,18 @@ function ManageVideochat() {
   const fetchVideoCallData = async () => {
     setLoading(true);
     try {
-      const auth_token = JSON.parse(localStorage.getItem('auth_token') || "{}");
-      if (!auth_token?.access_token) {
-        throw new Error("Authentication tokens are missing. Please log in again.");
-      }
-      const accesstoken = auth_token.access_token;
-
-      // Include searchText in API request
-      const response = await axios.get(`http://localhost:8000/api/video-call/?search=${searchText}`, {
-        headers: { Authorization: `Bearer ${accesstoken}` }
+      const response = await axios.get(`http://localhost:8000/api/video-call/`, {
+        headers: { Authorization: `Bearer ${accesstoken}` },
+        params: {
+          search: searchText,
+          page: currentPage,
+          page_size: pageSize
+        }
       });
 
       setData(response.data.results || []);
       setTotalItems(response.data.count || 0);
+      setPageSize(response.data.page_size || 10); // API-defined page size
     } catch (error) {
       message.error("Failed to fetch video call data.");
     } finally {
@@ -60,15 +57,10 @@ function ManageVideochat() {
     }
   };
 
-  // Call fetchVideoCallData when search text changes
+  // Fetch data when component mounts or when filters change
   useEffect(() => {
     fetchVideoCallData();
-  }, [searchText]); // Refetch data when searchText changes
-
-
-  useEffect(() => {
-    fetchVideoCallData();
-  }, []);
+  }, [searchText, currentPage, pageSize]);
 
   const handleDelete = async (id) => {
     Modal.confirm({
@@ -78,15 +70,11 @@ function ManageVideochat() {
       onOk: async () => {
         try {
           setLoading(true);
-          const response = await axios.delete(`http://localhost:8000/api/video-call/${id}/`, {
+          await axios.delete(`http://localhost:8000/api/video-call/${id}/`, {
             headers: { Authorization: `Bearer ${accesstoken}` }
           });
-          if (response.status === 204) {
-            message.success("Video call deleted successfully.");
-            fetchVideoCallData(); // Refresh the data after deletion
-          } else {
-            message.error("Failed to delete video call.");
-          }
+          message.success("Video call deleted successfully.");
+          fetchVideoCallData();
         } catch (error) {
           message.error("An error occurred while deleting the video call.");
         } finally {
@@ -104,19 +92,13 @@ function ManageVideochat() {
       onOk: async () => {
         try {
           setLoading(true);
-          const response = await axios.post(
+          await axios.post(
             "http://localhost:8000/api/video-call/endvideocall/",
             { id },
-            {
-              headers: { Authorization: `Bearer ${accesstoken}` }
-            }
+            { headers: { Authorization: `Bearer ${accesstoken}` } }
           );
-          if (response.status === 200) {
-            message.success("Video call ended successfully.");
-            fetchVideoCallData(); // Refresh the table after ending the call
-          } else {
-            message.error("Failed to end video call.");
-          }
+          message.success("Video call ended successfully.");
+          fetchVideoCallData();
         } catch (error) {
           message.error("An error occurred while ending the video call.");
         } finally {
@@ -127,34 +109,16 @@ function ManageVideochat() {
   };
 
   const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchText(value);
-
-    if (!value) {
-      fetchVideoCallData(); // Reset data when search is cleared
-      return;
-    }
-
-    const filteredData = data.filter((item) =>
-      Object.values(item).some(
-        (val) =>
-          val &&
-          val.toString().toLowerCase().includes(value.toLowerCase())
-      )
-    );
-
-    setData(filteredData);
+    setSearchText(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
   };
-
 
   const columns = [
     {
       title: "Sr. No.",
       dataIndex: "SrNo",
       key: "SrNo",
-      render: (text, record, index) => {
-        return (currentPage - 1) * 10 + index + 1;
-      }
+      render: (text, record, index) => (currentPage - 1) * pageSize + index + 1
     },
     {
       title: "Teacher Name",
@@ -190,53 +154,51 @@ function ManageVideochat() {
       title: "Created By",
       dataIndex: "created_by_username",
       key: "created_by_username",
-    },
+    }
     // {
-    //   title: "Created At",
-    //   dataIndex: "created_at",
-    //   key: "created_at",
-    // },
-    // {
-    //   title: "Updated At",
-    //   dataIndex: "updated_at",
-    //   key: "updated_at",
-    // },
-    // {
-    //   title: "Action",
-    //   key: "action",
-    //   render: (text, record) => (
-    //     <Space>
-    //       <Tooltip title="Edit">
-    //         <Button
-    //           icon={<EditOutlined />}
-    //           style={{ cursor: "pointer" }}
-    //           onClick={() => openEditModal(record)}
-    //         />
-    //       </Tooltip>
-    //       <Tooltip title="Delete">
-    //         <Button
-    //           icon={<DeleteOutlined />}
-    //           style={{ cursor: "pointer", color: "red" }}
-    //           onClick={() => handleDelete(record.id)}
-    //         />
-    //       </Tooltip>
-    //       {record.end === null && (
-    //         <Tooltip title="End Call">
-    //           <Button
-    //             type="primary"
-    //             style={{ cursor: "pointer", backgroundColor: "#28a745", borderColor: "#28a745" }}
-    //             onClick={() => handleEndVideoCall(record.id)}
-    //           >
-    //             End Call
-    //           </Button>
-    //         </Tooltip>
-    //       )}
-    //     </Space>
-    //   ),
-    // }
-
+    //     //   title: "Created At",
+    //     //   dataIndex: "created_at",
+    //     //   key: "created_at",
+    //     // },
+    //     // {
+    //     //   title: "Updated At",
+    //     //   dataIndex: "updated_at",
+    //     //   key: "updated_at",
+    //     // },
+    //     // {
+    //     //   title: "Action",
+    //     //   key: "action",
+    //     //   render: (text, record) => (
+    //     //     <Space>
+    //     //       <Tooltip title="Edit">
+    //     //         <Button
+    //     //           icon={<EditOutlined />}
+    //     //           style={{ cursor: "pointer" }}
+    //     //           onClick={() => openEditModal(record)}
+    //     //         />
+    //     //       </Tooltip>
+    //     //       <Tooltip title="Delete">
+    //     //         <Button
+    //     //           icon={<DeleteOutlined />}
+    //     //           style={{ cursor: "pointer", color: "red" }}
+    //     //           onClick={() => handleDelete(record.id)}
+    //     //         />
+    //     //       </Tooltip>
+    //     //       {record.end === null && (
+    //     //         <Tooltip title="End Call">
+    //     //           <Button
+    //     //             type="primary"
+    //     //             style={{ cursor: "pointer", backgroundColor: "#28a745", borderColor: "#28a745" }}
+    //     //             onClick={() => handleEndVideoCall(record.id)}
+    //     //           >
+    //     //             End Call
+    //     //           </Button>
+    //     //         </Tooltip>
+    //     //       )}
+    //     //     </Space>
+    //     //   ),
+    //     // }
   ];
-
 
   const resetFilter = () => {
     setSearchText("");
@@ -251,7 +213,7 @@ function ManageVideochat() {
           <Breadcrumb
             items={[
               { title: <Link to="/dashboard">Home</Link> },
-              { title: "video Call" },
+              { title: "Video Call" },
             ]}
           />
         </Col>
@@ -262,7 +224,7 @@ function ManageVideochat() {
                 placeholder="Search"
                 prefix={<SearchOutlined />}
                 value={searchText}
-                onChange={handleSearch} // Call filtering function
+                onChange={handleSearch}
               />
               <Tooltip placement="top" title="Reset Filter">
                 <Button type="primary" className="iconlink" onClick={resetFilter}>
@@ -271,32 +233,33 @@ function ManageVideochat() {
               </Tooltip>
             </Space>
           </Col>
-          {/* <Col>
-            <Tooltip title="Create Video Call">
-              <Button type="primary" icon={<PlusOutlined />} onClick={openModal}>
-                Create Video Call
-              </Button>
-            </Tooltip>
-          </Col> */}
         </Row>
       </Row>
+
       <Table
         columns={columns}
         dataSource={data}
         loading={loading}
         pagination={{
           current: currentPage,
+          pageSize: pageSize,
           total: totalItems,
-          showTotal: (total) => `Total ${total} items`, // This will display the total records
+          showSizeChanger: true,
+          onShowSizeChange: (current, size) => {
+            setPageSize(size);
+            setCurrentPage(1); // Reset to first page when changing page size
+          },
+          onChange: (page) => setCurrentPage(page),
+          showTotal: (total) => `Total ${total} items`,
         }}
-        onChange={(pagination) => setCurrentPage(pagination.current)}
       />
+      {/* 
       <Modal
         title="Create Video Call"
         open={isModalOpen}
         onCancel={closeModal}
         footer={null}
-        width={800}  // Adjust width as needed
+        width={800}
       >
         <CreateVideoCall closeModal={closeModal} refreshData={fetchVideoCallData} />
       </Modal>
@@ -309,9 +272,9 @@ function ManageVideochat() {
         width={800}
       >
         <EditVideoCall editData={editData} closeModal={closeEditModal} refreshData={fetchVideoCallData} />
-      </Modal>
+      </Modal> */}
     </div>
   );
 }
 
-export default ManageVideochat
+export default ManageVideochat;

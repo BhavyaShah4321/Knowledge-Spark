@@ -3057,116 +3057,305 @@ body .ant-layout-sider .sidebar_menu {
     9. Chat
   -----------------------*/
 
-
-/* Full-page layout */
-.chat-container {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 20px;
-  font-family: "Poppins", sans-serif;
+/* Modern Table Chat Layout */
+.table-chat-container {
+  padding: 30px;
+  background-color: #f7f9fc;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
 }
 
 /* Header */
-.chat-header {
-  text-align: center;
-  margin-bottom: 20px;
+.table-header {
+  margin-bottom: 30px;
 }
 
-.chat-header h1 {
+.table-header h1 {
   font-size: 32px;
-  font-weight: bold;
-  color: #333;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 20px;
+  text-align: center;
 }
 
-/* Search Bar */
-.chat-search-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 15px;
+/* Search */
+.table-search-wrapper {
+  max-width: 500px;
+  margin: 0 auto 30px;
 }
 
-.chat-search {
-  width: 400px;
-  padding: 12px 20px;
-  border-radius: 25px;
-  border: 1px solid #ddd;
-  outline: none;
+.table-search {
+  height: 46px;
+  border-radius: 8px;
   font-size: 16px;
-  background: white;
-  color: #333;
-  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease-in-out;
-  text-align: left;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.chat-search:focus {
-  border: 1px solid #007bff;
-  box-shadow: 0px 4px 12px rgba(0, 123, 255, 0.5);
-}
-
-/* Chat Table */
-.chat-table {
-  width: 90%;
-  max-width: 1200px;
-  background: white;
+/* Table Container */
+.table-responsive {
+  overflow-x: auto;
+  background-color: white;
   border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  margin-bottom: 30px;
+}
+
+/* Table */
+.custom-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
 }
 
 /* Table Header */
-.chat-table .ant-table {
-  background: transparent;
+.custom-table thead tr {
+  background-color: #f1f5f9;
+  height: 60px;
 }
 
-.chat-table .ant-table-thead>tr>th {
-  background: #f5f5f5 !important;
-  color: #333 !important;
-  font-size: 18px;
-  text-align: center;
-  border-bottom: 2px solid #ddd;
+.custom-table th {
+  padding: 16px 20px;
+  text-align: left;
+  font-size: 16px;
+  font-weight: 600;
+  color: #4a5568;
+  border-bottom: 2px solid #e2e8f0;
 }
 
-/* Table Rows */
-.chat-table .ant-table-tbody>tr>td {
+.custom-table th:first-child {
+  border-top-left-radius: 12px;
+  width: 80px;
+}
+
+.custom-table th:last-child {
+  border-top-right-radius: 12px;
+  width: 120px;
   text-align: center;
-  color: #555;
+}
+
+/* Table Body */
+.custom-table tbody tr {
+  height: 70px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.custom-table tbody tr:hover {
+  background-color: #f8fafc;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.custom-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 15px;
+  color: #2d3748;
+}
+
+/* Alternating Row Colors */
+.odd-row {
+  background-color: #ffffff;
+}
+
+.even-row {
+  background-color: #f8fafc;
+}
+
+/* ID Badge */
+.chat-id {
+  text-align: center;
+}
+
+.id-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #edf2f7;
+  color: #4a5568;
+  font-weight: 600;
   font-size: 16px;
 }
 
-/* Hover Effect */
-.chat-table .ant-table-tbody>tr:hover {
-  background: #f0f8ff !important;
-  transition: background 0.3s ease-in-out;
+.even-row .id-badge {
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+.odd-row .id-badge {
+  background-color: #fff0f6;
+  color: #f759ab;
 }
 
 /* User Cell */
 .user-cell {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 18px;
-  color: #333;
+  gap: 15px;
 }
 
-/* User Avatar */
-.ant-avatar {
-  background: #007bff;
+.username {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+/* View Button */
+.view-btn {
+  background-color: #3182ce;
   color: white;
-  box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.4);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: block;
+  margin: 0 auto;
 }
 
-/* Loading Spinner */
-.loading-container {
+.view-btn:hover {
+  background-color: #2c5282;
+}
+
+/* Empty State */
+.no-results {
+  padding: 40px 20px;
+  text-align: center;
+  color: #718096;
+}
+
+.no-results h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #4a5568;
+}
+
+/* Loading */
+.table-loading {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 70vh;
+  height: 300px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
+
+/* Pagination */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Modal */
+.chat-modal .ant-modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.chat-modal .ant-modal-header {
+  background-color: #f8f9fa;
+  padding: 16px 24px;
+}
+
+.chat-modal .ant-modal-title {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .table-chat-container {
+    padding: 20px 15px;
+  }
+  
+  .custom-table {
+    min-width: 700px;
+  }
+  
+  .user-cell {
+    gap: 10px;
+  }
+  
+  .table-header h1 {
+    font-size: 28px;
+  }
+}
+
+/*-----------------
+    11. Chat Message
+  -----------------------*/
+  .chat-box {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    height: 100%;
+    overflow-y: auto;
+  }
+  
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+  
+  .message-container {
+    display: flex;
+    width: 100%;
+    margin-bottom: 15px;
+  }
+  
+  .first-sender-container {
+    justify-content: flex-end;
+  }
+  
+  .other-sender-container {
+    justify-content: flex-start;
+  }
+  
+  .message {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 18px;
+    position: relative;
+    overflow-wrap: break-word;
+  }
+  
+  .first-sender-message {
+    background-color: #0084ff;
+    color: white;
+    border-bottom-right-radius: 5px;
+  }
+  
+  .other-sender-message {
+    background-color: #f0f0f0;
+    color: #333;
+    border-bottom-left-radius: 5px;
+  }
+  
+  .message-text {
+    margin: 0 0 5px 0;
+  }
+  
+  .message-meta {
+    font-size: 12px;
+    display: block;
+    margin-top: 5px;
+    opacity: 0.8;
+  }
+  
+  .no-messages {
+    text-align: center;
+    color: #888;
+    margin-top: 20px;
+  }
+
 
 /*-----------------
     10. Student Courese

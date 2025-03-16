@@ -6,6 +6,10 @@ function ChatMessage({ chatUuid }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const authData = JSON.parse(localStorage.getItem("auth_token"));
+  const accessToken = authData?.access_token;
+  const loggedInUserId = authData?.user_id;
+
   useEffect(() => {
     if (!chatUuid) {
       console.log("chatUuid is missing. Skipping API call.");
@@ -14,9 +18,6 @@ function ChatMessage({ chatUuid }) {
     }
 
     console.log("Fetching messages for chatUuid:", chatUuid);
-
-    const authData = JSON.parse(localStorage.getItem("auth_token"));
-    const accessToken = authData?.access_token;
 
     if (!accessToken) {
       message.error("Unauthorized. Please log in again.");
@@ -46,30 +47,38 @@ function ChatMessage({ chatUuid }) {
     };
 
     fetchMessages();
-  }, [chatUuid]);
+  }, [chatUuid, accessToken]);
+
+  // Get the first sender ID from messages if it exists
+  const firstSenderId = messages.length > 0 ? messages[0].sender : null;
 
   return (
     <div className="chat-box">
       {loading ? (
-        <Spin size="large" />
+        <div className="loading-container">
+          <Spin size="large" />
+        </div>
       ) : messages.length > 0 ? (
-        messages.map((msg, index) => {
-          const isRightAligned = index % 2 === 0; // First message is right, then alternate
-
+        messages.map((msg) => {
+          // Check if this message is from the first sender
+          const isFirstSender = parseInt(msg.sender) === parseInt(firstSenderId);
+          
           return (
             <div
               key={msg.id}
-              className={`message ${isRightAligned ? "right-message" : "left-message"}`}
+              className={`message-container ${isFirstSender ? "first-sender-container" : "other-sender-container"}`}
             >
-              <p className="message-text">{msg.message}</p>
-              <span className="message-meta">
-                <strong>{msg.sender_username}</strong> • {new Date(msg.created_at).toLocaleTimeString()}
-              </span>
+              <div className={`message ${isFirstSender ? "first-sender-message" : "other-sender-message"}`}>
+                <p className="message-text">{msg.message}</p>
+                <span className="message-meta">
+                  <strong>{msg.sender_username}</strong> • {new Date(msg.created_at).toLocaleTimeString()}
+                </span>
+              </div>
             </div>
           );
         })
       ) : (
-        <p>No messages found.</p>
+        <p className="no-messages">No messages found.</p>
       )}
     </div>
   );
