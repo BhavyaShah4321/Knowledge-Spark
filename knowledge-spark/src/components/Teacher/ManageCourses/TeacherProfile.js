@@ -60,34 +60,34 @@ const TeacherProfile = () => {
     return <div className="loader-container">Teacher not found</div>;
   }
 
-  const handleTeacherContact = async () => {
-    try {
-      const accessToken = getAccessToken();
-      const userData = JSON.parse(localStorage.getItem("auth_token"));
-      const user1 = userData.user.id; // ID from localStorage
-      const user2 = parseInt(id); // Convert Teacher ID from useParams() to a number
+  // const handleTeacherContact = async () => {
+  //   try {
+  //     const accessToken = getAccessToken();
+  //     const userData = JSON.parse(localStorage.getItem("auth_token"));
+  //     const user1 = userData.user.id; // ID from localStorage
+  //     const user2 = parseInt(id); // Convert Teacher ID from useParams() to a number
   
-      const payload = {
-        user_1: user1,
-        user_2: user2,
-      };
+  //     const payload = {
+  //       user_1: user1,
+  //       user_2: user2,
+  //     };
   
-      const response = await axios.post(`${BASE_URL}/api/chat/`, payload, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
+  //     const response = await axios.post(`${BASE_URL}/api/chat/`, payload, {
+  //       headers: {
+  //         Authorization: `Bearer ${accessToken}`,
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
   
-      // Get the uuid from the response data
-      const uuid = response.data.data.uuid;
+  //     // Get the uuid from the response data
+  //     const uuid = response.data.data.uuid;
   
-      // Navigate to the chat page and pass the uuid as state
-      navigate("/teacher-chat", { state: { uuid } });
-    } catch (error) {
-      console.error("Error creating chat:", error);
-    }
-  };
+  //     // Navigate to the chat page and pass the uuid as state
+  //     navigate("/teacher-chat", { state: { uuid } });
+  //   } catch (error) {
+  //     console.error("Error creating chat:", error);
+  //   }
+  // };
 
   return (
     <div className="teacher-profile-container">
@@ -131,7 +131,7 @@ const TeacherProfile = () => {
               )}{" "}
               {teacher.is_active ? "Active" : "Inactive"}
             </Text>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            {/* <div style={{ display: "flex", justifyContent: "flex-end" }}>
               <Button
                 type="primary"
                 icon={<MessageOutlined />}
@@ -140,7 +140,7 @@ const TeacherProfile = () => {
               >
                 Contact Teacher
               </Button>
-            </div>
+            </div> */}
           </Col>
         </Row>
       </Card>

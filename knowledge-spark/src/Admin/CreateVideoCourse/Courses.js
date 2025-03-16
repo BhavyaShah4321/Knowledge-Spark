@@ -90,14 +90,15 @@ export default function Courses() {
           Authorization: `Bearer ${accessToken}`,
         },
         params: {
-          search: searchText, // Include search text in API request
-          page: page, // Maintain pagination
+          search: searchText,
+          page: page, // Ensure the page parameter is correctly sent
         },
       });
 
       const CourseDetails = response.data;
       setCourseData(CourseDetails.results.data || []);
       setTotalItems(CourseDetails.count || 0);
+      setCurrentPage(page); // Update the current page state
     } catch (error) {
       console.error("Error fetching course details:", error);
       message.error("Failed to fetch course details");
@@ -105,7 +106,6 @@ export default function Courses() {
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     fetchCourseDetails(currentPage);
@@ -364,7 +364,9 @@ export default function Courses() {
         pagination={{
           current: currentPage,
           total: totalItems,
-          showTotal: (total) => `Total ${total} items`, // This will display the total records
+          pageSize: 10, // Ensure you're setting a valid page size
+          showTotal: (total) => `Total ${total} items`,
+          onChange: (page) => fetchCourseDetails(page), // Fetch new data when the page changes
         }}
         loading={loading}
       />

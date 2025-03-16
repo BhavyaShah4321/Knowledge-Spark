@@ -1,6 +1,7 @@
 import {
   DownOutlined,
   EditOutlined,
+  FilePdfOutlined,
   SearchOutlined
 } from "@ant-design/icons";
 import {
@@ -20,6 +21,9 @@ import {
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import moment from 'moment';
 
 import { ReactComponent as FilterIcon } from "../../Image/FilterIcon.svg";
 import EditTeacherModal from "./EditTeacherModal";
@@ -29,14 +33,15 @@ function TeacherList() {
   const [searchText, setSearchText] = useState("");
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-      const [selectedTeacherId, setSelectedTeacherId] = useState(null);
-      const handleEdit = (record) => {
-          setSelectedTeacherId(record.id);
-          setIsModalVisible(true);
-      };
+  const [selectedTeacherId, setSelectedTeacherId] = useState(null);
+  const handleEdit = (record) => {
+    setSelectedTeacherId(record.id);
+    setIsModalVisible(true);
+  };
 
   const getAccessToken = () => {
     const authData = JSON.parse(localStorage.getItem("auth_token") || "{}");
@@ -50,17 +55,21 @@ function TeacherList() {
     try {
       setLoading(true);
       const accessToken = getAccessToken();
-      const response = await axios.get(
-        `http://localhost:8000/api/user/?page=${page}&search=Teacher ${query}`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
+
+      const response = await axios.get(`http://localhost:8000/api/user/`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        params: {
+          search: `Teacher ${query}`.trim(), // Remove extra spaces
+          page: page,
+          page_size: pageSize,
         }
-      );
+      });
 
       const teacherDetails = response.data;
-      console.log('teacherDetails',teacherDetails.count);
-      
+      console.log("Filtered teacherDetails:", teacherDetails);
+
       setData(teacherDetails.results?.data || []);
+      setPageSize(teacherDetails.results.page_size || 10);
       setTotalItems(teacherDetails.count || 0);
     } catch (error) {
       console.error("Error fetching teacher details:", error);
@@ -69,6 +78,7 @@ function TeacherList() {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchTeacherDetails(currentPage, searchText);
@@ -215,17 +225,85 @@ function TeacherList() {
       title: "Action",
       key: "action",
       render: (record) => (
-        
+
         <Space>
           <Tooltip title="Edit">
             {/* <Link to={`/edit-teacher/${record.id}`}> */}
-              <Button icon={<EditOutlined />} style={{ cursor: "pointer" }} onClick={()=>handleEdit(record)}/>
+            <Button icon={<EditOutlined />} style={{ cursor: "pointer" }} onClick={() => handleEdit(record)} />
             {/* </Link> */}
           </Tooltip>
         </Space>
       ),
     },
   ];
+
+
+  const getBase64ImageFromUrl = async (url) => {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const handlePdfDownload = async (teacherList = [], columns = []) => {
+    if (!Array.isArray(columns)) {
+      console.error("Error: columns is not an array", columns);
+      return;
+    }
+    const pdf = new jsPDF();
+    pdf.setFontSize(18);
+    pdf.text("Teacher List", 14, 20);
+
+    const pdfColumns = [
+      { title: "ID", dataKey: "id" },
+      { title: "Name", dataKey: "name" },
+      { title: "Email", dataKey: "email" },
+      { title: "Mobile Number", dataKey: "mobile_number" },
+      { title: "Profile Picture", dataKey: "profile_picture" },
+      { title: "Certificates", dataKey: "certificates" },
+    ];
+
+    const filteredColumns = pdfColumns.filter((col) => columns?.includes(col.title)); // Safe check
+
+    const data = await Promise.all(
+      teacherList.map(async (item, index) => {
+        const row = {
+          id: index + 1,
+          name: item.name,
+          email: item.email,
+          mobile_number: item.mobile_number,
+          profile_picture: item.profile_picture ? "Available" : "N/A",
+          certificates: item.certificates?.length ? "Available" : "N/A",
+        };
+
+        if (columns.includes("Profile Picture") && item.profile_picture) {
+          const base64Image = await getBase64ImageFromUrl(`http://localhost:8000${item.profile_picture}`);
+          pdf.addImage(base64Image, "JPEG", 160, 20 + index * 10, 20, 20);
+        }
+        return row;
+      })
+    );
+
+    pdf.autoTable({
+      columns: filteredColumns,
+      body: data,
+      startY: 30,
+      theme: "grid",
+      didDrawPage: (data) => {
+        const pageCount = pdf.internal.getNumberOfPages();
+        pdf.setFontSize(10);
+        pdf.text(`Page ${pageCount}`, pdf.internal.pageSize.width - 50, pdf.internal.pageSize.height - 10);
+      },
+    });
+
+    const date = moment().format("YYYY-MM-DD");
+    pdf.save(`Teacher_List_${date}.pdf`);
+  };
+
+
 
   return (
     <div>
@@ -242,19 +320,27 @@ function TeacherList() {
         <Row>
           <Col>
             <Space size="small">
-            <Input
-              placeholder="Search"
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-            />
-        
-          
-            <Tooltip placement="top" title="Reset Filter">
-              <Button type="primary" className="iconlink" onClick={resetFilter}>
-                <FilterIcon />
-              </Button>
-            </Tooltip>
+              <Input
+                placeholder="Search"
+                prefix={<SearchOutlined />}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onPressEnter={() => fetchTeacherDetails(1, searchText)} // Fetch results when pressing Enter
+              />
+              <Tooltip placement="top" title="Reset Filter">
+                <Button type="primary" className="iconlink" onClick={resetFilter}>
+                  <FilterIcon />
+                </Button>
+              </Tooltip>
+              <Tooltip placement="top" title={'Export PDF'}>
+                <Button
+                  type="primary"
+                  className='iconlink'
+                  onClick={() => handlePdfDownload(data, columns.map(col => col.title))} // Pass the correct parameters
+                >
+                  <FilePdfOutlined />
+                </Button>
+              </Tooltip>
             </Space>
           </Col>
           {/* <Col>
@@ -269,25 +355,25 @@ function TeacherList() {
         </Row>
       </Row>
       <Table
-  columns={columns}
-  dataSource={data}
-  loading={loading}
-  pagination={{
-    current: currentPage,
-    total: totalItems,
-    showTotal: (total) => `Total ${total} items`, // This will display the total records
-  }}
-  onChange={(pagination) => setCurrentPage(pagination.current)}
-/>
+        columns={columns}
+        dataSource={data}
+        loading={loading}
+        pagination={{
+          current: currentPage,
+          total: totalItems,
+          showTotal: (total) => `Total ${total} items`,
+        }}
+        onChange={(pagination) => setCurrentPage(pagination.current)}
+      />
 
-       <EditTeacherModal
+      <EditTeacherModal
         visible={isModalVisible}
         teacherId={selectedTeacherId}
         onClose={() => setIsModalVisible(false)}
         onSuccess={() => {
-            // Refresh your teacher list or perform other updates
+          // Refresh your teacher list or perform other updates
         }}
-    />
+      />
     </div>
   );
 }

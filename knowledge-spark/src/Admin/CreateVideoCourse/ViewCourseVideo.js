@@ -1,5 +1,5 @@
 
-import { EditOutlined, UploadOutlined, LockOutlined } from "@ant-design/icons";
+import { EditOutlined, UploadOutlined, LockOutlined, MessageOutlined } from "@ant-design/icons";
 import {
   Form,
   Upload,
@@ -36,7 +36,7 @@ import {
   SortAscendingOutlined,
 } from "@ant-design/icons";
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { List, Card } from "antd";
 import "../../Styles/Main.css";
 import dayjs from "dayjs";
@@ -45,6 +45,8 @@ const { Title, Paragraph, Text } = Typography;
 const { Search } = Input;
 
 const ViewCourseVideo = () => {
+  const location = useLocation();
+  const state = location.state;
   const [modalVisible, setModalVisible] = useState(false);
   const [courseVideoDrawerOpen, setCourseVideoDrawerOpen] = useState(false);
   const [editingCourseVideo, setEditingCourseVideo] = useState(null);
@@ -75,13 +77,13 @@ const ViewCourseVideo = () => {
   const [watchedVideos, setWatchedVideos] = useState([]);
   // Add a state for enrollment modal
   const [enrollmentModalVisible, setEnrollmentModalVisible] = useState(false);
-   const [userId, setUserId] = useState(null);
-     const [purchasedCourses, setPurchasedCourses] = useState([]);
-   useEffect(() => {
+  const [userId, setUserId] = useState(null);
+  const [purchasedCourses, setPurchasedCourses] = useState([]);
+  useEffect(() => {
     const authData = JSON.parse(localStorage.getItem("auth_token"));
     if (authData?.user?.id) {
-      console.log('myid',authData?.user?.id);
-      
+      console.log('myid', authData?.user?.id);
+
       setUserId(authData.user.id);
     }
   }, []);
@@ -106,10 +108,10 @@ const ViewCourseVideo = () => {
   }, []);
 
 
- useEffect(() => {
+  useEffect(() => {
     const fetchPurchasedCourses = async () => {
       if (!userId) return;
-      
+
       try {
         const authData = JSON.parse(localStorage.getItem('auth_token'));
         if (!authData || !authData.access_token) {
@@ -117,32 +119,32 @@ const ViewCourseVideo = () => {
         }
         const accessToken = authData.access_token;
 
-      
-         const response = await axios.post(
-                `http://localhost:8000/api/course-purchase/purchases-by-user/`,
-                { user_id: userId},
-                {
-                  headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                  },
-                }
-              );
 
-      
+        const response = await axios.post(
+          `http://localhost:8000/api/course-purchase/purchases-by-user/`,
+          { user_id: userId },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+
+
         // const data = await response.json();
-        
-      
-          const purchasedCourseIds = response.data.results.map(purchase => purchase.course);
-          console.log('purchasedCourseIds',purchasedCourseIds);
-          
-          setPurchasedCourses(purchasedCourseIds);
-        
+
+
+        const purchasedCourseIds = response.data.results.map(purchase => purchase.course);
+        console.log('purchasedCourseIds', purchasedCourseIds);
+
+        setPurchasedCourses(purchasedCourseIds);
+
       } catch (err) {
         console.error('Error fetching purchased courses:', err);
       }
     };
 
-     
+
     if (userId) {
       fetchPurchasedCourses();
     }
@@ -234,13 +236,13 @@ const ViewCourseVideo = () => {
   const canWatchVideo = (videoIndex) => {
     // Teachers can watch any video
     if (currentUser?.type === "Teacher") return true;
-  
+
     // If the user has purchased the course, they can watch any video
     if (purchasedCourses.includes(parseInt(id))) return true;
-  
+
     // Students who are enrolled can watch any video
     if (isEnrolled) return true;
-  
+
     // Non-enrolled students can only watch the first two videos
     return videoIndex < 2;
   };
@@ -381,124 +383,123 @@ const ViewCourseVideo = () => {
     }
   };
 
- // Edit Video Button
-<Button
-  type="primary"
-  icon={<EditOutlined />}
-  onClick={() => handleEditVideo(selectedVideo)}
-  disabled={!selectedVideo}
->
-  Edit Course Video
-</Button>
+  // Edit Video Button
+  <Button
+    type="primary"
+    icon={<EditOutlined />}
+    onClick={() => handleEditVideo(selectedVideo)}
+    disabled={!selectedVideo}
+  >
+    Edit Course Video
+  </Button>
 
-// Edit Video Handler Function
-const handleEditVideo = (video) => {
-  if (!video) {
-    message.error("No video selected for editing");
-    return;
-  }
-  
-  console.log("Editing video:", video);
-  setEditingCourseVideo({
-    videoId: video.id,
-    course_video_title: video.course_video_title,
-    course_video_description: video.course_video_description,
-    course_video: video.course_video,
-    course_video_thumbnail: video.course_video_thumbnail,
-  });
-  
-  // Reset the form first
-  courseVideoForm.resetFields();
-  
-  // Then set values
-  courseVideoForm.setFieldsValue({
-    course_video_title: video.course_video_title,
-    course_video_description: video.course_video_description,
-  });
-  
-  // Open the edit modal
-  setEditVideoModalVisible(true);
-};
-
-const handleCourseVideoSubmit = async (values) => {
-  try {
-    const accessToken = getAccessToken();
-    const formData = new FormData();
-
-    const form_data = {
-      course_video_title: values.course_video_title,
-      course_video_description: values.course_video_description,
-      course: id,
-    };
-    // Handle video file
-    if (values.course_video && values.course_video[0]?.originFileObj) {
-      formData.append("course_video", values.course_video[0].originFileObj);
+  // Edit Video Handler Function
+  const handleEditVideo = (video) => {
+    if (!video) {
+      message.error("No video selected for editing");
+      return;
     }
 
-    // Handle thumbnail
-    if (values.course_video_thumbnail && values.course_video_thumbnail[0]?.originFileObj) {
-      formData.append(
-        "course_video_thumbnail",
-        values.course_video_thumbnail[0].originFileObj
-      );
-    }
-
-    formData.append("form_data", JSON.stringify(form_data));
-
-    const endpoint = editingCourseVideo?.videoId
-      ? `${BASE_URL}/api/course-video/${editingCourseVideo.videoId}/`
-      : `${BASE_URL}/api/course-video/`;
-
-    const method = editingCourseVideo?.videoId ? "patch" : "post";
-
-    const response = await axios({
-      method,
-      url: endpoint,
-      data: formData,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'multipart/form-data'
-      },
+    console.log("Editing video:", video);
+    setEditingCourseVideo({
+      videoId: video.id,
+      course_video_title: video.course_video_title,
+      course_video_description: video.course_video_description,
+      course_video: video.course_video,
+      course_video_thumbnail: video.course_video_thumbnail,
     });
 
-    if (response.status === 200 || response.status === 201) {
-      message.success(
-        `Video ${
-          editingCourseVideo?.videoId ? "updated" : "added"
-        } successfully`
-      );
-      
-      // Reload course data to show the updated video
-      const courseResponse = await axios.get(`${BASE_URL}/api/course/${id}`, {
+    // Reset the form first
+    courseVideoForm.resetFields();
+
+    // Then set values
+    courseVideoForm.setFieldsValue({
+      course_video_title: video.course_video_title,
+      course_video_description: video.course_video_description,
+    });
+
+    // Open the edit modal
+    setEditVideoModalVisible(true);
+  };
+
+  const handleCourseVideoSubmit = async (values) => {
+    try {
+      const accessToken = getAccessToken();
+      const formData = new FormData();
+
+      const form_data = {
+        course_video_title: values.course_video_title,
+        course_video_description: values.course_video_description,
+        course: id,
+      };
+      // Handle video file
+      if (values.course_video && values.course_video[0]?.originFileObj) {
+        formData.append("course_video", values.course_video[0].originFileObj);
+      }
+
+      // Handle thumbnail
+      if (values.course_video_thumbnail && values.course_video_thumbnail[0]?.originFileObj) {
+        formData.append(
+          "course_video_thumbnail",
+          values.course_video_thumbnail[0].originFileObj
+        );
+      }
+
+      formData.append("form_data", JSON.stringify(form_data));
+
+      const endpoint = editingCourseVideo?.videoId
+        ? `${BASE_URL}/api/course-video/${editingCourseVideo.videoId}/`
+        : `${BASE_URL}/api/course-video/`;
+
+      const method = editingCourseVideo?.videoId ? "patch" : "post";
+
+      const response = await axios({
+        method,
+        url: endpoint,
+        data: formData,
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'multipart/form-data'
         },
       });
-      
-      setCourse(courseResponse.data.data);
-      
-      // If we edited the currently selected video, update it
-      if (selectedVideo && selectedVideo.id === editingCourseVideo?.videoId) {
-        const updatedVideo = courseResponse.data.data.videos.find(
-          v => v.id === editingCourseVideo.videoId
+
+      if (response.status === 200 || response.status === 201) {
+        message.success(
+          `Video ${editingCourseVideo?.videoId ? "updated" : "added"
+          } successfully`
         );
-        if (updatedVideo) {
-          setSelectedVideo(updatedVideo);
+
+        // Reload course data to show the updated video
+        const courseResponse = await axios.get(`${BASE_URL}/api/course/${id}`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        setCourse(courseResponse.data.data);
+
+        // If we edited the currently selected video, update it
+        if (selectedVideo && selectedVideo.id === editingCourseVideo?.videoId) {
+          const updatedVideo = courseResponse.data.data.videos.find(
+            v => v.id === editingCourseVideo.videoId
+          );
+          if (updatedVideo) {
+            setSelectedVideo(updatedVideo);
+          }
         }
+
+        // Reset state
+        setEditVideoModalVisible(false);
+        courseVideoForm.resetFields();
+        setEditingCourseVideo(null);
       }
-      
-      // Reset state
-      setEditVideoModalVisible(false);
-      courseVideoForm.resetFields();
-      setEditingCourseVideo(null);
+    } catch (error) {
+      console.error("Error submitting course video:", error);
+      message.error(
+        error.response?.data?.message || "Failed to save video details"
+      );
     }
-  } catch (error) {
-    console.error("Error submitting course video:", error);
-    message.error(
-      error.response?.data?.message || "Failed to save video details"
-    );
-  }
-};
+  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -578,6 +579,35 @@ const handleCourseVideoSubmit = async (values) => {
     fetchFeedBackData();
   };
 
+
+  const handleTeacherContact = async () => {
+    try {
+      const accessToken = getAccessToken();
+      const userData = JSON.parse(localStorage.getItem("auth_token"));
+      const user1 = userData.user.id; // ID from localStorage
+      const user2 = parseInt(id); // Convert Teacher ID from useParams() to a number
+
+      const payload = {
+        user_1: user1,
+        user_2: user2,
+      };
+
+      const response = await axios.post(`${BASE_URL}/api/chat/`, payload, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      // Get the uuid from the response data
+      const uuid = response.data.data.uuid;
+
+      // Navigate to the chat page and pass the uuid as state
+      navigate("/teacher-chat", { state: { uuid } });
+    } catch (error) {
+      console.error("Error creating chat:", error);
+    }
+  };
   return (
     <>
       <div className="course-container">
@@ -591,7 +621,7 @@ const handleCourseVideoSubmit = async (values) => {
                     className="video-player"
                     controls
                     playsInline
-                    // onPlay={() => markVideoAsWatched(selectedVideo.id)}
+                  // onPlay={() => markVideoAsWatched(selectedVideo.id)}
                   />
                 ) : (
                   <div className="video-player no-video">
@@ -754,21 +784,35 @@ const handleCourseVideoSubmit = async (values) => {
                 )}
                 <Col>
                   {currentUser.type === "Student" && (
-                    <Button
-                      type="primary"
-                      icon={<EditOutlined />}
-                      onClick={() => {
-                        if (course && course.course_teacher) {
-                          viewTeacherProfile(course.course_teacher);
-                        } else {
-                          message.error(
-                            "Teacher information is not available."
-                          );
-                        }
-                      }}
-                    >
-                      View Profile
-                    </Button>
+                    <>
+                      <Button
+                        type="primary"
+                        icon={<EditOutlined />}
+                        onClick={() => {
+                          if (course && course.course_teacher) {
+                            viewTeacherProfile(course.course_teacher);
+                          } else {
+                            message.error(
+                              "Teacher information is not available."
+                            );
+                          }
+                        }}
+                      >
+                        View Profile
+                      </Button>
+                      {state === "My Courses" && (
+                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                          <Button
+                            type="primary"
+                            icon={<MessageOutlined />}
+                            style={{ marginTop: 16 }}
+                            onClick={handleTeacherContact}
+                          >
+                            Contact Teacher
+                          </Button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </Col>
               </div>
@@ -782,49 +826,48 @@ const handleCourseVideoSubmit = async (values) => {
                 </p>
               </div>
               <div className="video-list">
-  {course.videos.map((video, index) => (
-    <div
-      key={video.id}
-      className={`video-item ${
-        selectedVideo?.id === video.id ? "active" : ""
-      }`}
-    >
-      <button
-        onClick={() => handleVideoSelect(video, index)}
-        style={{ position: "relative" }}
-        disabled={
-          !canWatchVideo(index) && currentUser?.type === "Student"
-        }
-      >
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <div className="lesson-number">{index + 1}</div>
-          <div className="lesson-info">
-            <div className="lesson-title">
-              {video.course_video_title}
-              {watchedVideos.includes(video.id) && (
-                <Tag color="success" style={{ marginLeft: "8px" }}>
-                  Watched
-                </Tag>
-              )}
-            </div>
-            <div className="lesson-date">
-              {formatDate(video.created_at)}
-            </div>
-          </div>
-          {/* Show lock icon only if the user hasn't purchased the course and it's beyond the first two videos */}
-          {currentUser?.type === "Student" &&
-            !purchasedCourses.includes(parseInt(id)) &&
-            !isEnrolled &&
-            index >= 2 && (
-              <LockOutlined
-                style={{ marginLeft: "8px", color: "#ff4d4f" }}
-              />
-            )}
-        </div>
-      </button>
-    </div>
-  ))}
-</div>
+                {course.videos.map((video, index) => (
+                  <div
+                    key={video.id}
+                    className={`video-item ${selectedVideo?.id === video.id ? "active" : ""
+                      }`}
+                  >
+                    <button
+                      onClick={() => handleVideoSelect(video, index)}
+                      style={{ position: "relative" }}
+                      disabled={
+                        !canWatchVideo(index) && currentUser?.type === "Student"
+                      }
+                    >
+                      <div style={{ display: "flex", alignItems: "center" }}>
+                        <div className="lesson-number">{index + 1}</div>
+                        <div className="lesson-info">
+                          <div className="lesson-title">
+                            {video.course_video_title}
+                            {watchedVideos.includes(video.id) && (
+                              <Tag color="success" style={{ marginLeft: "8px" }}>
+                                Watched
+                              </Tag>
+                            )}
+                          </div>
+                          <div className="lesson-date">
+                            {formatDate(video.created_at)}
+                          </div>
+                        </div>
+                        {/* Show lock icon only if the user hasn't purchased the course and it's beyond the first two videos */}
+                        {currentUser?.type === "Student" &&
+                          !purchasedCourses.includes(parseInt(id)) &&
+                          !isEnrolled &&
+                          index >= 2 && (
+                            <LockOutlined
+                              style={{ marginLeft: "8px", color: "#ff4d4f" }}
+                            />
+                          )}
+                      </div>
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -848,154 +891,154 @@ const handleCourseVideoSubmit = async (values) => {
 
       {/* Enrollment Modal */}
       <Modal
-  title="Enroll in this Course"
-  open={enrollmentModalVisible}
-  onCancel={() => setEnrollmentModalVisible(false)}
-  footer={[
-    <Button key="cancel" onClick={() => setEnrollmentModalVisible(false)}>
-      Cancel
-    </Button>,
-    <Button
-      key="enroll"
-      type="primary"
-      onClick={() => {
-        setSelectedCourse(course);
-        setModalVisible(true);
-      }}
-      disabled={purchasedCourses.includes(parseInt(id))} // Disable if already purchased
-    >
-      {purchasedCourses.includes(parseInt(id)) ? "Already Purchased" : "Enroll Now"}
-    </Button>,
-  ]}
->
-  {purchasedCourses.includes(parseInt(id)) ? (
-    <p>You already have access to all videos in this course.</p>
-  ) : (
-    <>
-      <p>
-        You have reached the limit of free preview videos for this course.
-      </p>
-      <p>
-        Enroll now to get access to all {course?.videos?.length} videos and
-        complete the course!
-      </p>
-    </>
-  )}
-</Modal>
+        title="Enroll in this Course"
+        open={enrollmentModalVisible}
+        onCancel={() => setEnrollmentModalVisible(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setEnrollmentModalVisible(false)}>
+            Cancel
+          </Button>,
+          <Button
+            key="enroll"
+            type="primary"
+            onClick={() => {
+              setSelectedCourse(course);
+              setModalVisible(true);
+            }}
+            disabled={purchasedCourses.includes(parseInt(id))} // Disable if already purchased
+          >
+            {purchasedCourses.includes(parseInt(id)) ? "Already Purchased" : "Enroll Now"}
+          </Button>,
+        ]}
+      >
+        {purchasedCourses.includes(parseInt(id)) ? (
+          <p>You already have access to all videos in this course.</p>
+        ) : (
+          <>
+            <p>
+              You have reached the limit of free preview videos for this course.
+            </p>
+            <p>
+              Enroll now to get access to all {course?.videos?.length} videos and
+              complete the course!
+            </p>
+          </>
+        )}
+      </Modal>
 
       <Modal
-  title={`Edit Course Video`}
-  open={editVideoModalVisible}
-  onCancel={() => {
-    setEditVideoModalVisible(false);
-    courseVideoForm.resetFields();
-    setEditingCourseVideo(null);
-  }}
-  footer={null}
-  width={600}
-  centered
->
-  <Form
-    layout="vertical"
-    form={courseVideoForm}
-    onFinish={handleCourseVideoSubmit}
-    className="p-4"
-  >
-    <Form.Item
-      name="course_video_title"
-      label="Video Title"
-      rules={[
-        { required: true, message: "Please enter video title" },
-        {
-          pattern: /^[a-zA-Z\s]+$/,
-          message: "Video title can only include letters and spaces",
-        },
-      ]}
-    >
-      <Input placeholder="Enter video title" />
-    </Form.Item>
-
-    <Form.Item
-      name="course_video_description"
-      label="Video Description"
-      rules={[
-        { required: true, message: "Please enter video description" },
-      ]}
-    >
-      <Input.TextArea placeholder="Enter video description" rows={4} />
-    </Form.Item>
-
-    <Form.Item
-      name="course_video_thumbnail"
-      label="Course Video Thumbnail"
-      rules={[
-        { required: true, message: "Please Upload Course Video Thumbnail" },
-      ]}
-      valuePropName="fileList"
-      getValueFromEvent={(e) => {
-        if (Array.isArray(e)) return e;
-        return e?.fileList;
-      }}
-    >
-      <Upload
-        name="course_video_thumbnail"
-        listType="picture"
-       
-        beforeUpload={() => false}
-        accept="image/*"
-        maxCount={1}
-      >
-        <Button icon={<UploadOutlined />}>Upload Thumbnail</Button>
-      </Upload>
-    </Form.Item>
-
-    <Form.Item
-      name="course_video"
-      label="Course Video File"
-      valuePropName="fileList"
-      rules={[
-        { required: true, message: "Please Upload Course Video" },
-      ]}
-      getValueFromEvent={(e) => {
-        if (Array.isArray(e)) return e;
-        return e?.fileList;
-      }}
-    >
-      <Upload
-        name="course_video"
-        listType="text"
-        beforeUpload={() => false}
-        accept="video/*"
-        maxCount={1}
-      >
-        <Button icon={<UploadOutlined />}>Upload New Video</Button>
-      </Upload>
-    </Form.Item>
-
-    <Form.Item
-      className="text-right mb-0"
-      style={{ display: "flex", justifyContent: "flex-end" }}
-    >
-      <Button
-        className="mr-2"
-        onClick={() => {
+        title={`Edit Course Video`}
+        open={editVideoModalVisible}
+        onCancel={() => {
           setEditVideoModalVisible(false);
           courseVideoForm.resetFields();
           setEditingCourseVideo(null);
         }}
+        footer={null}
+        width={600}
+        centered
       >
-        Cancel
-      </Button>
-      <Button
-        type="primary"
-        htmlType="submit"
-        style={{ marginLeft: "10px" }}
-      >
-        Update Video
-      </Button>
-    </Form.Item>
-  </Form>
-</Modal>
+        <Form
+          layout="vertical"
+          form={courseVideoForm}
+          onFinish={handleCourseVideoSubmit}
+          className="p-4"
+        >
+          <Form.Item
+            name="course_video_title"
+            label="Video Title"
+            rules={[
+              { required: true, message: "Please enter video title" },
+              {
+                pattern: /^[a-zA-Z\s]+$/,
+                message: "Video title can only include letters and spaces",
+              },
+            ]}
+          >
+            <Input placeholder="Enter video title" />
+          </Form.Item>
+
+          <Form.Item
+            name="course_video_description"
+            label="Video Description"
+            rules={[
+              { required: true, message: "Please enter video description" },
+            ]}
+          >
+            <Input.TextArea placeholder="Enter video description" rows={4} />
+          </Form.Item>
+
+          <Form.Item
+            name="course_video_thumbnail"
+            label="Course Video Thumbnail"
+            rules={[
+              { required: true, message: "Please Upload Course Video Thumbnail" },
+            ]}
+            valuePropName="fileList"
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) return e;
+              return e?.fileList;
+            }}
+          >
+            <Upload
+              name="course_video_thumbnail"
+              listType="picture"
+
+              beforeUpload={() => false}
+              accept="image/*"
+              maxCount={1}
+            >
+              <Button icon={<UploadOutlined />}>Upload Thumbnail</Button>
+            </Upload>
+          </Form.Item>
+
+          <Form.Item
+            name="course_video"
+            label="Course Video File"
+            valuePropName="fileList"
+            rules={[
+              { required: true, message: "Please Upload Course Video" },
+            ]}
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) return e;
+              return e?.fileList;
+            }}
+          >
+            <Upload
+              name="course_video"
+              listType="text"
+              beforeUpload={() => false}
+              accept="video/*"
+              maxCount={1}
+            >
+              <Button icon={<UploadOutlined />}>Upload New Video</Button>
+            </Upload>
+          </Form.Item>
+
+          <Form.Item
+            className="text-right mb-0"
+            style={{ display: "flex", justifyContent: "flex-end" }}
+          >
+            <Button
+              className="mr-2"
+              onClick={() => {
+                setEditVideoModalVisible(false);
+                courseVideoForm.resetFields();
+                setEditingCourseVideo(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              style={{ marginLeft: "10px" }}
+            >
+              Update Video
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
       <Modal
         title="Teacher Response"
         open={isResponseModalVisible}
@@ -1045,8 +1088,8 @@ const handleCourseVideoSubmit = async (values) => {
                   selectedCourse.course_thumbnail
                     ? `http://localhost:8000${selectedCourse.course_thumbnail}`
                     : selectedCourse.videos && selectedCourse.videos.length > 0
-                    ? `http://localhost:8000${selectedCourse.videos[0].course_video_thumbnail}`
-                    : "/api/placeholder/400/320"
+                      ? `http://localhost:8000${selectedCourse.videos[0].course_video_thumbnail}`
+                      : "/api/placeholder/400/320"
                 }
                 alt={selectedCourse.course_title}
                 style={{ width: "100%", height: 300, objectFit: "cover" }}
@@ -1257,8 +1300,8 @@ const handleCourseVideoSubmit = async (values) => {
                         {paymentProcessing
                           ? "Processing..."
                           : selectedCourse.course_price
-                          ? "Enroll Now"
-                          : "Start Learning Now"}
+                            ? "Enroll Now"
+                            : "Start Learning Now"}
                       </Button>
 
                       <Button
