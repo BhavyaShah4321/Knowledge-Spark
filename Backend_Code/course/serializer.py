@@ -220,6 +220,8 @@ class CoursePurchaseSerializer(serializers.ModelSerializer):
     course_title = serializers.CharField(source="course.course_title", read_only=True)
     course_teacher = serializers.CharField(source="course.course_teacher.username", read_only=True)
     course_thumbnail = serializers.CharField(source="course.course_thumbnail", read_only=True)
+    course_teacher_id = serializers.CharField(source="course.course_teacher.id", read_only=True)
+    
     
     
     # amount = serializers.CharField(source="course.course_price", read_only=True)
@@ -230,7 +232,10 @@ class CoursePurchaseSerializer(serializers.ModelSerializer):
             "id",
             "user",
             "user_username",
+            "teacher_amount",
+            "platform_fee",
             "course",
+            "course_teacher_id",
             "course_teacher",
             "course_thumbnail",
             "course_title",
