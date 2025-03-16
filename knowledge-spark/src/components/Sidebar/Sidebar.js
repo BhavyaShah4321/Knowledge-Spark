@@ -142,6 +142,12 @@ export default function Sidebar() {
       roles: ["Student"],
     },
     {
+      key: "/student-feedbacks",
+      label: "Feedback",
+      icon: <RobotOutlined />,
+      roles: ["Student"],
+    },
+    {
       key: "/student-chat",
       label: "Chat",
       icon: <WechatOutlined />,
