@@ -67,7 +67,7 @@ class User(AbstractUser):
     
     email_verified = models.BooleanField(default=False)
     gender=models.CharField(choices=gender_fields,default="",null=True,blank=True)
-
+    razorpay_contact_id=models.CharField(max_length=255,null=True,blank=True)
     deleted=models.IntegerField(default=0)
     objects=UserManager()
     dob=models.DateField(null=True,blank=True)

@@ -625,6 +625,25 @@ class CoursePurchaseViewSet(ModelViewSet):
         serializer = self.serializer_class(purchases, many=True)
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
     
+    
+    
+    @action(detail=False, methods=["POST"], url_path="course-purchase-according-teacher")
+    def course_purchase_according_teacher(self, request, *args, **kwargs):
+        teacher_id = request.data.get("teacher_id")
+        if not teacher_id:
+            return Response({"success": False, "message": "teacher_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        course_purchases = CoursePurchase.objects.filter(course__course_teacher__id=teacher_id)
+
+        page = self.paginate_queryset(course_purchases)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(course_purchases, many=True)
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+    
+    
     @action(detail=False, methods=["POST"], url_path="purchase-course")
     def purchase_course(self, request, *args, **kwargs):
         """Initiates a purchase by creating a Razorpay order."""
@@ -642,7 +661,13 @@ class CoursePurchaseViewSet(ModelViewSet):
         except Course.DoesNotExist:
             return Response({"success":True,"message":"course with this id doesnot exists"})
         
-        amount_in_paise = int(float(amount) * 100)  # Convert to paise for Razorpay
+        amount_in_paise = int(float(amount) * 100)  
+        
+        teacher_amount = int(float(amount)) / 100 *80 # 80% for the teacher
+        platform_fee = int(float(amount)) / 100  *20
+        print(platform_fee)
+        print(teacher_amount)# Convert to paise for Razorpay
+        # Convert to paise for Razorpay
         client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
         try:
@@ -657,6 +682,8 @@ class CoursePurchaseViewSet(ModelViewSet):
                 user=user,
                 course_id=course_id,
                 amount=amount,
+                teacher_amount=teacher_amount,
+                platform_fee=platform_fee,
                 razorpay_order_id=razorpay_order["id"],
                 status="PENDING",
             )
@@ -679,34 +706,55 @@ class CoursePurchaseViewSet(ModelViewSet):
 
     @action(detail=False, methods=["POST"], url_path="verify-payment")
     def verify_payment(self, request, *args, **kwargs):
-        """Verifies the payment using Razorpay's signature verification."""
-        razorpay_order_id = request.data.get("razorpay_order_id")
+        """Verifies payment and transfers 80% to the teacher"""
         razorpay_payment_id = request.data.get("razorpay_payment_id")
+        razorpay_order_id = request.data.get("razorpay_order_id")
         razorpay_signature = request.data.get("razorpay_signature")
 
-        if not all([razorpay_order_id, razorpay_payment_id, razorpay_signature]):
-            return Response({"success": False, "message": "All payment details are required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not (razorpay_payment_id and razorpay_order_id and razorpay_signature):
+            return Response({"success": False, "message": "Payment details are required"}, status=status.HTTP_400_BAD_REQUEST)
 
         client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
         try:
+            # Verify Razorpay Payment Signature
             client.utility.verify_payment_signature({
                 "razorpay_order_id": razorpay_order_id,
                 "razorpay_payment_id": razorpay_payment_id,
-                "razorpay_signature": razorpay_signature,
+                "razorpay_signature": razorpay_signature
             })
 
             purchase = CoursePurchase.objects.get(razorpay_order_id=razorpay_order_id)
+            purchase.status = "paid"
             purchase.razorpay_payment_id = razorpay_payment_id
             purchase.razorpay_signature = razorpay_signature
-            purchase.status = "COMPLETED"
-            purchase.updated_at = datetime.now()
             purchase.save()
 
-            return Response({"success": True, "message": "Payment verified successfully."}, status=status.HTTP_200_OK)
+            # Fetch teacher details
+            teacher = purchase.course.course_teacher
+            teacher_amount = float(purchase.amount) * 0.80  # 80% to teacher
+            teacher_razorpay_contact_id = teacher.razorpay_contact_id  # Store teacher's Razorpay Contact ID
 
-        except razorpay.errors.SignatureVerificationError:
-            return Response({"success": False, "message": "Invalid payment signature."}, status=status.HTTP_400_BAD_REQUEST)
+            if teacher_razorpay_contact_id:
+                # Create a payout to teacher
+                payout_data = {
+                    "account_number": settings.RAZORPAY_ACCOUNT_NUMBER,  # Your business account
+                    "amount": int(teacher_amount * 100),  # Convert to paise
+                    "currency": "INR",
+                    "mode": "UPI",
+                    "purpose": "payout",
+                    "fund_account_id": teacher_razorpay_contact_id,
+                    "queue_if_low_balance": True,
+                    "reference_id": f"payout_{purchase.id}",
+                    "narration": "Course earnings",
+                }
+                payout_response = client.payout.create(payout_data)
 
-        except CoursePurchase.DoesNotExist:
-            return Response({"success": False, "message": "Order not found."}, status=status.HTTP_404_NOT_FOUND)
+                if payout_response["status"] == "processed":
+                    purchase.teacher_payment_status = "paid"
+                    purchase.save()
+
+            return Response({"success": True, "message": "Payment verified and teacher paid"}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"success": False, "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
