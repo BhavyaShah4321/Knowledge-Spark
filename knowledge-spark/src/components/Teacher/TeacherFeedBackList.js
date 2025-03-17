@@ -16,24 +16,25 @@ import {
 } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ReactComponent as FilterIcon } from "../../Image/FilterIcon.svg";
 import TextArea from "antd/es/input/TextArea";
 
 const { Option } = Select;
 
 export default function TeacherFeedBackList() {
+   const { id } = useParams();
   const [searchText, setSearchText] = useState("");
   const [filterCourse, setFilterCourse] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
- 
-    const [totalItems, setTotalItems] = useState(0);
+  const [feedback, setFeedback] = useState("");
+  const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
   const [feedbackData, setFeedbackData] = useState([]);
   const [teacherId, setTeacherId] = useState(null);
   const [originalData, setOriginalData] = useState([]); // Store original data
 
-  const [form] = Form.useForm();
+const [responseForm] = Form.useForm();
 
   const [isResponseModalVisible, setIsResponseModalVisible] = useState(false);
   const [selectedFeedback, setSelectedFeedback] = useState(null);
@@ -41,7 +42,33 @@ export default function TeacherFeedBackList() {
   const showResponseModal = (feedback) => {
     setSelectedFeedback(feedback);
     setIsResponseModalVisible(true);
-    form.setFieldsValue({ response: feedback.teacher_response || "" });
+
+    responseForm.setFieldsValue({ response: feedback.teacher_response || "" });
+    fetchFeedBackData();
+  };
+
+
+  const fetchFeedBackData = async () => {
+    try {
+      const accessToken = getAccessToken();
+      const response = await axios.get(
+        `http://localhost:8000/api/course-feedback/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      const FeddbackData = response.data.data;
+      console.log("FeddbackData", FeddbackData);
+
+      setFeedback(FeddbackData);
+    } catch (error) {
+      console.error("Error fetching course data:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
 
@@ -84,8 +111,26 @@ export default function TeacherFeedBackList() {
       setLoading(false);
     }
   };
+  const handleAddResponse = async (values) => {
+    try {
+      const accessToken = getAccessToken();
+      await axios.patch(
+        `http://localhost:8000/api/course-feedback/${selectedFeedback.id}/`,
+        { teacher_response: values.response },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+      message.success("Response added successfully");
+      fetchFeedBackData();
+      setIsResponseModalVisible(false);
+      responseForm.resetFields();
 
-
+    } catch (error) {
+      console.error("Error adding response:", error);
+      message.error("Failed to add response");
+    }
+  };
 
   useEffect(() => {
     if (teacherId) {
@@ -194,6 +239,37 @@ export default function TeacherFeedBackList() {
         loading={loading}
         scroll={{ x: 1500 }}
       />
+      <Modal
+        title="Teacher Response"
+        open={isResponseModalVisible}
+        onCancel={() => {
+          setIsResponseModalVisible(false);
+          responseForm.resetFields();
+        }}
+        footer={null}
+      >
+        <Form
+          form={responseForm}
+          onFinish={handleAddResponse}
+          layout="vertical"
+        >
+          <Form.Item
+            name="response"
+            label="Response"
+            rules={[{ required: true, message: "Please enter your response" }]}
+          >
+            <TextArea
+              rows={4}
+              placeholder="Enter your response to the feedback"
+            />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Submit Response
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }
