@@ -527,7 +527,7 @@ class CourseCategoryViewSet(ModelViewSet):
         )
 
 class CoursePurchaseViewSet(ModelViewSet):
-    queryset = CoursePurchase.objects.all().order_by("-created_at")
+    queryset = CoursePurchase.objects.all().order_by("-id")
     serializer_class = CoursePurchaseSerializer
     pagination_class = mypagination
     permission_classes = [IsAuthenticated]
@@ -692,7 +692,7 @@ class CoursePurchaseViewSet(ModelViewSet):
                 {
                     "success": True,
                     "data": {
-                        "order_id": razorpay_order["id"],
+                        "id": purchase.id,
                         "amount": amount,
                         "currency": "INR",
                         "teacher_name":course_instance.course_teacher.username,
