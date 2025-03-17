@@ -18,6 +18,7 @@ from utils.generate_otp import generate_otp, generate_token, decode_token
 from rest_framework_simplejwt.tokens import RefreshToken
 from course.models import Course
 from faker import Faker
+from course.models import CourseFeedback,CoursePurchase
 
 # from rest_framework_simplejwt.tokens import OutstandingToken, BlacklistedToken
 
@@ -244,20 +245,52 @@ class UserViewSet(ModelViewSet):
     def dashboared_api(self,request,*args,**kwargs):
         user=request.user
         print(request.user.is_superuser)
-        if not user.is_superuser:
-            return Response({"success":False,"message":"Only Admin can access this api"},status=status.HTTP_400_BAD_REQUEST)
         
         teachers=User.objects.filter(type="Teacher").count()
         students=User.objects.filter(type="Student").count()
         courses=Course.objects.all().count()
         
+        total_revenue_instance=CoursePurchase.objects.all()
+        total_earn=0
+        for single_instance in total_revenue_instance:
+            total_earn=total_earn+ int(single_instance.platform_fee) if  single_instance.platform_fee else 0
+        
         data={
             "total_teacher":teachers,
             "total_student":students,
-            "total_courses":courses
+            "total_courses":courses,
+            "total_earn":total_earn
         }
         
         return Response({"success":True,"data":data},status=status.HTTP_200_OK)
+    
+    @action(detail=False,methods=["POST"],url_path="dashboared-teacher-api")
+    def dashboared_teacher_api(self,request,*args,**kwrargs):
+        teacher_id=request.data.get("teacher_id")
+        if not teacher_id:
+            return Response({"success":True,"message":"teacher_id is required"},status=status.HTTP_400_BAD_REQUEST)
+
+        total_course_created=Course.objects.filter(course_teacher=teacher_id).count()
+        total_course_feedback=CourseFeedback.objects.filter(course__course_teacher_id=teacher_id).count()
+        total_course_purchase_student=CoursePurchase.objects.filter(course__course_teacher=teacher_id).count()
+        
+        
+        total_revenue=CoursePurchase.objects.filter(course__course_teacher=teacher_id)
+        total_earned = 0
+        for single_instance in total_revenue:
+            teacher_amount = single_instance.teacher_amount or 0  # Convert None to 0
+            total_earned += int(teacher_amount)
+        data={
+            "total_course_created":total_course_created,
+            "total_course_feedback":total_course_feedback,
+            "total_course_purchase_student":total_course_purchase_student,
+            "total_revenue":total_earned
+        }
+        
+        return Response({"success":True,"data":data},status=status.HTTP_400_BAD_REQUEST)
+        
+        
+    
         
 
 
@@ -904,6 +937,8 @@ class LoginWithGoogleViewSet(ModelViewSet):
                 {"success": False, "message": "Something went wrong ! Try again"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
 
 
 
