@@ -25,7 +25,6 @@ import {
   Avatar,
   Pagination,
   Tag,
-  Modal,
   Form,
   Select,
   Tooltip
@@ -35,7 +34,6 @@ import { Link } from "react-router-dom";
 import TextArea from "antd/es/input/TextArea";
 
 const { Title, Text, Paragraph } = Typography;
-const { Option } = Select;
 
 export default function StudentFeedback() {
   const [searchText, setSearchText] = useState("");
@@ -46,7 +44,6 @@ export default function StudentFeedback() {
   const [feedbackData, setFeedbackData] = useState([]);
   const [userId, setUserId] = useState(null);
   const [originalData, setOriginalData] = useState([]);
-  const [form] = Form.useForm();
   const [editingFeedbackId, setEditingFeedbackId] = useState(null);
   const [editingMessage, setEditingMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -141,35 +138,41 @@ export default function StudentFeedback() {
       message.error("Feedback message cannot be empty");
       return;
     }
-    
+  
     try {
       setSubmitting(true);
       const accessToken = getAccessToken();
-      
-      // This is the API call to update the feedback
-      // Ensure the endpoint and payload match your backend API
-      await axios.put(
-        `http://localhost:8000/api/course-feedback/update/${feedbackId}/`,
-        { 
-          feedback_message: editingMessage,
-          student_id: userId
-        },
+  
+      // Find the feedback item from the original data to get the `feedback_student` and `course` values
+      const feedbackItem = originalData.find((item) => item.id === feedbackId);
+      if (!feedbackItem) {
+        message.error("Feedback item not found.");
+        return;
+      }
+  
+      const payload = {
+        feedback_student: feedbackItem.feedback_student, // Use existing feedback_student ID
+        course: feedbackItem.course, // Use existing course ID
+        feedback_message: editingMessage, // Updated message
+      };
+  
+      await axios.patch(
+        `http://localhost:8000/api/course-feedback/${feedbackId}/`, // Correct API URL
+        payload,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
           },
         }
       );
 
-      // Update local state after successful API call
-      const updatedData = feedbackData.map(item => 
+      const updatedData = feedbackData.map((item) =>
         item.id === feedbackId ? { ...item, feedback_message: editingMessage } : item
       );
-      
+  
       setFeedbackData(updatedData);
       setOriginalData(updatedData);
-      
       cancelEditingFeedback();
       message.success("Feedback updated successfully");
     } catch (error) {
@@ -179,6 +182,7 @@ export default function StudentFeedback() {
       setSubmitting(false);
     }
   };
+  
 
   const responseStatusTag = (response) => {
     if (response) {

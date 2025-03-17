@@ -75,6 +75,7 @@ const ViewCourseVideo = () => {
   const [isEnrolled, setIsEnrolled] = useState(false);
   // Add a new state to track which videos have been watched
   const [watchedVideos, setWatchedVideos] = useState([]);
+  const [form] = Form.useForm();
   // Add a state for enrollment modal
   const [enrollmentModalVisible, setEnrollmentModalVisible] = useState(false);
   const [userId, setUserId] = useState(null);
@@ -515,7 +516,7 @@ const ViewCourseVideo = () => {
       feedback_message: values.feedback, // Use the value from the form
       course: parseInt(id),
     };
-
+  
     try {
       const accessToken = getAccessToken();
       await axios.post(`${BASE_URL}/api/course-feedback/`, form_data, {
@@ -523,14 +524,16 @@ const ViewCourseVideo = () => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
+  
       setSubmitStatus({
         type: "success",
         message: "Feedback submitted successfully!",
       });
-
+  
+      form.resetFields(); // Reset form fields
       fetchFeedBackData();
-
-      setFeedback("");
+  
+  
     } catch (error) {
       setSubmitStatus({
         type: "error",
@@ -538,6 +541,7 @@ const ViewCourseVideo = () => {
       });
     }
   };
+  
 
   if (loading) {
     return <div className="loader">Loading...</div>;
@@ -565,6 +569,9 @@ const ViewCourseVideo = () => {
       fetchFeedBackData();
       setIsResponseModalVisible(false);
       responseForm.resetFields();
+        
+      // Refresh the page
+      window.location.reload();
     } catch (error) {
       console.error("Error adding response:", error);
       message.error("Failed to add response");

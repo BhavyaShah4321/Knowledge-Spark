@@ -2199,6 +2199,11 @@ body .ant-layout-sider .sidebar_menu {
 
 @media only screen and (max-width: 575px) {}
 
+
+/*--------------------------
+    2. Login
+    --------------------------------*/
+
 .login-container {
   display: flex;
   min-width: 98vw;
@@ -2392,7 +2397,6 @@ body .ant-layout-sider .sidebar_menu {
   }
 
 }
-
 
 /*--------------------------
     3. Registration
@@ -2656,7 +2660,6 @@ body .ant-layout-sider .sidebar_menu {
   }
 }
 
-
 /*--------------------------
     4. OTP VErification
   --------------------------------*/
@@ -2791,7 +2794,7 @@ body .ant-layout-sider .sidebar_menu {
 }
 
 /*-----------------
-    6. Forget password
+    5. Forget password
   -----------------------*/
 
 .forget-password-container {
@@ -2914,7 +2917,7 @@ body .ant-layout-sider .sidebar_menu {
 
 
 /*-----------------
-    7. Reset Password
+    6. Reset Password
   -----------------------*/
 
 .reset-password-field {
@@ -2928,7 +2931,7 @@ body .ant-layout-sider .sidebar_menu {
 
 
 /*-----------------
-    8. Cource Details
+    7. Cource Details
   -----------------------*/
 
 /* Main container */
@@ -3037,7 +3040,7 @@ body .ant-layout-sider .sidebar_menu {
 }
 
 /*-----------------
-    9. view Course Video
+    8. view Course Video
   -----------------------*/
 
 .teacher-profile-modal {
@@ -3050,11 +3053,8 @@ body .ant-layout-sider .sidebar_menu {
   border-radius: 50%;
 }
 
-
-
-
 /*-----------------
-    9. Chat
+    9. Chat 
   -----------------------*/
 
 /* Modern Table Chat Layout */
@@ -3290,6 +3290,7 @@ body .ant-layout-sider .sidebar_menu {
 /*-----------------
     11. Chat Message
   -----------------------*/
+
   .chat-box {
     display: flex;
     flex-direction: column;
@@ -3595,13 +3596,87 @@ h1 {
   }
 }
 
+.category-dropdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 300px;
+  position: relative;
+}
 
+.dropdown-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dropdown-btn:hover {
+  background: #f0f0f0;
+}
+
+.dropdown-icon {
+  margin-left: 10px;
+}
+
+/* Dropdown Menu */
+.category-menu {
+  width: 250px;
+  padding: 0;
+  border-radius: 6px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Search Bar (Fixed) */
+.category-search-container {
+  padding: 8px;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.category-search {
+  width: 100%;
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+/* Scrollable Category List */
+.category-list {
+  max-height: 180px; /* 4 items at a time */
+  overflow-y: auto;
+}
+
+/* Custom Scrollbar */
+.category-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.category-list::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.category-list::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
 
 /*-----------------
     11. Teacher Chat
   -----------------------*/
 /* Main Container */
-/* Main Container with Sketchy Theme */
+
 .chat-message-container {
   display: flex;
   flex-direction: row;

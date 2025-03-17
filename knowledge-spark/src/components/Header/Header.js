@@ -186,6 +186,8 @@ export default function AppHeader() {
   const [userEmail, setUserEmail] = useState('');
   const [profilePicture, setProfilePicture] = useState('');
   const [userId, setUserId] = useState('');
+  const [username, setUsername] = useState('');
+
 
   useEffect(() => {
     const authData = JSON.parse(localStorage.getItem('auth_token'));
@@ -214,10 +216,10 @@ export default function AppHeader() {
           },
         })
         .then((response) => {
-          const { profile_picture } = response.data;
-          setProfilePicture(profile_picture || '');  // Update profile picture
+          const { profile_picture, username } = response.data;
+          setProfilePicture(profile_picture || '');
+          setUsername(username || 'User');  // Set username, default to "User" if empty
         })
-
         .catch((error) => {
           console.error('Error fetching user data:', error);
           message.error('Failed to load user data.');
@@ -325,10 +327,10 @@ export default function AppHeader() {
     <Header>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <Dropdown overlay={userMenu} trigger={['click']} className="usermenu">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
             {profilePicture ? (
               <img
-                src={`${profilePicture}`}
+                src={profilePicture}
                 alt="User Profile"
                 style={{
                   width: '40px',
@@ -338,15 +340,21 @@ export default function AppHeader() {
                   border: '2px solid #ddd',
                 }}
               />
-
             ) : (
               <Avatar style={{ backgroundColor: backgroundColor, color: '#fff' }}>
                 {getInitials(userEmail)}
               </Avatar>
             )}
+
+            {/* Display Username from API Response */}
+            <span style={{ fontWeight: 'bold', fontSize: '16px', color: 'black' }}>
+              {username}
+            </span>
+
             <DownOutlined />
           </div>
         </Dropdown>
+
         <Button
           type="link"
           shape="circle"

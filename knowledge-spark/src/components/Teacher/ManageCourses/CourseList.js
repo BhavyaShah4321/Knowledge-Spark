@@ -23,6 +23,7 @@ import {
   Upload,
   message,
   Modal,
+  Spin,
 } from "antd";
 import { Option } from "antd/es/mentions";
 import axios from "axios";
@@ -48,38 +49,67 @@ export default function CourseList() {
   const [courseVideoModalOpen, setCourseVideoModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
   const [editingCourseVideo, setEditingCourseVideo] = useState(null);
-
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(null); 
+  
   // Forms
   const [courseForm] = Form.useForm();
   const [courseVideoForm] = Form.useForm();
   const [teacherId, setTeacherId] = useState(null);
 
   const navigate = useNavigate();
-
-  const fetchCategoryDetails = async (page = 1) => {
+  // Fetch Categories from API
+  const fetchCategoryDetails = async () => {
     try {
       setLoading(true);
       const accessToken = getAccessToken();
 
-      const response = await axios.get(
-        `http://localhost:8000/api/course-category/`,
+      const response = await fetch(
+        "http://localhost:8000/api/course-category/?no_pagination=true",
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
+      const data = await response.json();
+      let categoryArray;
 
-      const CategoryDetails = response.data;
-      setCategory(CategoryDetails.results.data || []);
-      setTotalItems(CategoryDetails.count || 0);
+      if (data && typeof data === "object") {
+        if (data.data && Array.isArray(data.data)) {
+          categoryArray = data.data;
+        } else if (data.results?.data && Array.isArray(data.results.data)) {
+          categoryArray = data.results.data;
+        } else if (Array.isArray(data)) {
+          categoryArray = data;
+        } else {
+          console.error("Unexpected category data structure:", data);
+          categoryArray = [];
+        }
+      } else {
+        console.error("Invalid category data:", data);
+        categoryArray = [];
+      }
+
+      const apiCategories = categoryArray
+        .filter((cat) => cat && cat.status === "active")
+        .map((cat) => ({ id: cat.id, name: cat.name }));
+
+      setCategory([{ id: "all", name: "All Courses" }, ...apiCategories]);
     } catch (error) {
-      console.error("Error fetching category details:", error);
-      message.error("Failed to fetch category details");
+      console.error("Error fetching categories:", error);
+      message.error("Failed to fetch categories.");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchCategoryDetails();
+  }, []);
+
+
+  const filteredCategories = category.filter((cat) =>
+    cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const getAccessToken = () => {
     const authData = JSON.parse(localStorage.getItem("auth_token"));
@@ -586,23 +616,45 @@ export default function CourseList() {
             rules={[
               {
                 required: true,
-                message: "Please select course category!",
+                message: "Please select a course category!",
               },
             ]}
           >
-            <Select placeholder="Select Course Category">
-              {category.map((category) => (
-                <Option
-                  key={category.id}
-                  value={category.id}
-                  disabled={category.status === "inactive"}
-                >
-                  {category.name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
+            {loading ? (
+              <Spin />
+            ) : (
+              <Select
+                showSearch
+                placeholder="Select Course Category"
+                value={selectedCategory}
+                onChange={setSelectedCategory}
+                filterOption={false} // Disable default search filtering
+                dropdownRender={(menu) => (
+                  <div>
+                    {/* Fixed Search Bar */}
+                    <div style={{ padding: "8px", background: "#fff", position: "sticky", top: 0, zIndex: 10 }}>
+                      <Input
+                        placeholder="Search Category..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
 
+                    {/* Scrollable List with a Limit of 4 Visible Items */}
+                    <div style={{ maxHeight: "160px", overflowY: "auto" }}>
+                      {menu}
+                    </div>
+                  </div>
+                )}
+              >
+                {filteredCategories.map((cat) => (
+                  <Option key={cat.id} value={cat.id} disabled={cat.status === "inactive"}>
+                    {cat.name}
+                  </Option>
+                ))}
+              </Select>
+            )}
+          </Form.Item>
           <Form.Item
             name="course_thumbnail"
             label="Course Thumbnail"
