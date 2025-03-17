@@ -98,8 +98,8 @@ class ChatIDViewSet(ModelViewSet):
             status=status.HTTP_204_NO_CONTENT,
         )
         
-   
-    @action(detail=False, methods=["POST"], url_path="chatid-according-user")
+    
+    @action(detail=False, methods=["POST",], url_path="chatid-according-user")
     def chatid_according_user(self, request, *args, **kwargs):
         user_id = request.data.get("user_id")
 
@@ -135,7 +135,7 @@ class ChatIDViewSet(ModelViewSet):
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
     
     @action(detail=False, methods=["POST"], url_path="chatids-admin")
-    def chatid_according_user(self, request, *args, **kwargs):
+    def chatids_admin(self, request, *args, **kwargs):
         user = request.user
 
         if not user.is_superuser:
