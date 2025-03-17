@@ -10,8 +10,10 @@ from rest_framework.decorators import action
 from django.db.models import Q
 from utils.pagination import mypagination
 from django.db.models import Max
+from django.db.models import Max, Q, F
 from django.db.models import Q
 from videocall.models import VideoRoom
+from django.db.models.functions import Coalesce
 
 class ChatIDViewSet(ModelViewSet):
     queryset = ChatID.objects.filter(deleted=0)
@@ -115,9 +117,14 @@ class ChatIDViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        chatid_instance = ChatID.objects.filter(Q(user_1__id=user_id) | Q(user_2__id=user_id))\
-            .annotate(latest_message=Max("messages__created_at"))\
-            .order_by("-latest_message")
+        chatid_instance = ChatID.objects.filter(
+            Q(user_1__id=user_id) | Q(user_2__id=user_id)
+        ).annotate(
+            latest_message=Coalesce(
+                Max("messages__created_at"),  # Get latest message timestamp
+                F("created_at")  # Default to chat creation time if no messages exist
+            )
+        ).order_by("-latest_message")  # Sort from latest to oldest
 
         page = self.paginate_queryset(chatid_instance)
         if page is not None:
@@ -126,6 +133,33 @@ class ChatIDViewSet(ModelViewSet):
 
         serializer = self.get_serializer(chatid_instance, many=True)
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=["POST"], url_path="chatids-admin")
+    def chatid_according_user(self, request, *args, **kwargs):
+        user = request.user
+
+        if not user.is_superuser:
+            return Response(
+                {"success": False, "message": "Only admin an use this api ."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        chatid_instance = ChatID.objects.all().annotate(
+            latest_message=Coalesce(
+                Max("messages__created_at"),  # Get latest message timestamp
+                F("created_at")  # Default to chat creation time if no messages exist
+            )
+        ).order_by("-latest_message")  # Sort from latest to oldest
+
+        page = self.paginate_queryset(chatid_instance)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(chatid_instance, many=True)
+        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+    
+    
     
     @action(detail=False, methods=["POST"], url_path="get-chat-by-videocall-id")
     def get_chat_videocall_id(self, request, *args, **kwargs):

@@ -20,6 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
             'email_verified',
             "user_degree_certificate",
             "user_12th_marsheet_image",
+            "razorpay_contact_id",
             "is_active",
             'otp',
             'gender',

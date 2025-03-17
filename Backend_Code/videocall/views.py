@@ -20,8 +20,8 @@ class VideoRoomViewSet(ModelViewSet):
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
 
-    search_fields = ["uuid", "created_by__username","teacher_username","student_username","start","end","duration"]
-    ordering_fields = ["uuid", "created_at", "updated_at","teacher_username","student_username","start","end","duration"]
+    search_fields = ["uuid", "created_by__username","teacher__username","student__username","start","end","duration"]
+    ordering_fields = ["uuid", "created_at", "updated_at","teacher__username","student__username","start","end","duration"]
 
     def list(self, request, *args, **kwargs):
         """List all feedback with optional pagination."""

@@ -7,9 +7,9 @@ from rest_framework import serializers
 from videocall.models import VideoRoom,VideoChatRoom,VideoChatMessage
 
 class VideoRoomSerializer(serializers.ModelSerializer):
-    created_by_username = serializers.CharField(source="created_by.username", read_only=True)
-    teacher_username = serializers.CharField(source="teacher.username", read_only=True)
-    student_username = serializers.CharField(source="student.username", read_only=True)
+    created_by_username = serializers.CharField(source="created_by.username", required=False)
+    teacher_username = serializers.CharField(source="teacher.username", required=False)
+    student_username = serializers.CharField(source="student.username",required=False)
     start = serializers.DateTimeField(format="%d/%m/%Y %H:%M", 
     input_formats=["%d/%m/%Y %H:%M", "%Y-%m-%dT%H:%M:%S.%fZ"], 
     required=False)
