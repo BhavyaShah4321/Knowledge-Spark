@@ -16,6 +16,8 @@ class UserSerializer(serializers.ModelSerializer):
             "username",
             'email',
             'type',
+            "upi_id",
+            "razorpay_fund_account_id",
             "profile_picture",
             'email_verified',
             "user_degree_certificate",
