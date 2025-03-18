@@ -516,7 +516,7 @@ const ViewCourseVideo = () => {
       feedback_message: values.feedback, // Use the value from the form
       course: parseInt(id),
     };
-  
+
     try {
       const accessToken = getAccessToken();
       await axios.post(`${BASE_URL}/api/course-feedback/`, form_data, {
@@ -524,16 +524,16 @@ const ViewCourseVideo = () => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-  
+
       setSubmitStatus({
         type: "success",
         message: "Feedback submitted successfully!",
       });
-  
+
       form.resetFields(); // Reset form fields
       fetchFeedBackData();
-  
-  
+
+
     } catch (error) {
       setSubmitStatus({
         type: "error",
@@ -541,7 +541,7 @@ const ViewCourseVideo = () => {
       });
     }
   };
-  
+
 
   if (loading) {
     return <div className="loader">Loading...</div>;
@@ -569,7 +569,7 @@ const ViewCourseVideo = () => {
       fetchFeedBackData();
       setIsResponseModalVisible(false);
       responseForm.resetFields();
-        
+
       // Refresh the page
       window.location.reload();
     } catch (error) {
@@ -586,14 +586,16 @@ const ViewCourseVideo = () => {
     fetchFeedBackData();
   };
 
-
   const handleTeacherContact = async () => {
     try {
       const accessToken = getAccessToken();
       const userData = JSON.parse(localStorage.getItem("auth_token"));
       const user1 = userData.user.id; // ID from localStorage
-      const user2 = parseInt(id); // Convert Teacher ID from useParams() to a number
-
+      const user2 = parseInt(course.course_teacher); // Convert Teacher ID from useParams() to a number
+     console.log("Courses Data", course);
+      console.log("User2",user2)
+      console.log("User1",user1);
+      
       const payload = {
         user_1: user1,
         user_2: user2,
