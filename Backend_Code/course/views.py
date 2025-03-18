@@ -527,7 +527,7 @@ class CourseCategoryViewSet(ModelViewSet):
         )
 
 class CoursePurchaseViewSet(ModelViewSet):
-    queryset = CoursePurchase.objects.all().order_by("-created_at")
+    queryset = CoursePurchase.objects.all().order_by("-id")
     serializer_class = CoursePurchaseSerializer
     pagination_class = mypagination
     permission_classes = [IsAuthenticated]
@@ -616,7 +616,7 @@ class CoursePurchaseViewSet(ModelViewSet):
         if not user_id:
             return Response({"success": False, "message": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        purchases = CoursePurchase.objects.filter(user__id=user_id)
+        purchases = CoursePurchase.objects.filter(user__id=user_id).order_by("-id")
         page = self.paginate_queryset(purchases)
         if page is not None:
             serializer = self.serializer_class(page, many=True)
@@ -692,7 +692,7 @@ class CoursePurchaseViewSet(ModelViewSet):
                 {
                     "success": True,
                     "data": {
-                        "order_id": razorpay_order["id"],
+                        "id": purchase.id,
                         "amount": amount,
                         "currency": "INR",
                         "teacher_name":course_instance.course_teacher.username,

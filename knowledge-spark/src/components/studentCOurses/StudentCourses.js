@@ -13,9 +13,11 @@ import {
   Col,
   Empty,
   Space,
+  Menu,
   Divider,
   Avatar,
   Descriptions,
+  Dropdown, 
 } from "antd";
 import {
   SearchOutlined,
@@ -24,6 +26,7 @@ import {
   FireOutlined,
   FilterOutlined,
   EyeOutlined,
+  DownOutlined,
   CheckCircleFilled,
 } from "@ant-design/icons";
 import axios from "axios";
@@ -45,6 +48,9 @@ const StudentCourses = () => {
   const [categories, setCategories] = useState([]);
   const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
+  const [filteredCategories, setFilteredCategories] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+
 
   useEffect(() => {
     const authData = JSON.parse(localStorage.getItem("auth_token"));
@@ -104,16 +110,14 @@ const StudentCourses = () => {
       try {
         const authData = JSON.parse(localStorage.getItem("auth_token"));
         if (!authData || !authData.access_token) {
-          message.error(
-            "Authentication tokens are missing. Please log in again."
-          );
+          message.error("Authentication tokens are missing. Please log in again.");
           return;
         }
         const accessToken = authData.access_token;
 
-        // Fetch categories
+        // Fetch categories with no pagination
         const categoryResponse = await fetch(
-          "http://localhost:8000/api/course-category/",
+          "http://localhost:8000/api/course-category/?no_pagination=true",
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -122,18 +126,21 @@ const StudentCourses = () => {
         );
         const categoryData = await categoryResponse.json();
 
-        const apiCategories = categoryData.results.data
-          .filter((category) => category.status === "active")
-          .map((category) => ({
-            key: category.id.toString(),
-            name: category.name,
-          }));
+        // Ensure `categoryData.data` exists before mapping
+        const apiCategories = categoryData.data
+          ? categoryData.data
+            .filter((category) => category.status === "active")
+            .map((category) => ({
+              key: category.id.toString(),
+              name: category.name,
+            }))
+          : [];
 
         setCategories([{ key: "all", name: "All Courses" }, ...apiCategories]);
 
-        // Fetch courses
+        // Fetch courses with no pagination
         const courseResponse = await fetch(
-          "http://localhost:8000/api/course/",
+          "http://localhost:8000/api/course/?no_pagination=true",
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -142,16 +149,21 @@ const StudentCourses = () => {
         );
         const courseData = await courseResponse.json();
 
-        const activeCourses = courseData.results.data
-          .filter((course) => course.course_status === "active")
-          .map((course) => ({
-            ...course,
-            students_enrolled: Math.floor(Math.random() * 500) + 50,
-            rating: (Math.random() * 2 + 3).toFixed(1),
-            duration: `${Math.floor(Math.random() * 10) + 2} hours`,
-            category_id: course.course_category,
-            trending: Math.random() > 0.7,
-          }));
+        console.log("Fetched Course Data:", courseData); // Debugging
+
+        // Ensure `courseData.data` exists before mapping
+        const activeCourses = courseData.data
+          ? courseData.data
+            .filter((course) => course.course_status === "active")
+            .map((course) => ({
+              ...course,
+              students_enrolled: Math.floor(Math.random() * 500) + 50,
+              rating: (Math.random() * 2 + 3).toFixed(1),
+              duration: `${Math.floor(Math.random() * 10) + 2} hours`,
+              category_id: course.course_category,
+              trending: Math.random() > 0.7,
+            }))
+          : [];
 
         setCourses(activeCourses);
         setFilteredCourses(activeCourses);
@@ -166,6 +178,48 @@ const StudentCourses = () => {
     fetchData();
   }, []);
 
+  const handleCategoryChange = (categoryKey) => {
+    setSelectedCategory(categoryKey);
+    if (categoryKey === "all") {
+      setFilteredCourses(courses);
+    } else {
+      setFilteredCourses(courses.filter((course) => course.category_id.toString() === categoryKey));
+    }
+  };
+
+  useEffect(() => {
+    setFilteredCategories(
+      categories.filter((category) =>
+        category.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+  }, [searchTerm, categories]);
+
+  const menu = (
+    <Menu className="category-menu">
+      <div className="category-search-container">
+        <Input
+          placeholder="Search Category..."
+          className="category-search"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+      <div className="category-list">
+        <Menu.Item key="all" onClick={() => handleCategoryChange("all")}>
+          All Courses
+        </Menu.Item>
+        {filteredCategories.map((category) => (
+          <Menu.Item key={category.key} onClick={() => handleCategoryChange(category.key)}>
+            {category.name}
+          </Menu.Item>
+        ))}
+      </div>
+    </Menu>
+  );
+
+
+
   // Check if user has purchased a course
   // Check if user has purchased a course with completed status
   const isCoursePurchased = (courseId) => {
@@ -178,12 +232,6 @@ const StudentCourses = () => {
   const handleSearch = (value) => {
     const searchTerm = value.toLowerCase();
     filterCourses(searchTerm, selectedCategory);
-  };
-
-  // Handle category filter change
-  const handleCategoryChange = (category) => {
-    setSelectedCategory(category);
-    filterCourses("", category);
   };
 
   // Filter courses based on search term and category
@@ -424,18 +472,13 @@ const StudentCourses = () => {
       </Row>
 
       {/* Category Filters */}
-      <div className="category-container">
-        {categories.map((category) => (
-          <Button
-            key={category.key}
-            className={`category-pill ${
-              selectedCategory === category.key ? "active" : ""
-            }`}
-            onClick={() => handleCategoryChange(category.key)}
-          >
-            {category.name}
-          </Button>
-        ))}
+      <div className="category-dropdown">
+        <Dropdown overlay={menu} trigger={["click"]}>
+          <button className="dropdown-btn">
+            {selectedCategory ? categories.find((c) => c.key === selectedCategory)?.name : "Select Category"}
+            <DownOutlined className="dropdown-icon" />
+          </button>
+        </Dropdown>
       </div>
 
       {/* Course List */}
@@ -464,16 +507,15 @@ const StudentCourses = () => {
                       course.course_thumbnail
                         ? `http://localhost:8000${course.course_thumbnail}`
                         : course.videos?.[0]?.course_video_thumbnail
-                        ? `http://localhost:8000${course.videos[0].course_video_thumbnail}`
-                        : "/api/placeholder/400/320"
+                          ? `http://localhost:8000${course.videos[0].course_video_thumbnail}`
+                          : "/api/placeholder/400/320"
                     }
                     onClick={() => navigate(`/view-course/${course.id}`)}
                     className="course-thumbnail"
                   />
                   <span
-                    className={`course-badge ${
-                      purchased ? "enrolled" : "active"
-                    }`}
+                    className={`course-badge ${purchased ? "enrolled" : "active"
+                      }`}
                   >
                     {purchased ? "Enrolled" : "Available"}
                   </span>
@@ -482,7 +524,7 @@ const StudentCourses = () => {
                     <div className="image-overlay">
                       {purchased ? (
                         <Button
-                        type="default"
+                          type="default"
                           // className="view-course-button"
                           onClick={() => handleViewCourse(course.id)}
                           icon={<EyeOutlined />}
@@ -493,11 +535,11 @@ const StudentCourses = () => {
                         <Button
                           className="price-button"
                           onClick={() => navigate(`/view-course/${course.id}`)}
-                          // type="primary"
-                          // onClick={() => {
-                          //   setSelectedCourse(course);
-                          //   setModalVisible(true);
-                          // }}
+                        // type="primary"
+                        // onClick={() => {
+                        //   setSelectedCourse(course);
+                        //   setModalVisible(true);
+                        // }}
                         >
                           Preview
                         </Button>
@@ -520,16 +562,15 @@ const StudentCourses = () => {
                   </div>
                   <div className="course-footer">
                     <span
-                      className={`course-price ${
-                        !course.course_price ? "free" : ""
-                      }`}
+                      className={`course-price ${!course.course_price ? "free" : ""
+                        }`}
                     >
                       {course.course_price ? `₹${course.course_price}` : "Free"}
                     </span>
                     {purchased ? (
                       <Button
                         type="primary"
-                        
+
                         onClick={() => handleViewCourse(course.id)}
                         icon={<EyeOutlined />}
                       >
@@ -804,7 +845,7 @@ const StudentCourses = () => {
                       </Button>
                     )}
                     <Button
-                     danger
+                      danger
                       type="default"
                       size="large"
                       onClick={() => setModalVisible(false)}
