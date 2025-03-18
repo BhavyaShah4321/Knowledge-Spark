@@ -713,7 +713,7 @@ class CoursePurchaseViewSet(ModelViewSet):
         
     @action(detail=False, methods=["POST"], url_path="verify-payment")
     def verify_payment(self, request, *args, **kwargs):
-        """Verifies payment and transfers 80% to the teacher"""
+        """Verifies payment and transfers demo amount to the teacher"""
         razorpay_payment_id = request.data.get("razorpay_payment_id")
         razorpay_order_id = request.data.get("razorpay_order_id")
         razorpay_signature = request.data.get("razorpay_signature")
@@ -721,7 +721,7 @@ class CoursePurchaseViewSet(ModelViewSet):
         if not (razorpay_payment_id and razorpay_order_id and razorpay_signature):
             return Response({"success": False, "message": "Payment details are required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        client = razorpay.Client(auth=("rzp_test_demoKey", "rzp_test_demoSecret"))  # Demo Keys
 
         try:
             # Verify Razorpay Payment Signature
@@ -739,55 +739,35 @@ class CoursePurchaseViewSet(ModelViewSet):
 
             # Fetch teacher details
             teacher = purchase.course.course_teacher
-            teacher_amount = float(purchase.amount) * 0.80  # 80% to teacher
+            teacher_amount = 100  # Demo amount (₹1.00 in paise)
 
-            # Ensure teacher has a Razorpay Contact
-            if not teacher.razorpay_contact_id:
-                contact_data = {
-                    "name": teacher.username,
-                    "email": teacher.email,
-                    "type": "employee",
-                }
-                contact_response = client.contact.create(contact_data)
-                teacher.razorpay_contact_id = contact_response["id"]
-                teacher.save()
+            # Ensure teacher has a Razorpay Contact (Demo Contact ID)
+            teacher.razorpay_contact_id = "cont_demo12345"
+            teacher.save()
 
-            # Ensure teacher has a Fund Account
-            if not teacher.razorpay_fund_account_id:
-                fund_account_data = {
-                    "contact_id": teacher.razorpay_contact_id,
-                    "account_type": "vpa",  # Change to "bank_account" if needed
-                    "vpa": {"address": teacher.upi_id},
-                }
-                fund_account_response = client.fund_account.create(fund_account_data)
-                teacher.razorpay_fund_account_id = fund_account_response["id"]
-                teacher.save()
+            # Ensure teacher has a Fund Account (Demo Fund Account ID)
+            teacher.razorpay_fund_account_id = "fa_demo12345"
+            teacher.save()
 
-            # Validate Fund Account
-            try:
-                client.fund_account.fetch(teacher.razorpay_fund_account_id)
-            except razorpay.errors.BadRequestError:
-                return Response({"success": False, "message": "Invalid Fund Account ID"}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Process Payout to Teacher
+            # Process Demo Payout to Teacher
             payout_data = {
-                "account_number": settings.RAZORPAY_ACCOUNT_NUMBER,
-                "amount": int(teacher_amount * 100),  # Convert to paise
+                "account_number": "2323230076543210",  # Demo Razorpay Account Number
+                "amount": teacher_amount,  # Demo Amount (₹1.00 in paise)
                 "currency": "INR",
                 "mode": "UPI",
                 "purpose": "payout",
                 "fund_account_id": teacher.razorpay_fund_account_id,
                 "queue_if_low_balance": True,
-                "reference_id": f"payout_{purchase.id}",
-                "narration": "Course earnings",
+                "reference_id": f"payout_demo_{purchase.id}",
+                "narration": "Demo Course Earnings",
             }
             payout_response = client.payout.create(payout_data)
 
-            if payout_response["status"] == "processed":
+            if payout_response.get("status") == "processed":
                 purchase.teacher_payment_status = "paid"
                 purchase.save()
 
-            return Response({"success": True, "message": "Payment verified and teacher paid"}, status=status.HTTP_200_OK)
+            return Response({"success": True, "message": "Demo Payment verified and teacher paid"}, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({"success": False, "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
