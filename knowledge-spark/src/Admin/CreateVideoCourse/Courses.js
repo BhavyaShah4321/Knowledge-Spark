@@ -1,4 +1,9 @@
-import { DownOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  DownOutlined,
+  EditOutlined,
+  SearchOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import {
   Breadcrumb,
   Button,
@@ -15,6 +20,7 @@ import {
   Tooltip,
   message,
   Modal,
+  Upload,
 } from "antd";
 import { Option } from "antd/es/mentions";
 import axios from "axios";
@@ -115,6 +121,26 @@ export default function Courses() {
     setEditingCourse(course);
     form.setFieldsValue(course);
     setIsModalOpen(true);
+    setEditingCourse(course);
+  
+  // Create initial form values
+  const initialValues = {
+    ...course,
+    // Handle thumbnail properly if it exists
+    course_thumbnail: course.course_thumbnail 
+      ? [
+          {
+            uid: '-1',
+            name: 'Existing Thumbnail',
+            status: 'done',
+            url: course.course_thumbnail,
+          },
+        ] 
+      : [],
+  };
+  
+  form.setFieldsValue(initialValues);
+  setIsModalOpen(true);
   };
 
   const handleModalCancel = () => {
@@ -128,7 +154,7 @@ export default function Courses() {
         message.error("No course selected for editing");
         return;
       }
-
+  
       const formData = new FormData();
       const form_data = {
         course_description: values.course_description,
@@ -136,22 +162,31 @@ export default function Courses() {
         course_price: values.course_price,
         course_category: values.course_category,
       };
-
+  
       formData.append("form_data", JSON.stringify(form_data));
+      
+      // Handle the file upload
+      if (values.course_thumbnail && values.course_thumbnail.length > 0) {
+        // If it's a new file (not a URL string)
+        if (values.course_thumbnail[0].originFileObj) {
+          formData.append("course_thumbnail", values.course_thumbnail[0].originFileObj);
+        }
+      }
+  
       setLoading(true);
       const accessToken = getAccessToken();
-
+  
       const response = await axios.patch(
         `http://localhost:8000/api/course/${editingCourse.id}/`,
         formData,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
+            "Content-Type": "multipart/form-data", // Changed to multipart/form-data
           },
         }
       );
-
+  
       if (response.status === 200) {
         message.success("Course updated successfully");
         setIsModalOpen(false);
@@ -225,7 +260,6 @@ export default function Courses() {
     setSearchText(""); // Clear the search text
     fetchCourseDetails(1); // Reload course data
   };
-
 
   const columns = [
     {
@@ -336,11 +370,7 @@ export default function Courses() {
               style={{ width: "100%" }}
             />
             <Tooltip placement="top" title="Reset Filter">
-              <Button
-                type="primary"
-                className="iconlink"
-                onClick={resetFilter}
-              >
+              <Button type="primary" className="iconlink" onClick={resetFilter}>
                 <FilterIcon />
               </Button>
             </Tooltip>
@@ -439,6 +469,33 @@ export default function Courses() {
                 </Option>
               ))}
             </Select>
+          </Form.Item>
+          <Form.Item
+            name="course_thumbnail"
+            label="Course Thumbnail"
+            valuePropName="fileList"
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) {
+                return e;
+              }
+              return e && e.fileList;
+            }}
+            rules={[
+              {
+                required: !editingCourse?.course_thumbnail,
+                message: "Please upload course thumbnail",
+              },
+            ]}
+          >
+            <Upload
+              name="course_thumbnail"
+              listType="picture"
+              beforeUpload={() => false} // Prevents automatic upload
+              accept="image/*"
+              maxCount={1}
+            >
+              <Button icon={<UploadOutlined />}>Upload Course Thumbnail</Button>
+            </Upload>
           </Form.Item>
 
           <Form.Item className="mb-0">
