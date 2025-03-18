@@ -65,8 +65,8 @@ export default function CoursePurchaseList() {
       setLoading(true);
       const accessToken = getAccessToken();
       const response = await axios.post(
-        `http://localhost:8000/api/course-purchase/purchases-by-user/`,
-        { user_id: teacherId },
+        `http://localhost:8000/api/course-purchase/course-purchase-according-teacher/`,
+        { teacher_id: teacherId },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -74,7 +74,11 @@ export default function CoursePurchaseList() {
         }
       );
 
+      console.log('dsadhhd',response);
+      
+      setTotalItems(response.data.count);
       const FeedBackDetails = response.data.results || [];
+      
       setFeedbackData(FeedBackDetails);
       setOriginalData(FeedBackDetails); // Store original data for filtering
     } catch (error) {
@@ -134,22 +138,22 @@ export default function CoursePurchaseList() {
       key: "user_username",
     },
     {
-      title: "Feedback",
-      dataIndex: "feedback_message",
-      key: "feedback_message",
+      title: "Course Price",
+      dataIndex: "teacher_amount",
+      key: "teacher_amount",
     },
-    {
-      title: "Teacher Response",
-      dataIndex: "teacher_response",
-      key: "teacher_response",
-      render: (response, record) => (
-        <Space direction="vertical">
-          <Button type="primary" onClick={() => showResponseModal(record)}>
-            {response ? "Edit Response" : "Add Response"}
-          </Button>
-        </Space>
-      ),
-    },
+    // {
+    //   title: "Teacher Response",
+    //   dataIndex: "teacher_response",
+    //   key: "teacher_response",
+    //   render: (response, record) => (
+    //     <Space direction="vertical">
+    //       <Button type="primary" onClick={() => showResponseModal(record)}>
+    //         {response ? "Edit Response" : "Add Response"}
+    //       </Button>
+    //     </Space>
+    //   ),
+    // },
   ];
 
   return (

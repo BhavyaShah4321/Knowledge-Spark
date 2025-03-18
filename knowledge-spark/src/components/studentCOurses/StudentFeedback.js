@@ -32,6 +32,7 @@ import {
 import axios from "axios";
 import { Link } from "react-router-dom";
 import TextArea from "antd/es/input/TextArea";
+import dayjs from "dayjs";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -194,7 +195,7 @@ export default function StudentFeedback() {
   const formatDateIfAvailable = (dateString) => {
     if (!dateString) return "";
     try {
-      return new Date(dateString).toLocaleDateString();
+      return dayjs(dateString).format('DD-MM-YYYY : hh : mm');
     } catch (e) {
       return "";
     }
