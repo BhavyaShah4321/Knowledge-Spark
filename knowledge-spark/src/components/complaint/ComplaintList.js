@@ -163,13 +163,13 @@ const ComplaintList = () => {
       title: "Created At",
       dataIndex: "created_at",
       key: "created_at",
-      render: (date) => dayjs(date).format('DD-MM-YYYY:hh:mm'),
+      render: (created_at) => dayjs(created_at).format('DD-MM-YYYY:hh:mm'),
     },
     {
       title: "Updated At",
       dataIndex: "updated_at",
       key: "updated_at",
-      render: (date) => dayjs(date).format('DD-MM-YYYY:hh:mm'),
+      render: (updated_at) => (updated_at ? dayjs(updated_at).format('DD-MM-YYYY:hh:mm') : "N/A"),
     },
     {
       title: "Admin Response",

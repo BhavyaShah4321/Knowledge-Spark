@@ -244,7 +244,7 @@ export default function Category() {
           <Tooltip title="Change Status">
             <Dropdown overlay={menu(record)} trigger={["click"]}>
               <Button
-                type={record.status === "active" ? "primary" : "default"}
+                type={record.status === "active" ? "default" : "default"}
                 className={
                   record.status === "active"
                     ? "bg-green-500"
