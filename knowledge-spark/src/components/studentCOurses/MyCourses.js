@@ -79,7 +79,7 @@ const MyCourses = () => {
     switch (status) {
       case "PENDING":
         return <Tag color="orange">Pending</Tag>;
-      case "COMPLETED":
+      case "paid":
         return <Tag color="green">Completed</Tag>;
       case "FAILED":
         return <Tag color="red">Failed</Tag>;
@@ -143,7 +143,7 @@ const MyCourses = () => {
             />
           ) : filteredCourses.length > 0 ? (
             <Row gutter={[16, 16]}>
-              {filteredCourses.map((course) => course.status==="COMPLETED" && ( 
+              {filteredCourses.map((course) => course.status==="paid" && ( 
                  
                 <Col xs={24} sm={12} md={8} key={course.id}>
                   <Card

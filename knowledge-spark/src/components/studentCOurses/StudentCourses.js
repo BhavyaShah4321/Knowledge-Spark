@@ -85,7 +85,7 @@ const StudentCourses = () => {
 
         // Filter for completed purchases only
         const completedPurchases = response.data.results.filter(
-          (purchase) => purchase.status === "COMPLETED"
+          (purchase) => purchase.status === "paid"
         );
 
         const purchasedCourseIds = completedPurchases.map(
@@ -353,6 +353,8 @@ const StudentCourses = () => {
         },
         handler: async function (response) {
           // Step 3: Verify payment
+          console.log('newqeuie',response);
+          
           try {
             const verifyResponse = await fetch(
               "http://127.0.0.1:8000/api/course-purchase/verify-payment/",
@@ -370,9 +372,9 @@ const StudentCourses = () => {
               }
             );
 
-            if (!verifyResponse.ok) {
-              throw new Error("Failed to verify payment");
-            }
+            // if (!verifyResponse.ok) {
+            //   throw new Error("Failed to verify payment");
+            // }
 
             const verifyData = await verifyResponse.json();
 
