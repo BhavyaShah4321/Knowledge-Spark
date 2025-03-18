@@ -717,12 +717,12 @@ class CoursePurchaseViewSet(ModelViewSet):
         razorpay_payment_id = request.data.get("razorpay_payment_id")
         razorpay_order_id = request.data.get("razorpay_order_id")
         razorpay_signature = request.data.get("razorpay_signature")
-    
+
         if not (razorpay_payment_id and razorpay_order_id and razorpay_signature):
             return Response({"success": False, "message": "Payment details are required"}, status=status.HTTP_400_BAD_REQUEST)
-    
+
         client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-    
+
         try:
             # Verify Razorpay Payment Signature
             client.utility.verify_payment_signature({
@@ -730,28 +730,28 @@ class CoursePurchaseViewSet(ModelViewSet):
                 "razorpay_payment_id": razorpay_payment_id,
                 "razorpay_signature": razorpay_signature
             })
-    
+
             purchase = CoursePurchase.objects.get(razorpay_order_id=razorpay_order_id)
             purchase.status = "paid"
             purchase.razorpay_payment_id = razorpay_payment_id
             purchase.razorpay_signature = razorpay_signature
             purchase.save()
-    
+
             # Fetch teacher details
             teacher = purchase.course.course_teacher
             teacher_amount = float(purchase.amount) * 0.80  # 80% to teacher
-    
+
             # Ensure teacher has a Razorpay Contact
             if not teacher.razorpay_contact_id:
                 contact_data = {
-                    "name": teacher.name,
+                    "name": teacher.username,
                     "email": teacher.email,
                     "type": "employee",
                 }
                 contact_response = client.contact.create(contact_data)
                 teacher.razorpay_contact_id = contact_response["id"]
                 teacher.save()
-    
+
             # Ensure teacher has a Fund Account
             if not teacher.razorpay_fund_account_id:
                 fund_account_data = {
@@ -762,13 +762,13 @@ class CoursePurchaseViewSet(ModelViewSet):
                 fund_account_response = client.fund_account.create(fund_account_data)
                 teacher.razorpay_fund_account_id = fund_account_response["id"]
                 teacher.save()
-    
+
             # Validate Fund Account
             try:
                 client.fund_account.fetch(teacher.razorpay_fund_account_id)
             except razorpay.errors.BadRequestError:
                 return Response({"success": False, "message": "Invalid Fund Account ID"}, status=status.HTTP_400_BAD_REQUEST)
-    
+
             # Process Payout to Teacher
             payout_data = {
                 "account_number": settings.RAZORPAY_ACCOUNT_NUMBER,
@@ -782,12 +782,12 @@ class CoursePurchaseViewSet(ModelViewSet):
                 "narration": "Course earnings",
             }
             payout_response = client.payout.create(payout_data)
-    
+
             if payout_response["status"] == "processed":
                 purchase.teacher_payment_status = "paid"
                 purchase.save()
-    
+
             return Response({"success": True, "message": "Payment verified and teacher paid"}, status=status.HTTP_200_OK)
-    
+
         except Exception as e:
             return Response({"success": False, "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
