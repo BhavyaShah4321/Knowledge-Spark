@@ -717,51 +717,98 @@ class CoursePurchaseViewSet(ModelViewSet):
         razorpay_payment_id = request.data.get("razorpay_payment_id")
         razorpay_order_id = request.data.get("razorpay_order_id")
         razorpay_signature = request.data.get("razorpay_signature")
-
+    
         if not (razorpay_payment_id and razorpay_order_id and razorpay_signature):
-            return Response({"success": False, "message": "Payment details are required"}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response(
+                {"success": False, "message": "Payment details are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+    
         client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-
+    
         try:
-            # Verify Razorpay Payment Signature
+            # ✅ Verify Razorpay Payment Signature
             client.utility.verify_payment_signature({
                 "razorpay_order_id": razorpay_order_id,
                 "razorpay_payment_id": razorpay_payment_id,
                 "razorpay_signature": razorpay_signature
             })
-
+    
             purchase = CoursePurchase.objects.get(razorpay_order_id=razorpay_order_id)
             purchase.status = "paid"
             purchase.razorpay_payment_id = razorpay_payment_id
             purchase.razorpay_signature = razorpay_signature
             purchase.save()
-
-            # Fetch teacher details
+    
+            # ✅ Fetch teacher details
             teacher = purchase.course.course_teacher
             teacher_amount = float(purchase.amount) * 0.80  # 80% to teacher
-            teacher_razorpay_contact_id = teacher.razorpay_contact_id  # Store teacher's Razorpay Contact ID
-
-            if teacher_razorpay_contact_id:
-                # Create a payout to teacher
-                payout_data = {
-                    "account_number": settings.RAZORPAY_ACCOUNT_NUMBER,  # Your business account
-                    "amount": int(teacher_amount * 100),  # Convert to paise
-                    "currency": "INR",
-                    "mode": "UPI",
-                    "purpose": "payout",
-                    "fund_account_id": teacher_razorpay_contact_id,
-                    "queue_if_low_balance": True,
-                    "reference_id": f"payout_{purchase.id}",
-                    "narration": "Course earnings",
-                }
-                payout_response = client.payout.create(payout_data)
-
-                if payout_response["status"] == "processed":
-                    purchase.teacher_payment_status = "paid"
-                    purchase.save()
-
-            return Response({"success": True, "message": "Payment verified and teacher paid"}, status=status.HTTP_200_OK)
-
+            teacher_fund_account_id = teacher.razorpay_fund_account_id  # Ensure fund account ID is stored
+    
+            if not teacher_fund_account_id:
+                return Response(
+                    {"success": False, "message": "Teacher fund account ID not found"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+    
+            # ✅ Fetch Razorpay account number (ONLY IF NOT STORED)
+            razorpay_account_number = getattr(settings, "RAZORPAY_ACCOUNT_NUMBER", None)
+            if not razorpay_account_number:
+                try:
+                    account_details = client.account.fetch()
+                    razorpay_account_number = account_details.get("account_number")
+                    if not razorpay_account_number:
+                        raise ValueError("Failed to retrieve Razorpay account number")
+                except Exception as e:
+                    return Response(
+                        {"success": False, "message": f"Error fetching account number: {str(e)}"},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    )
+    
+            # ✅ Create a payout request
+            payout_data = {
+                "account_number": razorpay_account_number,
+                "amount": int(teacher_amount * 100),  # Convert to paise
+                "currency": "INR",
+                "mode": "UPI",
+                "purpose": "payout",
+                "fund_account_id": teacher_fund_account_id,  # Ensure this is a valid fund account
+                "queue_if_low_balance": True,
+                "reference_id": f"payout_{purchase.id}",
+                "narration": "Course earnings",
+            }
+    
+            payout_response = client.payout.create(payout_data)
+    
+            if payout_response.get("status") == "processed":
+                purchase.teacher_payment_status = "paid"
+                purchase.save()
+            else:
+                return Response(
+                    {"success": False, "message": "Payout creation failed"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+    
+            return Response(
+                {"success": True, "message": "Payment verified and teacher paid"},
+                status=status.HTTP_200_OK,
+            )
+    
+        except razorpay.errors.SignatureVerificationError:
+            return Response(
+                {"success": False, "message": "Invalid Razorpay signature"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+    
+        except CoursePurchase.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Purchase record not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+    
         except Exception as e:
-            return Response({"success": False, "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+    
