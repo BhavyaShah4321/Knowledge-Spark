@@ -50,8 +50,8 @@ export default function CourseList() {
   const [editingCourse, setEditingCourse] = useState(null);
   const [editingCourseVideo, setEditingCourseVideo] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(null); 
-  
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
   // Forms
   const [courseForm] = Form.useForm();
   const [courseVideoForm] = Form.useForm();
@@ -60,6 +60,18 @@ export default function CourseList() {
   const navigate = useNavigate();
   // Fetch Categories from API
   const fetchCategoryDetails = async () => {
+    // Check if we have cached data
+    const cachedData = localStorage.getItem('categoryData');
+    if (cachedData) {
+      const { categories, timestamp } = JSON.parse(cachedData);
+      const isStillValid = Date.now() - timestamp < 3600000; // 1 hour cache
+
+      if (isStillValid) {
+        setCategory(categories);
+        return; // Skip fetching if we have valid cached data
+      }
+    }
+
     try {
       setLoading(true);
       const accessToken = getAccessToken();
@@ -93,7 +105,15 @@ export default function CourseList() {
         .filter((cat) => cat && cat.status === "active")
         .map((cat) => ({ id: cat.id, name: cat.name }));
 
-      setCategory([{ id: "all", name: "All Courses" }, ...apiCategories]);
+      const categoriesWithAll = [{ id: "all", name: "All Courses" }, ...apiCategories];
+
+      // Cache the result
+      localStorage.setItem('categoryData', JSON.stringify({
+        categories: categoriesWithAll,
+        timestamp: Date.now()
+      }));
+
+      setCategory(categoriesWithAll);
     } catch (error) {
       console.error("Error fetching categories:", error);
       message.error("Failed to fetch categories.");
@@ -388,7 +408,6 @@ export default function CourseList() {
     if (userId) {
       setTeacherId(userId);
       fetchCourseDetails(currentPage);
-      fetchCategoryDetails(currentPage);
     } else {
       message.error("Please login to view courses");
       // Optionally redirect to login page
@@ -628,7 +647,11 @@ export default function CourseList() {
                 placeholder="Select Course Category"
                 value={selectedCategory}
                 onChange={setSelectedCategory}
-                filterOption={false} // Disable default search filtering
+                optionFilterProp="children" // This helps with search performance
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                listHeight={160} // Set a fixed height for the dropdown list
                 dropdownRender={(menu) => (
                   <div>
                     {/* Fixed Search Bar */}
@@ -639,11 +662,7 @@ export default function CourseList() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                       />
                     </div>
-
-                    {/* Scrollable List with a Limit of 4 Visible Items */}
-                    <div style={{ maxHeight: "160px", overflowY: "auto" }}>
-                      {menu}
-                    </div>
+                    {menu} {/* Render the menu directly instead of wrapping it */}
                   </div>
                 )}
               >

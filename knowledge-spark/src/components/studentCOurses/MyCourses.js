@@ -158,7 +158,7 @@ const MyCourses = () => {
                             ? `http://localhost:8000${course.videos[0].course_video_thumbnail}`
                             : "/api/placeholder/400/320"
                         }
-                        onClick={() => handleViewCourse(course.id)}
+                        onClick={() => handleViewCourse(course.course)}
                       />
                     }
                   >
