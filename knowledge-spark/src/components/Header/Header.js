@@ -315,9 +315,6 @@ export default function AppHeader() {
       <Menu.Item key="1">
         <Link to='/profile'>Profile</Link>
       </Menu.Item>
-      <Menu.Item key="2">
-        <Link>Settings</Link>
-      </Menu.Item>
       <Menu.Item key="3">
         <Link>Logout</Link>
       </Menu.Item>
