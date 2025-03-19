@@ -250,7 +250,7 @@ class UserViewSet(ModelViewSet):
         students=User.objects.filter(type="Student").count()
         courses=Course.objects.all().count()
         
-        total_revenue_instance=CoursePurchase.objects.all()
+        total_revenue_instance=CoursePurchase.objects.filter(status="paid")
         total_earn=0
         for single_instance in total_revenue_instance:
             total_earn=total_earn+ int(single_instance.platform_fee) if  single_instance.platform_fee else 0
@@ -275,7 +275,7 @@ class UserViewSet(ModelViewSet):
         total_course_purchase_student=CoursePurchase.objects.filter(course__course_teacher=teacher_id).count()
         
         
-        total_revenue=CoursePurchase.objects.filter(course__course_teacher=teacher_id)
+        total_revenue=CoursePurchase.objects.filter(course__course_teacher=teacher_id,status="paid")
         total_earned = 0
         for single_instance in total_revenue:
             teacher_amount = single_instance.teacher_amount or 0  # Convert None to 0

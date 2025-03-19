@@ -1,3 +1,8 @@
+from reportlab.lib.utils import ImageReader
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from django.http import FileResponse
+import os
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -14,6 +19,7 @@ from course.serializer import (
     CoursePurchaseSerializer
     
 )
+from io import BytesIO
 from datetime import datetime
 from final_year_project import settings
 from utils.pagination import mypagination
@@ -574,6 +580,7 @@ class CoursePurchaseViewSet(ModelViewSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         data = request.data
+        print(data)
         data["updated_at"] = datetime.now()
         serializer = self.serializer_class(instance, data=data, partial=True)
         if serializer.is_valid():
@@ -687,7 +694,7 @@ class CoursePurchaseViewSet(ModelViewSet):
                 teacher_amount=teacher_amount,
                 platform_fee=platform_fee,
                 razorpay_order_id=razorpay_order["id"],
-                status="PENDING",
+                status="pending",
             )
 
             course_thumbnail_url = request.build_absolute_uri(course_instance.course_thumbnail.url) if course_instance.course_thumbnail else None
@@ -771,3 +778,70 @@ class CoursePurchaseViewSet(ModelViewSet):
 
         except Exception as e:
             return Response({"success": False, "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+        
+    @action(detail=True, methods=['get'], url_path="download-receipt")
+    def download_receipt(self, request, pk=None):
+        try:
+            purchase = self.get_object()
+
+            if purchase.status != "paid":
+                return Response(
+                    {"success": False, "message": "Receipt is only available for completed purchases."}, 
+                    status=400
+                )
+
+            buffer = BytesIO()
+            pdf = canvas.Canvas(buffer, pagesize=A4)
+            width, height = A4  # Get page dimensions
+
+            # ✅ Path to the logo
+            logo_path = os.path.join("static", "images", "logo.png")
+
+            # ✅ Add Logo at the Top (Centered)
+            if os.path.exists(logo_path):
+                logo = ImageReader(logo_path)
+                logo_width = 150  # Adjust as needed
+                logo_height = 75  # Adjust as needed
+                pdf.drawImage(logo, (width - logo_width) / 2, height - 120, width=logo_width, height=logo_height)
+
+            # ✅ Title below the logo
+            pdf.setFont("Helvetica-Bold", 16)
+            pdf.drawCentredString(width / 2, height - 150, "Course Purchase Receipt")
+
+            # ✅ Receipt Content
+            pdf.setFont("Helvetica", 12)
+            y_position = height - 200  # Start below the title
+            line_spacing = 22  # More spacing for readability
+
+            details = [
+                f"Order ID: {purchase.id}",
+                f"User: {purchase.user.username}",
+                f"Course: {purchase.course.course_title}",
+                f"Amount Paid: {purchase.amount:.2f} INR",
+                f"Platform Fee: {purchase.platform_fee:.2f} INR",
+                f"Teacher's Share: {purchase.teacher_amount:.2f} INR",
+                f"Payment ID: {purchase.razorpay_payment_id}",
+                f"Payment Status: {purchase.status}",
+                f"Purchase Date: {purchase.created_at.strftime('%Y-%m-%d %H:%M:%S')}",
+            ]
+
+            for detail in details:
+                pdf.drawString(100, y_position, detail)
+                y_position -= line_spacing
+
+            # ✅ Footer - Thank You Message
+            pdf.setFont("Helvetica-Oblique", 11)
+            pdf.drawCentredString(width / 2, 50, "Thank you for your purchase!")
+
+            pdf.showPage()
+            pdf.save()
+
+            buffer.seek(0)
+            return FileResponse(
+                buffer, as_attachment=True, filename=f"receipt_{purchase.id}.pdf"
+            )
+
+        except CoursePurchase.DoesNotExist:
+            return Response({"error": "Purchase not found"}, status=404)
