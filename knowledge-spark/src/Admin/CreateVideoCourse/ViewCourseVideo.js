@@ -532,7 +532,7 @@ const ViewCourseVideo = () => {
 
       form.resetFields(); // Reset form fields
       fetchFeedBackData();
-
+      window.location.reload();
 
     } catch (error) {
       setSubmitStatus({
@@ -769,6 +769,10 @@ const ViewCourseVideo = () => {
                           {
                             max: 500,
                             message: "Feedback cannot exceed 500 characters",
+                          },
+                          {
+                            min: 10,
+                            message: "Please Enter atleast 10 characters"
                           },
                         ]}
                       >

@@ -25,9 +25,15 @@ function Login() {
           navigate("/"); // Redirect to login page
           return;
         }
+        console.log("Login Token", storedAuth);
 
-        // If the token seems valid, allow access to dashboard
-        navigate("/dashboard");
+        if (parsedAuth.user.type == "Student") {
+          navigate("/student-coures")
+        } else {
+          navigate("/dashboard");
+        }
+
+
       } catch (error) {
         console.error("Invalid token format:", error);
         localStorage.removeItem("auth_token");
@@ -152,11 +158,11 @@ function Login() {
         <h2>Welcome to Knowledge Spark.</h2>
         <p>
           <b>
-          🌟 Empowering Learning, Anytime, Anywhere! 🔹 For Teachers: Create and
-          manage courses effortlessly. Share your knowledge with students
-          worldwide. 🔹 For Students: Explore a wide range of courses, learn
-          from expert educators, and enhance your skills at your own pace. 🚀
-          Log in now and ignite your learning journey!
+            🌟 Empowering Learning, Anytime, Anywhere! 🔹 For Teachers: Create and
+            manage courses effortlessly. Share your knowledge with students
+            worldwide. 🔹 For Students: Explore a wide range of courses, learn
+            from expert educators, and enhance your skills at your own pace. 🚀
+            Log in now and ignite your learning journey!
           </b>
         </p>
       </div>
