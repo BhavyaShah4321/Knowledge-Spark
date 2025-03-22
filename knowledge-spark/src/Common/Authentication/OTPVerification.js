@@ -199,11 +199,12 @@ function OTPVerification() {
 
                         <div className="otpresend">
                             {timer > 0 ? (
-                                <p>Resend OTP in {timer} seconds</p>
+                                <p style={{fontSize:'18px',marginTop:'20px'}}>Resend OTP in <span style={{color:'red'}}>{timer}</span> seconds</p>
                             ) : (
                                 <div>
                                     Click here to  &nbsp;
                                     <span
+                                  
                                         onClick={(e) => {
                                             setTimer(60);
                                             handleresendotp(e);

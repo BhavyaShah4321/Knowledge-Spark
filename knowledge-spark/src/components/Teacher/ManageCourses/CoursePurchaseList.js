@@ -30,7 +30,7 @@ export default function CoursePurchaseList() {
     const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
   const [feedbackData, setFeedbackData] = useState([]);
-  const [teacherId, setTeacherId] = useState(null);
+  const [teacherId, setTeacherId] = useState('');
   const [originalData, setOriginalData] = useState([]); // Store original data
 
   const [form] = Form.useForm();
@@ -65,8 +65,11 @@ export default function CoursePurchaseList() {
       setLoading(true);
       const accessToken = getAccessToken();
       const response = await axios.post(
-        `http://localhost:8000/api/course-purchase/course-purchase-according-teacher/`,
-        { teacher_id: teacherId },
+        `http://localhost:8000/api/course-purchase/course-purchase-according-teacher/?page=${page}`,
+        { 
+          teacher_id: teacherId,
+       
+        },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

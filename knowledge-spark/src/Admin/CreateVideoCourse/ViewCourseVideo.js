@@ -1,5 +1,9 @@
-
-import { EditOutlined, UploadOutlined, LockOutlined, MessageOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  UploadOutlined,
+  LockOutlined,
+  MessageOutlined,
+} from "@ant-design/icons";
 import {
   Form,
   Upload,
@@ -83,7 +87,7 @@ const ViewCourseVideo = () => {
   useEffect(() => {
     const authData = JSON.parse(localStorage.getItem("auth_token"));
     if (authData?.user?.id) {
-      console.log('myid', authData?.user?.id);
+      console.log("myid", authData?.user?.id);
 
       setUserId(authData.user.id);
     }
@@ -108,18 +112,16 @@ const ViewCourseVideo = () => {
     }
   }, []);
 
-
   useEffect(() => {
     const fetchPurchasedCourses = async () => {
       if (!userId) return;
 
       try {
-        const authData = JSON.parse(localStorage.getItem('auth_token'));
+        const authData = JSON.parse(localStorage.getItem("auth_token"));
         if (!authData || !authData.access_token) {
           return;
         }
         const accessToken = authData.access_token;
-
 
         const response = await axios.post(
           `http://localhost:8000/api/course-purchase/purchases-by-user/`,
@@ -131,20 +133,18 @@ const ViewCourseVideo = () => {
           }
         );
 
-
         // const data = await response.json();
 
-
-        const purchasedCourseIds = response.data.results.map(purchase => purchase.course);
-        console.log('purchasedCourseIds', purchasedCourseIds);
+        const purchasedCourseIds = response.data.results.map(
+          (purchase) => purchase.course
+        );
+        console.log("purchasedCourseIds", purchasedCourseIds);
 
         setPurchasedCourses(purchasedCourseIds);
-
       } catch (err) {
-        console.error('Error fetching purchased courses:', err);
+        console.error("Error fetching purchased courses:", err);
       }
     };
-
 
     if (userId) {
       fetchPurchasedCourses();
@@ -392,7 +392,7 @@ const ViewCourseVideo = () => {
     disabled={!selectedVideo}
   >
     Edit Course Video
-  </Button>
+  </Button>;
 
   // Edit Video Handler Function
   const handleEditVideo = (video) => {
@@ -439,7 +439,10 @@ const ViewCourseVideo = () => {
       }
 
       // Handle thumbnail
-      if (values.course_video_thumbnail && values.course_video_thumbnail[0]?.originFileObj) {
+      if (
+        values.course_video_thumbnail &&
+        values.course_video_thumbnail[0]?.originFileObj
+      ) {
         formData.append(
           "course_video_thumbnail",
           values.course_video_thumbnail[0].originFileObj
@@ -460,13 +463,14 @@ const ViewCourseVideo = () => {
         data: formData,
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'multipart/form-data'
+          "Content-Type": "multipart/form-data",
         },
       });
 
       if (response.status === 200 || response.status === 201) {
         message.success(
-          `Video ${editingCourseVideo?.videoId ? "updated" : "added"
+          `Video ${
+            editingCourseVideo?.videoId ? "updated" : "added"
           } successfully`
         );
 
@@ -482,7 +486,7 @@ const ViewCourseVideo = () => {
         // If we edited the currently selected video, update it
         if (selectedVideo && selectedVideo.id === editingCourseVideo?.videoId) {
           const updatedVideo = courseResponse.data.data.videos.find(
-            v => v.id === editingCourseVideo.videoId
+            (v) => v.id === editingCourseVideo.videoId
           );
           if (updatedVideo) {
             setSelectedVideo(updatedVideo);
@@ -533,7 +537,6 @@ const ViewCourseVideo = () => {
       form.resetFields(); // Reset form fields
       fetchFeedBackData();
       window.location.reload();
-
     } catch (error) {
       setSubmitStatus({
         type: "error",
@@ -541,7 +544,6 @@ const ViewCourseVideo = () => {
       });
     }
   };
-
 
   if (loading) {
     return <div className="loader">Loading...</div>;
@@ -592,10 +594,10 @@ const ViewCourseVideo = () => {
       const userData = JSON.parse(localStorage.getItem("auth_token"));
       const user1 = userData.user.id; // ID from localStorage
       const user2 = parseInt(course.course_teacher); // Convert Teacher ID from useParams() to a number
-     console.log("Courses Data", course);
-      console.log("User2",user2)
-      console.log("User1",user1);
-      
+      console.log("Courses Data", course);
+      console.log("User2", user2);
+      console.log("User1", user1);
+
       const payload = {
         user_1: user1,
         user_2: user2,
@@ -630,7 +632,7 @@ const ViewCourseVideo = () => {
                     className="video-player"
                     controls
                     playsInline
-                  // onPlay={() => markVideoAsWatched(selectedVideo.id)}
+                    // onPlay={() => markVideoAsWatched(selectedVideo.id)}
                   />
                 ) : (
                   <div className="video-player no-video">
@@ -706,7 +708,8 @@ const ViewCourseVideo = () => {
                                 )}
                               </small>
                             </div>
-                            {currentUser?.type === "Teacher" && (
+                            {(currentUser?.type === "Teacher" ||
+                              currentUser?.type === "Admin") && (
                               <Button
                                 type="primary"
                                 onClick={() => showResponseModal(feedback)}
@@ -772,7 +775,7 @@ const ViewCourseVideo = () => {
                           },
                           {
                             min: 10,
-                            message: "Please Enter atleast 10 characters"
+                            message: "Please Enter atleast 10 characters",
                           },
                         ]}
                       >
@@ -814,7 +817,12 @@ const ViewCourseVideo = () => {
                         View Profile
                       </Button>
                       {state === "My Courses" && (
-                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                          }}
+                        >
                           <Button
                             type="primary"
                             icon={<MessageOutlined />}
@@ -842,8 +850,9 @@ const ViewCourseVideo = () => {
                 {course.videos.map((video, index) => (
                   <div
                     key={video.id}
-                    className={`video-item ${selectedVideo?.id === video.id ? "active" : ""
-                      }`}
+                    className={`video-item ${
+                      selectedVideo?.id === video.id ? "active" : ""
+                    }`}
                   >
                     <button
                       onClick={() => handleVideoSelect(video, index)}
@@ -858,7 +867,10 @@ const ViewCourseVideo = () => {
                           <div className="lesson-title">
                             {video.course_video_title}
                             {watchedVideos.includes(video.id) && (
-                              <Tag color="success" style={{ marginLeft: "8px" }}>
+                              <Tag
+                                color="success"
+                                style={{ marginLeft: "8px" }}
+                              >
                                 Watched
                               </Tag>
                             )}
@@ -887,7 +899,8 @@ const ViewCourseVideo = () => {
         <div
           style={{ display: "flex", justifyContent: "end", marginTop: "20px" }}
         >
-          {currentUser?.type === "Teacher" && (
+          {(currentUser?.type === "Teacher" ||
+            currentUser?.type === "Admin") && (
             <Col>
               <Button
                 type="primary"
@@ -920,7 +933,9 @@ const ViewCourseVideo = () => {
             }}
             disabled={purchasedCourses.includes(parseInt(id))} // Disable if already purchased
           >
-            {purchasedCourses.includes(parseInt(id)) ? "Already Purchased" : "Enroll Now"}
+            {purchasedCourses.includes(parseInt(id))
+              ? "Already Purchased"
+              : "Enroll Now"}
           </Button>,
         ]}
       >
@@ -932,8 +947,8 @@ const ViewCourseVideo = () => {
               You have reached the limit of free preview videos for this course.
             </p>
             <p>
-              Enroll now to get access to all {course?.videos?.length} videos and
-              complete the course!
+              Enroll now to get access to all {course?.videos?.length} videos
+              and complete the course!
             </p>
           </>
         )}
@@ -985,7 +1000,10 @@ const ViewCourseVideo = () => {
             name="course_video_thumbnail"
             label="Course Video Thumbnail"
             rules={[
-              { required: true, message: "Please Upload Course Video Thumbnail" },
+              {
+                required: true,
+                message: "Please Upload Course Video Thumbnail",
+              },
             ]}
             valuePropName="fileList"
             getValueFromEvent={(e) => {
@@ -996,7 +1014,6 @@ const ViewCourseVideo = () => {
             <Upload
               name="course_video_thumbnail"
               listType="picture"
-
               beforeUpload={() => false}
               accept="image/*"
               maxCount={1}
@@ -1009,9 +1026,7 @@ const ViewCourseVideo = () => {
             name="course_video"
             label="Course Video File"
             valuePropName="fileList"
-            rules={[
-              { required: true, message: "Please Upload Course Video" },
-            ]}
+            rules={[{ required: true, message: "Please Upload Course Video" }]}
             getValueFromEvent={(e) => {
               if (Array.isArray(e)) return e;
               return e?.fileList;
@@ -1101,8 +1116,8 @@ const ViewCourseVideo = () => {
                   selectedCourse.course_thumbnail
                     ? `http://localhost:8000${selectedCourse.course_thumbnail}`
                     : selectedCourse.videos && selectedCourse.videos.length > 0
-                      ? `http://localhost:8000${selectedCourse.videos[0].course_video_thumbnail}`
-                      : "/api/placeholder/400/320"
+                    ? `http://localhost:8000${selectedCourse.videos[0].course_video_thumbnail}`
+                    : "/api/placeholder/400/320"
                 }
                 alt={selectedCourse.course_title}
                 style={{ width: "100%", height: 300, objectFit: "cover" }}
@@ -1313,8 +1328,8 @@ const ViewCourseVideo = () => {
                         {paymentProcessing
                           ? "Processing..."
                           : selectedCourse.course_price
-                            ? "Enroll Now"
-                            : "Start Learning Now"}
+                          ? "Enroll Now"
+                          : "Start Learning Now"}
                       </Button>
 
                       <Button
