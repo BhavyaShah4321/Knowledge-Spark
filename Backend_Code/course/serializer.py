@@ -247,9 +247,9 @@ class CoursePurchaseSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["status", "created_at", "updated_at"]
     
     def validate(self, data):
+    
         user = data.get("user")
         course = data.get("course")
         amount = data.get("amount")
@@ -265,3 +265,7 @@ class CoursePurchaseSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Amount must be greater than zero.")
         
         return data
+
+
+        
+        
