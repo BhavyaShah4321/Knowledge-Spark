@@ -215,17 +215,6 @@ function Dashboard() {
           <div className='chartwrap'>
             <div className='titled'>
               Course Sales Overview
-              <div className='daterangewrap'>
-                <label>Select Date Range:</label>
-                <RangePicker
-                  value={dateRange}
-                  onChange={handleDateRangeChange}
-                  format={dateFormat}
-                />
-                <Button type="primary" size='small' onClick={handleGoClick}>
-                  GO
-                </Button>
-              </div>
             </div>
             <Graph1 dateRange={dateRange} />
           </div>

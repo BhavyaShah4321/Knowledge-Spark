@@ -261,6 +261,11 @@ export default function PurchaseCourse() {
       key: "course_title",
     },
     {
+      title: "Teacher Name",
+      dataIndex: "course_teacher",
+      key: "course_teacher",
+    },
+    {
       title: "Student Name",
       dataIndex: "user_username",
       key: "user_username",
