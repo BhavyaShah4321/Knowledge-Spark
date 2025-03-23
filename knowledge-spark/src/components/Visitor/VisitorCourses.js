@@ -317,7 +317,7 @@ const VisitorCourses = () => {
                             />
                           </div>
                         }
-                        onClick={() => navigate(`/view-course/${course.id}`)}
+                        onClick={() => navigate(`/visitor-view-course/${course.id}`)}
                         style={{ height: "100%" }}
                       >
                         <Tag color="blue" style={{ marginBottom: 8 }}>
@@ -426,7 +426,7 @@ const VisitorCourses = () => {
                       )}
                     </div>
                   }
-                  onClick={() => navigate(`/view-course/${course.id}`)}
+                  onClick={() => navigate(`/visitor-view-course/${course.id}`)}
                   style={{ height: "100%" }}
                 >
                   <Tag color="blue" style={{ marginBottom: 8 }}>
@@ -438,7 +438,7 @@ const VisitorCourses = () => {
                   <Paragraph ellipsis={{ rows: 2 }} style={{ color: "rgba(0,0,0,0.45)", height: 44 }}>
                     {course.course_description}
                   </Paragraph>
-                  <div style={{ 
+                  {/* <div style={{ 
                     display: "flex", 
                     justifyContent: "space-between", 
                     alignItems: "center",
@@ -452,7 +452,7 @@ const VisitorCourses = () => {
                       <UserOutlined style={{ marginRight: 4 }} />
                       {course.students_enrolled} students
                     </Text>
-                  </div>
+                  </div> */}
                   <div style={{ 
                     display: "flex", 
                     justifyContent: "space-between", 
