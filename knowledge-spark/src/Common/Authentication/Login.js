@@ -65,7 +65,7 @@ function Login() {
 
         // Check if the account is inactive
         if (
-          (data.type === "teacher" || data.type === "student") &&
+          (data.type === "Teacher" || data.type === "Student") &&
           data.status === "inactive"
         ) {
           message.error(
