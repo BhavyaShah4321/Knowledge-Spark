@@ -32,8 +32,8 @@ class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all().order_by("-id")
     serializer_class = CourseSerializer
     pagination_class = mypagination
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = [
         "course_title",
@@ -287,8 +287,8 @@ class CourseFeedbackViewSet(ModelViewSet):
     queryset = CourseFeedback.objects.all()
     serializer_class = CourseFeedbackSerializer
     pagination_class = mypagination
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = [
         "feedback_student__username",
@@ -445,8 +445,8 @@ class CourseCategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CourseCategorySerializer
     pagination_class = mypagination
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["name","status"]
     ordering_fields = ["id"]
