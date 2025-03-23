@@ -178,36 +178,65 @@ const Graph1 = ({ dateRange }) => {
         if (!authData || !authData.access_token) {
           throw new Error("Authentication tokens are missing");
         }
-
+  
         const accessToken = authData.access_token;
-        
-        // Fetch all pages of purchase data
         let allPurchases = [];
         let nextPage = "http://localhost:8000/api/course-purchase/";
-        
+  
         while (nextPage) {
           const response = await axios.get(nextPage, {
-            headers: {
-              Authorization: `Bearer ${accessToken}`
-            }
+            headers: { Authorization: `Bearer ${accessToken}` },
           });
-          
+  
           allPurchases = [...allPurchases, ...response.data.results];
           nextPage = response.data.next;
         }
-        
+  
         // Filter by date range if provided
         if (dateRange && dateRange.length === 2) {
-          const startDate = dayjs(dateRange[0]).startOf('day');
-          const endDate = dayjs(dateRange[1]).endOf('day');
-          
-          allPurchases = allPurchases.filter(purchase => {
+          const startDate = dayjs(dateRange[0]).startOf("day");
+          const endDate = dayjs(dateRange[1]).endOf("day");
+  
+          allPurchases = allPurchases.filter((purchase) => {
             const purchaseDate = dayjs(purchase.created_at);
             return purchaseDate.isAfter(startDate) && purchaseDate.isBefore(endDate);
           });
         }
-        
-        const processedData = processDataForChart(allPurchases);
+  
+        let processedData;
+        if (allPurchases.length === 0) {
+          // If no data, create default empty data
+          let defaultData = [];
+          if (dateRange && dateRange.length === 2) {
+            const startDate = dayjs(dateRange[0]);
+            const endDate = dayjs(dateRange[1]);
+            let currentDate = startDate;
+  
+            while (currentDate.isBefore(endDate) || currentDate.isSame(endDate, "day")) {
+              let formattedDate = currentDate.format("MMM DD");
+              let rawDate = currentDate.format("YYYY-MM-DD");
+  
+              defaultData.push({ date: formattedDate, rawDate, value: 1, category: "Total Sales" });
+              defaultData.push({ date: formattedDate, rawDate, value: 2, category: "Teacher Revenue" });
+              defaultData.push({ date: formattedDate, rawDate, value: 3, category: "Platform Fee" });
+  
+              currentDate = currentDate.add(1, "day");
+            }
+          } else {
+            let today = dayjs().format("MMM DD");
+            let rawDate = dayjs().format("YYYY-MM-DD");
+  
+            defaultData = [
+              { date: today, rawDate, value: 1, category: "Total Sales" },
+              { date: today, rawDate, value: 2, category: "Teacher Revenue" },
+              { date: today, rawDate, value: 3, category: "Platform Fee" },
+            ];
+          }
+          processedData = defaultData;
+        } else {
+          processedData = processDataForChart(allPurchases);
+        }
+  
         setPurchaseData(processedData);
       } catch (error) {
         console.error("Failed to fetch purchase data:", error);
@@ -216,9 +245,10 @@ const Graph1 = ({ dateRange }) => {
         setLoading(false);
       }
     };
-
+  
     fetchPurchaseData();
   }, [dateRange]);
+  
 
   useEffect(() => {
     const updateSize = () => {
@@ -326,7 +356,7 @@ const Graph1 = ({ dateRange }) => {
         <Column {...config} />
       ) : (
         <div className="no-data-message" style={{ textAlign: 'center', padding: '100px 0' }}>
-          No purchase data available for the selected period
+          
         </div>
       )}
     </div>

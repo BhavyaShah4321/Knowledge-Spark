@@ -17,11 +17,11 @@ import {
   Card,
   Divider
 } from "antd";
-import { 
-  SearchOutlined, 
-  BookOutlined, 
-  DownOutlined, 
-  UserOutlined, 
+import {
+  SearchOutlined,
+  BookOutlined,
+  DownOutlined,
+  UserOutlined,
   ClockCircleOutlined,
   FireOutlined,
   StarOutlined
@@ -131,7 +131,7 @@ const VisitorCourses = () => {
           <Menu.Item
             key={category.key}
             onClick={() => handleCategoryChange(category.key)}
-            style={{ 
+            style={{
               backgroundColor: selectedCategory === category.key ? '#f0f7ff' : 'transparent',
               fontWeight: selectedCategory === category.key ? '600' : 'normal'
             }}
@@ -201,26 +201,26 @@ const VisitorCourses = () => {
   return (
     <div style={{ background: "#f5f7fa", minHeight: "100vh" }}>
       {/* Header */}
-      <header style={{ 
-        background: "white", 
+      <header style={{
+        background: "white",
         boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-        position: "sticky", 
-        top: 0, 
+        position: "sticky",
+        top: 0,
         zIndex: 1000,
         padding: "12px 24px"
       }}>
-        <div style={{ 
-          display: "flex", 
-          justifyContent: "space-between", 
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
           alignItems: "center",
           maxWidth: 1200,
           margin: "0 auto"
         }}>
           <Title level={3} style={{ margin: 0, color: "#1890ff" }}>
-             Knowledge Spark
+            Knowledge Spark
           </Title>
           <Space size="middle">
-            <Button type="primary"  onClick={() => navigate("/login")}>
+            <Button type="primary" onClick={() => navigate("/login")}>
               Login
             </Button>
             <Button type="primary" onClick={() => navigate("/register")}>
@@ -231,7 +231,7 @@ const VisitorCourses = () => {
       </header>
 
       {/* Hero Section */}
-      <div style={{ 
+      <div style={{
         background: "linear-gradient(135deg, #1890ff 0%, #0050b3 100%)",
         padding: "60px 24px",
         color: "white",
@@ -241,9 +241,9 @@ const VisitorCourses = () => {
           <Title level={1} style={{ color: "white", marginBottom: 16 }}>
             Expand Your Knowledge
           </Title>
-          <Paragraph style={{ 
-            fontSize: 18, 
-            color: "rgba(255,255,255,0.85)", 
+          <Paragraph style={{
+            fontSize: 18,
+            color: "rgba(255,255,255,0.85)",
             marginBottom: 40
           }}>
             Discover expert-led courses designed to help you master new skills and achieve your goals
@@ -269,9 +269,9 @@ const VisitorCourses = () => {
             Courses {selectedCategory !== "all" && `in ${getCategoryName(selectedCategory)}`}
           </Title>
           <Dropdown overlay={menu} trigger={["click"]}>
-            <Button style={{ 
-              display: "flex", 
-              alignItems: "center", 
+            <Button style={{
+              display: "flex",
+              alignItems: "center",
               borderRadius: 4,
               background: "white",
               height: 40
@@ -286,12 +286,12 @@ const VisitorCourses = () => {
         {trendingCourses.length > 0 && (
           <>
             <div style={{ marginBottom: 24 }}>
-              <Title level={4} style={{ 
-                display: "flex", 
+              <Title level={4} style={{
+                display: "flex",
                 alignItems: "center",
                 marginBottom: 16
               }}>
-                <FireOutlined style={{ color: "#ff4d4f", marginRight: 8 }} /> 
+                <FireOutlined style={{ color: "#ff4d4f", marginRight: 8 }} />
                 Trending Courses
               </Title>
               <Row gutter={[24, 24]}>
@@ -309,10 +309,10 @@ const VisitorCourses = () => {
                                   ? `http://localhost:8000${course.course_thumbnail}`
                                   : "/api/placeholder/400/320"
                               }
-                              style={{ 
-                                width: "100%", 
-                                height: "100%", 
-                                objectFit: "cover" 
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover"
                               }}
                             />
                           </div>
@@ -335,18 +335,6 @@ const VisitorCourses = () => {
                             <Text strong style={{ display: "block", color: course.course_price ? "#1890ff" : "#52c41a" }}>
                               {course.course_price ? `₹${course.course_price}` : "Free"}
                             </Text>
-                            <Space size="small" style={{ display: "flex", marginTop: 4 }}>
-                              <Rate disabled defaultValue={parseFloat(course.rating)} count={1} />
-                              <Text type="secondary">{course.rating}</Text>
-                            </Space>
-                          </div>
-                          <div>
-                            <Text type="secondary" style={{ display: "flex", alignItems: "center" }}>
-                              <UserOutlined style={{ marginRight: 4 }} /> {course.students_enrolled}
-                            </Text>
-                            <Text type="secondary" style={{ display: "flex", alignItems: "center", marginTop: 4 }}>
-                              <ClockCircleOutlined style={{ marginRight: 4 }} /> {course.duration}
-                            </Text>
                           </div>
                         </div>
                       </Card>
@@ -365,12 +353,12 @@ const VisitorCourses = () => {
         </Title>
 
         {filteredCourses.length === 0 ? (
-          <div style={{ 
-            background: "white", 
-            padding: 48, 
-            borderRadius: 8, 
+          <div style={{
+            background: "white",
+            padding: 48,
+            borderRadius: 8,
             textAlign: "center",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.06)" 
+            boxShadow: "0 2px 8px rgba(0,0,0,0.06)"
           }}>
             <Empty description={
               <span>
@@ -380,8 +368,8 @@ const VisitorCourses = () => {
             <Text type="secondary" style={{ display: "block", marginTop: 16 }}>
               Try adjusting your filters or search for different terms
             </Text>
-            <Button 
-              type="primary" 
+            <Button
+              type="primary"
               style={{ marginTop: 24 }}
               onClick={() => {
                 setSelectedCategory("all");
@@ -407,16 +395,16 @@ const VisitorCourses = () => {
                             ? `http://localhost:8000${course.course_thumbnail}`
                             : "/api/placeholder/400/320"
                         }
-                        style={{ 
-                          width: "100%", 
-                          height: "100%", 
-                          objectFit: "cover" 
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover"
                         }}
                       />
                       {course.course_price ? null : (
-                        <Tag color="#52c41a" style={{ 
-                          position: "absolute", 
-                          top: 8, 
+                        <Tag color="#52c41a" style={{
+                          position: "absolute",
+                          top: 8,
                           right: 8,
                           padding: "2px 8px",
                           fontSize: 12
@@ -438,25 +426,10 @@ const VisitorCourses = () => {
                   <Paragraph ellipsis={{ rows: 2 }} style={{ color: "rgba(0,0,0,0.45)", height: 44 }}>
                     {course.course_description}
                   </Paragraph>
-                  {/* <div style={{ 
-                    display: "flex", 
-                    justifyContent: "space-between", 
-                    alignItems: "center",
-                    marginBottom: 12 
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                      <StarOutlined style={{ color: "#faad14", marginRight: 4 }} />
-                      <Text>{course.rating}</Text>
-                    </div>
-                    <Text type="secondary">
-                      <UserOutlined style={{ marginRight: 4 }} />
-                      {course.students_enrolled} students
-                    </Text>
-                  </div> */}
-                  <div style={{ 
-                    display: "flex", 
-                    justifyContent: "space-between", 
-                    alignItems: "center" 
+                  <div style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center"
                   }}>
                     <Text strong style={{ fontSize: 16, color: "#1890ff" }}>
                       {course.course_price ? `₹${course.course_price}` : "Free"}
@@ -473,50 +446,51 @@ const VisitorCourses = () => {
       </div>
 
       {/* Footer */}
-      <div style={{ 
-        background: "#001529", 
-        padding: "40px 24px", 
+      <div style={{
+        background: "#001529",
+        padding: "40px 24px",
         color: "rgba(255,255,255,0.65)",
         marginTop: 40
       }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <Row gutter={[48, 32]}>
-            <Col xs={24} sm={12} md={8}>
-              <Title level={4} style={{ color: "white" }}>
-                 Knowledge Spark
-              </Title>
-              <Paragraph style={{ color: "rgba(255,255,255,0.65)" }}>
-                Your gateway to professional skills development and lifelong learning.
-              </Paragraph>
-            </Col>
-            <Col xs={24} sm={12} md={8}>
-              <Title level={5} style={{ color: "white" }}>Quick Links</Title>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <a style={{ color: "rgba(255,255,255,0.65)", marginBottom: 12 }}>About Us</a>
-                <a style={{ color: "rgba(255,255,255,0.65)", marginBottom: 12 }}>Contact</a>
-                <a style={{ color: "rgba(255,255,255,0.65)", marginBottom: 12 }}>Become an Instructor</a>
-                <a style={{ color: "rgba(255,255,255,0.65)" }}>FAQ</a>
-              </div>
-            </Col>
-            <Col xs={24} sm={12} md={8}>
-              <Title level={5} style={{ color: "white" }}>Subscribe</Title>
-              <Paragraph style={{ color: "rgba(255,255,255,0.65)" }}>
-                Stay updated with our latest courses and offers.
-              </Paragraph>
-              <Input.Group compact>
-                <Input 
-                  style={{ width: 'calc(100% - 100px)' }} 
-                  placeholder="Your email"
-                />
-                <Button type="primary">Subscribe</Button>
-              </Input.Group>
-            </Col>
-          </Row>
-          <Divider style={{ background: "rgba(255,255,255,0.1)", margin: "32px 0 24px" }} />
-          <div style={{ textAlign: "center" }}>
-            <Text style={{ color: "rgba(255,255,255,0.45)" }}>
-              © {new Date().getFullYear()} Knowledge Spark. All rights reserved.
-            </Text>
+        {/* Footer */}
+        {/* Footer */}
+        {/* Footer */}
+        <div style={{
+          background: "#001529",
+          padding: "40px 24px",
+          color: "rgba(255,255,255,0.65)",
+          marginTop: 40
+        }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+            <Row>
+              <Col span={24}>
+                <Title level={4} style={{ color: "white", textAlign: "center" }}>
+                  Knowledge Spark
+                </Title>
+                <p style={{ color: "rgba(255,255,255,0.65)", textAlign: "center" }}>
+                  🌟 <strong>Revolutionizing Learning, One Course at a Time!</strong> 🚀
+                  <br />
+                  At <strong>Knowledge Spark</strong>, we bring education to your fingertips with personalized learning journeys and interactive experiences.
+                  <br /><br />
+                  🔹 <strong>For Teachers:</strong> Create, manage, and deliver engaging courses effortlessly. Share your expertise with students worldwide, host live sessions, and track progress seamlessly. Our platform empowers you to inspire and educate with cutting-edge tools.
+                  <br /><br />
+                  🔹 <strong>For Students:</strong> Unlock a world of knowledge with diverse courses taught by expert educators. Learn at your own pace, access interactive lessons, and enhance your skills with hands-on projects. Whether you're mastering a new subject or upskilling for your career, we’ve got you covered.
+                  <br /><br />
+                  🔹 <strong>For Everyone:</strong> Experience a dynamic e-learning environment with real-time chat, video calls, and collaborative discussions. Get personalized recommendations, track your achievements, and stay ahead in your learning journey.
+                  <br /><br />
+                  Join a thriving community of learners and educators where knowledge knows no bounds. 🚀
+                  <br /><br />
+                  💡 <strong>Start learning today and shape your future with Knowledge Spark!</strong>
+                </p>
+
+              </Col>
+            </Row>
+            <Divider style={{ background: "rgba(255,255,255,0.1)", margin: "32px 0 24px" }} />
+            <div style={{ textAlign: "center" }}>
+              <Text style={{ color: "rgba(255,255,255,0.45)" }}>
+                © {new Date().getFullYear()} Knowledge Spark. All rights reserved.
+              </Text>
+            </div>
           </div>
         </div>
       </div>
