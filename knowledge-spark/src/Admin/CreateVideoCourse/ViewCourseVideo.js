@@ -402,21 +402,46 @@ const ViewCourseVideo = () => {
     }
 
     console.log("Editing video:", video);
+
+    // Create proper URLs for video and thumbnail
+    const videoUrl = video.course_video
+      ? `http://127.0.0.1:8000${video.course_video}`
+      : "";
+    const thumbnailUrl = video.course_video_thumbnail
+      ? `http://127.0.0.1:8000${video.course_video_thumbnail}`
+      : "";
+
+    // Set editing state with correct paths
     setEditingCourseVideo({
       videoId: video.id,
       course_video_title: video.course_video_title,
       course_video_description: video.course_video_description,
-      course_video: video.course_video,
-      course_video_thumbnail: video.course_video_thumbnail,
+      course_video: videoUrl,
+      course_video_thumbnail: thumbnailUrl,
     });
+
+    // Create a fileList for the thumbnail to work with Upload component
+    let thumbnailFileList = [];
+    if (video.course_video_thumbnail) {
+      thumbnailFileList = [
+        {
+          uid: "-1",
+          name: "Existing Thumbnail",
+          status: "done",
+          url: thumbnailUrl,
+          thumbUrl: thumbnailUrl,
+        },
+      ];
+    }
 
     // Reset the form first
     courseVideoForm.resetFields();
 
-    // Then set values
+    // Then set values including the thumbnail fileList
     courseVideoForm.setFieldsValue({
       course_video_title: video.course_video_title,
       course_video_description: video.course_video_description,
+      course_video_thumbnail: thumbnailFileList,
     });
 
     // Open the edit modal

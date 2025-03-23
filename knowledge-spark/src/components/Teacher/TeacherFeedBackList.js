@@ -38,6 +38,7 @@ const [responseForm] = Form.useForm();
 
   const [isResponseModalVisible, setIsResponseModalVisible] = useState(false);
   const [selectedFeedback, setSelectedFeedback] = useState(null);
+  //  const [totalItems, setTotalItems] = useState(0);
 
   const showResponseModal = (feedback) => {
     setSelectedFeedback(feedback);
@@ -92,7 +93,7 @@ const [responseForm] = Form.useForm();
       setLoading(true);
       const accessToken = getAccessToken();
       const response = await axios.post(
-        `http://localhost:8000/api/course-feedback/get-course-feedback-according-course-teacher/`,
+        `http://localhost:8000/api/course-feedback/get-course-feedback-according-course-teacher/?page=${page}`,
         { teacher_id: teacherId },
         {
           headers: {
@@ -101,7 +102,9 @@ const [responseForm] = Form.useForm();
         }
       );
 
+      setTotalItems(response.data.count);
       const FeedBackDetails = response.data.results || [];
+     
       setFeedbackData(FeedBackDetails);
       setOriginalData(FeedBackDetails); // Store original data for filtering
     } catch (error) {

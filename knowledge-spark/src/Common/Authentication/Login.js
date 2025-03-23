@@ -2,47 +2,60 @@ import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import { Form, Input, message } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import loginimg from "../../Image/login-img.png";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  
   useEffect(() => {
-    const storedAuth = localStorage.getItem("auth_token");
-
-    if (storedAuth) {
-      try {
-        const parsedAuth = JSON.parse(storedAuth);
-
-        // Check if the token belongs to your website (validate based on your API structure)
-        if (
-          !parsedAuth.access_token ||
-          !parsedAuth.user ||
-          !parsedAuth.user.email
-        ) {
+    // Skip the redirect check if we're already on the login page
+    // This prevents redirect loops and allows users to access the login page
+    if (location.pathname === "/login") {
+      const storedAuth = localStorage.getItem("auth_token");
+      
+      if (storedAuth) {
+        try {
+          const parsedAuth = JSON.parse(storedAuth);
+          
+          // Check if the token has the expected structure
+          if (
+            !parsedAuth.access_token ||
+            !parsedAuth.user ||
+            !parsedAuth.user.email
+          ) {
+            // Invalid token structure, clear it but don't redirect
+            localStorage.removeItem("auth_token");
+            return;
+          }
+          
+          console.log("Login Token", storedAuth);
+          
+          // Valid token exists, redirect based on user type
+          if (parsedAuth.user.type === "Student") {
+            navigate("/student-coures");
+          } else {
+            navigate("/dashboard");
+          }
+        } catch (error) {
+          console.error("Invalid token format:", error);
           localStorage.removeItem("auth_token");
-          navigate("/"); // Redirect to login page
-          return;
+          // Don't redirect, allow user to stay on login page
         }
-        console.log("Login Token", storedAuth);
-
-        if (parsedAuth.user.type == "Student") {
-          navigate("/student-coures")
-        } else {
-          navigate("/dashboard");
-        }
-
-
-      } catch (error) {
-        console.error("Invalid token format:", error);
-        localStorage.removeItem("auth_token");
-        navigate("/"); // Redirect to login page
       }
+      // If no token exists, do nothing - user can stay on login page
     } else {
-      navigate("/"); // Redirect to login if no token exists
+      // For other pages, check if token exists
+      const storedAuth = localStorage.getItem("auth_token");
+      
+      if (!storedAuth) {
+        // No token, redirect to visitor courses
+        navigate("/");
+      }
     }
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -94,7 +107,13 @@ function Login() {
         );
 
         message.success("Login successful!");
-        navigate("/dashboard");
+        
+        // Redirect based on user type after successful login
+        if (data.type === "Student") {
+          navigate("/student-coures");
+        } else {
+          navigate("/dashboard");
+        }
         return;
       }
     } catch (error) {
