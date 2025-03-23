@@ -8,7 +8,7 @@ const PrivateRoute = ({ allowedRoles }) => {
 
   if (!authToken) {
     // Redirect to login if not authenticated
-    return <Navigate to="/" />;
+    return <Navigate to="/student-coures" />;
   }
 
   

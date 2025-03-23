@@ -137,7 +137,7 @@ function Dashboard() {
               </div>
               <div className='count'>
                 <h3>{dashboardData.total_course_purchase_student}</h3>
-                <p>Total Students</p>
+                <p>Total Purchased Courses</p>
               </div>
             </div>
           </Col>

@@ -116,31 +116,38 @@ export default function Courses() {
   useEffect(() => {
     fetchCourseDetails(currentPage);
   }, [currentPage]);
-
   const openEditModal = (course) => {
     setEditingCourse(course);
-    form.setFieldsValue(course);
+
+    const thumbnailUrl = course.course_thumbnail
+    ? `http://127.0.0.1:8000${course.course_thumbnail}`
+    : "";
+  
+   
+    // Create a fileList for the existing thumbnail that will work with Upload component
+    let thumbnailFileList = [];
+    if (course.course_thumbnail) {
+      thumbnailFileList = [
+        {
+          uid: "-1",
+          name: "Existing Thumbnail",
+          status: "done",
+          url: thumbnailUrl,
+          thumbUrl: thumbnailUrl,
+        },
+      ];
+    }
+   
+
+    
+    
+    // Set form values with proper thumbnail format
+    form.setFieldsValue({
+      ...course,
+      course_thumbnail: thumbnailFileList,
+    });
+    
     setIsModalOpen(true);
-    setEditingCourse(course);
-  
-  // Create initial form values
-  const initialValues = {
-    ...course,
-    // Handle thumbnail properly if it exists
-    course_thumbnail: course.course_thumbnail 
-      ? [
-          {
-            uid: '-1',
-            name: 'Existing Thumbnail',
-            status: 'done',
-            url: course.course_thumbnail,
-          },
-        ] 
-      : [],
-  };
-  
-  form.setFieldsValue(initialValues);
-  setIsModalOpen(true);
   };
 
   const handleModalCancel = () => {
