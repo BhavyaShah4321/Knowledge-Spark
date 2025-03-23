@@ -35,6 +35,7 @@ import PurchaseCourse from "../components/PurchaseCourses/PurchaseCourse";
 import CoursePurchaseList from "../components/Teacher/ManageCourses/CoursePurchaseList";
 import StudentFeedback from "../components/studentCOurses/StudentFeedback";
 import VisitorCourses from "../components/Visitor/VisitorCourses";
+import ViewCourseVideoVisitor from "../components/Visitor/ViewCourseVideoVisitor";
 
 const Root = () => {
   return (
@@ -45,6 +46,8 @@ const Root = () => {
       <Route path="/otp-verification" element={<OTPVerification />} />
       <Route path="/forget-password" element={<ForgetPassword />} />
       <Route path="/" element={<VisitorCourses/>}/>
+      <Route path="/view-course/:id" element={<ViewCourseVideo />} />
+      <Route path="/visitor-view-course/:id" element={<ViewCourseVideoVisitor />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
 
       {/* Role-Based Private Routes
