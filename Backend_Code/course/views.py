@@ -673,11 +673,11 @@ class CoursePurchaseViewSet(ModelViewSet):
             )
 
         try:
-            amount_in_paise = int(float(amount) * 100)  
+            amount_in_paise = int(amount)
 
-            teacher_amount = int(amount_in_paise * 0.8)  # 80% for the teacher
-            platform_fee = int(amount_in_paise * 0.2)  # 20% platform fee
-
+            teacher_amount = int(amount * 80 / 100)  # 80% for the teacher
+            platform_fee = int(amount * 20 / 100)  
+            
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
             order_data = {
@@ -794,51 +794,70 @@ class CoursePurchaseViewSet(ModelViewSet):
 
             buffer = BytesIO()
             pdf = canvas.Canvas(buffer, pagesize=A4)
-            width, height = A4  # Get page dimensions
+            width, height = A4
 
-            # ✅ Path to the logo
+            # Logo Placement (Centered)
             logo_path = os.path.join("static", "images", "logo.png")
-
-            # ✅ Add Logo at the Top (Centered)
             if os.path.exists(logo_path):
                 logo = ImageReader(logo_path)
-                logo_width = 150  # Adjust as needed
-                logo_height = 75  # Adjust as needed
-                pdf.drawImage(logo, (width - logo_width) / 2, height - 120, width=logo_width, height=logo_height)
+                pdf.drawImage(logo, width / 2 - 60, height - 100, width=120, height=50)
 
-            # ✅ Title below the logo
-            pdf.setFont("Helvetica-Bold", 16)
-            pdf.drawCentredString(width / 2, height - 150, "Course Purchase Receipt")
+            # Website Name (Centered, Below Logo)
+            pdf.setFont("Helvetica-Bold", 18)
+            pdf.drawCentredString(width / 2, height - 130, "Knowledge Spark")
+            pdf.setFont("Helvetica-Bold", 14)
+            pdf.drawString(50, height - 170, f"Receipt for Order {purchase.id}")
 
-            # ✅ Receipt Content
+            # Order Details
             pdf.setFont("Helvetica", 12)
-            y_position = height - 200  # Start below the title
-            line_spacing = 22  # More spacing for readability
-
+            y_position = height - 210
             details = [
-                f"Order ID: {purchase.id}",
-                f"User: {purchase.user.username}",
-                f"Course: {purchase.course.course_title}",
-                f"Amount Paid: {purchase.amount:.2f} INR",
-                f"Platform Fee: {purchase.platform_fee:.2f} INR",
-                f"Teacher's Share: {purchase.teacher_amount:.2f} INR",
+                f"Order Date: {purchase.created_at.strftime('%Y-%m-%d %H:%M:%S')}",
+                # f"Payment Method: {purchase.payment_method}",
                 f"Payment ID: {purchase.razorpay_payment_id}",
-                f"Payment Status: {purchase.status}",
-                f"Purchase Date: {purchase.created_at.strftime('%Y-%m-%d %H:%M:%S')}",
+                f"User: {purchase.user.username}",
+                f"Email: {purchase.user.email}",
             ]
 
             for detail in details:
-                pdf.drawString(100, y_position, detail)
-                y_position -= line_spacing
+                pdf.drawString(50, y_position, detail)
+                y_position -= 20
 
-            # ✅ Footer - Thank You Message
-            pdf.setFont("Helvetica-Oblique", 11)
-            pdf.drawCentredString(width / 2, 50, "Thank you for your purchase!")
+            # Course Details Table
+            pdf.setFont("Helvetica-Bold", 12)
+            pdf.drawString(50, y_position - 10, "Product")
+            pdf.drawString(300, y_position - 10, "Amount")
+            pdf.line(50, y_position - 15, 550, y_position - 15)
+            y_position -= 35
+
+            pdf.setFont("Helvetica", 12)
+            pdf.drawString(50, y_position, purchase.course.course_title)
+            pdf.drawString(300, y_position, f"INR {purchase.amount:.2f}")
+            y_position -= 30
+
+            # Pricing Breakdown
+            pdf.drawString(50, y_position, "Subtotal:")
+            pdf.drawString(300, y_position, f"INR {purchase.amount:.2f}")
+            y_position -= 20
+
+            pdf.drawString(50, y_position, "Platform Fee:")
+            pdf.drawString(300, y_position, f"INR {purchase.platform_fee:.2f}")
+            y_position -= 20
+
+            pdf.drawString(50, y_position, "Teacher's Share:")
+            pdf.drawString(300, y_position, f"INR {purchase.teacher_amount:.2f}")
+            y_position -= 30
+
+            # Total Amount
+            pdf.setFont("Helvetica-Bold", 12)
+            pdf.drawString(50, y_position, "Total Paid:")
+            pdf.drawString(300, y_position, f"INR {purchase.amount:.2f}")
+            pdf.line(50, y_position - 5, 550, y_position - 5)
 
             pdf.showPage()
             pdf.save()
-
             buffer.seek(0)
+
             return FileResponse(
                 buffer, as_attachment=True, filename=f"receipt_{purchase.id}.pdf"
             )
