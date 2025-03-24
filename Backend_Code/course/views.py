@@ -546,10 +546,12 @@ class CoursePurchaseViewSet(ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         no_pagination = request.query_params.get("no_pagination")
 
+        queryset = queryset.filter(status="paid").select_related("related_field")
         if no_pagination:
             serializer = self.serializer_class(queryset, many=True)
             return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
+        
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.serializer_class(page, many=True)
@@ -620,10 +622,19 @@ class CoursePurchaseViewSet(ModelViewSet):
     @action(detail=False, methods=["POST"], url_path="purchases-by-user")
     def purchases_by_user(self, request, *args, **kwargs):
         user_id = request.data.get("user_id")
+        no_pagination=self.query_params("no_pagination")
+            
         if not user_id:
             return Response({"success": False, "message": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
+
         purchases = CoursePurchase.objects.filter(user__id=user_id).order_by("-id")
+        
+        if no_pagination:
+            serializer=self.serializer_class(purchases,many=True)
+            return Response({"success":True,"data":serializer.data},status=status.HTTP_200_OK)
+        
+        
         page = self.paginate_queryset(purchases)
         if page is not None:
             serializer = self.serializer_class(page, many=True)
@@ -640,7 +651,7 @@ class CoursePurchaseViewSet(ModelViewSet):
         if not teacher_id:
             return Response({"success": False, "message": "teacher_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        course_purchases = CoursePurchase.objects.filter(course__course_teacher__id=teacher_id)
+        course_purchases = CoursePurchase.objects.filter(course__course_teacher__id=teacher_id,status="paid")
 
         page = self.paginate_queryset(course_purchases)
         if page is not None:
