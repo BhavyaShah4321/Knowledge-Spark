@@ -622,7 +622,7 @@ class CoursePurchaseViewSet(ModelViewSet):
     @action(detail=False, methods=["POST"], url_path="purchases-by-user")
     def purchases_by_user(self, request, *args, **kwargs):
         user_id = request.data.get("user_id")
-        no_pagination=self.query_params("no_pagination")
+        no_pagination=request.query_params.get("no_pagination")
             
         if not user_id:
             return Response({"success": False, "message": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
