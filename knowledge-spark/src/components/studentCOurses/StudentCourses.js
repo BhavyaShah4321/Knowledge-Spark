@@ -334,7 +334,7 @@ const StudentCourses = () => {
       // Step 2: Open Razorpay payment window with correct total amount (including GST)
       const options = {
         key: "rzp_test_KJQCW0zpmV0TnT", // Replace with your Razorpay key ID
-        amount: Math.round(pricing.totalAmount * 100), // Total amount with GST in paise, rounded to avoid decimal issues
+        amount: pricing.totalAmount * 100, // Total amount with GST in paise, rounded to avoid decimal issues
         currency: "INR",
         name: "Knowldge Spark", // Your platform name
         description: `Enrollment for: ${selectedCourse.course_title}`,

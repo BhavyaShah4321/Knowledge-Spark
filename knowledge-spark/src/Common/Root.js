@@ -45,9 +45,12 @@ const Root = () => {
       <Route path="/register" element={<Registration />} />
       <Route path="/otp-verification" element={<OTPVerification />} />
       <Route path="/forget-password" element={<ForgetPassword />} />
-      <Route path="/" element={<VisitorCourses/>}/>
-      <Route path="/view-course/:id" element={<ViewCourseVideo />} />
-      <Route path="/visitor-view-course/:id" element={<ViewCourseVideoVisitor />} />
+      <Route path="/" element={<VisitorCourses />} />
+
+      <Route
+        path="/visitor-view-course/:id"
+        element={<ViewCourseVideoVisitor />}
+      />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
 
       {/* Role-Based Private Routes
@@ -80,8 +83,6 @@ const Root = () => {
         <Route path="/profile/:id" element={<TeacherProfile />} />
 
         <Route path="/purchase-courses" element={<PurchaseCourse />} />
-
-       
       </Route>
 
       {/* Teacher-Specific Routes */}
@@ -102,6 +103,7 @@ const Root = () => {
         <Route path="/profile/:teacherId" element={<Profile />} />
         <Route path="/create-complaint" element={<ComplaintModal />} />
         <Route path="/student-feedbacks" element={<StudentFeedback />} />
+        <Route path="/view-course/:id" element={<ViewCourseVideo />} />
         <Route path="/mycourses" element={<MyCourses />} />
       </Route>
     </Routes>

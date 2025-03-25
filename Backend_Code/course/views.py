@@ -684,15 +684,15 @@ class CoursePurchaseViewSet(ModelViewSet):
             )
 
         try:
-            amount_in_paise = int(amount)
+            amount_in_paise = float(amount)
 
-            teacher_amount = int(amount * 80 / 100)  # 80% for the teacher
-            platform_fee = int(amount * 20 / 100)  
+            teacher_amount = float(amount) * 80 / 100  # 80% for the teacher
+            platform_fee = float(amount) * 20 / 100  
             
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
             order_data = {
-                "amount": amount_in_paise,
+                "amount": amount_in_paise*100,
                 "currency": "INR",
                 "payment_capture": 1,
             }

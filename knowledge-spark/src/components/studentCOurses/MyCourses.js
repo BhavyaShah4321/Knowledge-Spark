@@ -60,12 +60,12 @@ const MyCourses = () => {
   useEffect(() => {
     if (!studentId) return;
 
-    const fetchPurchasedCourses = async () => {
+    const fetchPurchasedCourses = async (page=1) => {
       try {
         setLoading(true);
         const accessToken = getAccessToken();
         const response = await axios.post(
-          `http://localhost:8000/api/course-purchase/purchases-by-user/`,
+          `http://localhost:8000/api/course-purchase/purchases-by-user/?no_pagination=true`,
           { user_id: studentId },
           {
             headers: {
@@ -74,7 +74,8 @@ const MyCourses = () => {
           }
         );
 
-        setPurchasedCourses(response.data.results || []);
+        setPurchasedCourses(response.data.data || []);
+        console.log("hfhwfh",response)
       } catch (error) {
         console.error("Error fetching purchased courses:", error);
         message.error("Failed to fetch your purchased courses.");
