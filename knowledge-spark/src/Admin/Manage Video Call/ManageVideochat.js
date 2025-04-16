@@ -130,21 +130,21 @@ function ManageVideochat() {
       dataIndex: "student_username",
       key: "student_username",
     },
-    {
-      title: "Start Time",
-      dataIndex: "start",
-      key: "start",
-    },
-    {
-      title: "End Time",
-      dataIndex: "end",
-      key: "end",
-    },
-    {
-      title: "Duration",
-      dataIndex: "duration",
-      key: "duration",
-    },
+    // {
+    //   title: "Start Time",
+    //   dataIndex: "start",
+    //   key: "start",
+    // },
+    // {
+    //   title: "End Time",
+    //   dataIndex: "end",
+    //   key: "end",
+    // },
+    // {
+    //   title: "Duration",
+    //   dataIndex: "duration",
+    //   key: "duration",
+    // },
     {
       title: "Status",
       dataIndex: "status",

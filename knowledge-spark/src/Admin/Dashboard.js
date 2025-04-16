@@ -5,6 +5,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
 import { ReactComponent as Graphico } from '../../src/Image/graphico.svg';
 import Graph1 from "./Graph1";
+import ProfileCompletionPrompt from '../Common/ProfileCompletionPrompt';
 
 dayjs.extend(customParseFormat);
 const { RangePicker } = DatePicker;
@@ -209,6 +210,7 @@ function Dashboard() {
 
   return (
     <>
+      <ProfileCompletionPrompt />
       {renderDashboardWidgets()}
       <Row className='graphrow' gutter={24}>
         <Col xs={24} sm={12} lg={16}>
