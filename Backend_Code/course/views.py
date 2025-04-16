@@ -546,7 +546,7 @@ class CoursePurchaseViewSet(ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         no_pagination = request.query_params.get("no_pagination")
 
-        queryset = queryset.filter(status="paid").select_related("related_field")
+        queryset = queryset.filter(status="paid")
         if no_pagination:
             serializer = self.serializer_class(queryset, many=True)
             return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
@@ -851,13 +851,13 @@ class CoursePurchaseViewSet(ModelViewSet):
             pdf.drawString(300, y_position, f"INR {purchase.amount:.2f}")
             y_position -= 20
 
-            pdf.drawString(50, y_position, "Platform Fee:")
-            pdf.drawString(300, y_position, f"INR {purchase.platform_fee:.2f}")
-            y_position -= 20
+            # pdf.drawString(50, y_position, "Platform Fee:")
+            # pdf.drawString(300, y_position, f"INR {purchase.platform_fee:.2f}")
+            # y_position -= 20
 
-            pdf.drawString(50, y_position, "Teacher's Share:")
-            pdf.drawString(300, y_position, f"INR {purchase.teacher_amount:.2f}")
-            y_position -= 30
+            # pdf.drawString(50, y_position, "Teacher's Share:")
+            # pdf.drawString(300, y_position, f"INR {purchase.teacher_amount:.2f}")
+            # y_position -= 30
 
             # Total Amount
             pdf.setFont("Helvetica-Bold", 12)

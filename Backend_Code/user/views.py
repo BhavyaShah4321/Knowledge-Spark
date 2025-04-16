@@ -247,6 +247,7 @@ class UserViewSet(ModelViewSet):
         print(request.user.is_superuser)
         
         teachers=User.objects.filter(type="Teacher").count()
+        print(teachers)
         students=User.objects.filter(type="Student").count()
         courses=Course.objects.all().count()
         
