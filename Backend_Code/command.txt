@@ -1,4 +1,4 @@
-step you must run during the project is 
+step you must rsun during the project is 
 1:- .venv/Scripts/activate
 2:- python ./manage.py migrate
 3:- python ./manage.py runserver
@@ -9,8 +9,7 @@ step you must run during the project is
 //start daphne 
 1:- open new tab in terminal
 2:- .venv/Scripts/activate 
-3:- daphne -b 0.0.0.0 -p 8001 final_year_project.asgi:application
-http://localhost:8000/video-call/UUid/?token={}
+3:- python -m  daphne -b 0.0.0.0 -p 8001 final_year_project.asgi:application
 
 //create superuser comamnd 
 python ./manage.py createsuperuser
