@@ -1,4 +1,4 @@
-step you must rsun during the project is 
+step you must run during the project is 
 1:- .venv/Scripts/activate
 2:- python ./manage.py migrate
 3:- python ./manage.py runserver
@@ -9,7 +9,22 @@ step you must rsun during the project is
 //start daphne 
 1:- open new tab in terminal
 2:- .venv/Scripts/activate 
-3:- python -m  daphne -b 0.0.0.0 -p 8001 final_year_project.asgi:application
+3:- daphne -b 0.0.0.0 -p 8001 final_year_project.asgi:application
+http://localhost:8000/video-call/UUid/?token={}
 
 //create superuser comamnd 
 python ./manage.py createsuperuser
+
+//to clean the datbase
+python manage.py flush
+
+
+// Freah start to connect database
+1. .venv/Scripts/activate 
+2. pip install -r requirements.txt
+3. python ./manage.py makemigrations
+4. python ./manage.py runserver
+
+note: in this python 3.13 
+so latest may not work 
+so for that delete .venv and reinstall it 
