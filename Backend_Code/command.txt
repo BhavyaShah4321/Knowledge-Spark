@@ -25,6 +25,6 @@ python manage.py flush
 3. python ./manage.py makemigrations
 4. python ./manage.py runserver
 
-note: in this python 3.13 
+note: in this python 3.12 
 so latest may not work 
 so for that delete .venv and reinstall it 
